@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis", "Sammo.Oeis\Sammo.Oeis.csproj", "{5CCEB3DE-EFD9-48C5-9BB7-7FAD144631FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis.Azure", "Sammo.Oeis.Azure\Sammo.Oeis.Azure.csproj", "{2168CE5D-4161-4599-A9AB-1D3D07397E2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis.Playground", "Sammo.Oeis.Playground\Sammo.Oeis.Playground.csproj", "{F24C32BC-8D22-4F29-A757-871A9628AE80}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CCEB3DE-EFD9-48C5-9BB7-7FAD144631FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CCEB3DE-EFD9-48C5-9BB7-7FAD144631FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CCEB3DE-EFD9-48C5-9BB7-7FAD144631FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CCEB3DE-EFD9-48C5-9BB7-7FAD144631FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2168CE5D-4161-4599-A9AB-1D3D07397E2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2168CE5D-4161-4599-A9AB-1D3D07397E2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2168CE5D-4161-4599-A9AB-1D3D07397E2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2168CE5D-4161-4599-A9AB-1D3D07397E2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
