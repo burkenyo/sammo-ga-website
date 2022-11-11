@@ -263,4 +263,8 @@ paket-files/
 __pycache__/
 *.pyc
 
+.DS_Store
+Desktop.ini
+
 data/
+*.temp.cs

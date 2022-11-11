@@ -1,89 +1,90 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
-using Azure.Storage;
+using Azure.Identity;
 using Azure.Storage.Blobs;
-using Sammo.Oeis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sammo.Oeis.Playground;
 
 static class Program
 {
-    readonly static Action<object?> p = Console.WriteLine;
-
     static void Main(string[] args)
     {
+        Trace.Listeners.Add(new ConsoleTraceListener());
+
         static string? GetDisplayName(MethodInfo m) =>
             m.Name.EndsWith("Async")
                 ? m.Name[..^5]
-                : m.Name.EndsWith("Internal")
-                    ? null
-                    : m.Name;
+                : m.Name;
 
-        var toRun = typeof(Program)
+        var runners = typeof(Playground)
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-            .Where(m => m.Name != nameof(Main))
-            .IntersectBy(args, m => GetDisplayName(m));
+            .Where(m => m.IsDefined(typeof(RunnerAttribute)))
+            .ToList();
 
-        var ranSomething = false;
-        foreach(var method in toRun)
+        var toRun = args.Contains("*")
+            ? runners
+            : runners
+                .IntersectBy(args, m => GetDisplayName(m))
+                .ToList();
+
+        if (toRun.Any())
         {
-            p($"-----\nRunning {GetDisplayName(method)}...\n-----\n");
-            if (method.ReturnType.IsAssignableTo(typeof(Task)))
-            {
-                method.CreateDelegate<Func<Task>>().Invoke().Wait();
-            }
-            else
-            {
-                method.CreateDelegate<Action>().Invoke();
-            }
+            var services = new ServiceCollection()
+                .AddSingleton(p => GetKnownConstantsAsync().Result)
+                .AddSingleton(p => GetDataDirectory())
+                .AddSingleton(p => GetContainerClient())
+                .AddTransient<HttpClient>()
+                .AddSingleton<OeisDecimalExpansionDownloader>()
+                .AddSingleton<OeisDozenalExpansionFileStore>()
+                .AddSingleton<OeisDozenalExpansionAzureBlobStore>()
+                .BuildServiceProvider();
 
-            ranSomething = true;
+            foreach (var method in toRun)
+            {
+                Console.WriteLine($"-----\nRunning {GetDisplayName(method)}...\n-----\n");
+
+                var @params = method.GetParameters()
+                    .Select(p => services.GetService(p.ParameterType))
+                    .ToArray();
+
+                if (method.ReturnType.IsAssignableTo(typeof(Task)))
+                {
+                    ((Task)method.Invoke(null, @params)!).Wait();
+                }
+                else
+                {
+                    method.Invoke(null, @params);
+                }
+            }
         }
-
-        if (!ranSomething)
+        else
         {
-            p("Nothing selected to run!");
+            var options = String.Join(", ", runners.Select(m => GetDisplayName(m)));
+
+            Console.WriteLine($"Nothing selected to run! Options are {options}.\nUse '*' to run all (may need to quote in shell).");
         }
     }
 
-    static async Task PlayWithOeisAsyncInternal(IOeisDozenalExpansionStore store)
+    static async Task<Dictionary<string, int>> GetKnownConstantsAsync()
     {
-        Dictionary<string, int> oeisIds;
+        string path = Path.Join(Path.GetDirectoryName(typeof(Program).Assembly.Location), "oeis.json");
 
-        Environment.CurrentDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location)!;
+        using var file = File.OpenRead(path);
+        var doc = await JsonDocument.ParseAsync(file);
 
-        using (var file = File.OpenRead("oeis.json"))
-        {
-            var doc = await JsonDocument.ParseAsync(file);
-            oeisIds = doc.RootElement
-                .EnumerateObject()
-                    .ToDictionary(
-                        static p => p.Name,
-                        static p => p.Value.GetInt32()
-                    );
-        }
+        var knownConstants = doc.RootElement
+            .EnumerateObject()
+            .ToDictionary(
+                static p => p.Name,
+                static p => p.Value.GetProperty("id").GetInt32()
+            );
 
-        using var _oeisClient = new HttpClient();
-        var downloader = new OeisDecimalExpansionDownloader(_oeisClient);
-
-        var service = new OeisDozenalExpansionService(downloader, store);
-
-        foreach (var (tag, id) in oeisIds)
-        {
-            var sw = Stopwatch.StartNew();
-
-            var oeisData = await service.RetrieveAsync((OeisId)id);
-
-            p($"{oeisData.Expansion.Digits.Count} digits of {oeisData.Name}:");
-            p(oeisData.Expansion.ToString()[..300] + '…');
-
-            p(sw.Elapsed);
-            p(null);
-        }
+        return knownConstants;
     }
 
-    static Task PlayWithOeisLocalAsync()
+    static DirectoryInfo GetDataDirectory()
     {
         DirectoryInfo directory = new DirectoryInfo(Environment.CurrentDirectory);
 
@@ -100,33 +101,16 @@ static class Program
             directory = directory.Parent ?? throw new DirectoryNotFoundException();
         }
 
-        var store = new OeisDozenalExpansionFileStore(directory);
-
-        return PlayWithOeisAsyncInternal(store);
+        return directory;
     }
 
-    static Task PlayWithOeisAzureAsync()
+    static BlobContainerClient GetContainerClient()
     {
-        var accountName = "roflninjastorage";
-        var containerName = "sammo-ga";
+        const string accountName = "roflninjastorage";
+        const string containerName = "sammo-ga";
 
         var containerUri = new Uri($"https://{accountName}.blob.core.windows.net/{containerName}");
-        var credential = new StorageSharedKeyCredential(accountName, accountKey);
 
-        var containerClient = new BlobContainerClient(containerUri, credential);
-
-        var store = new OeisDozenalExpansionAzureBlobStore(containerClient);
-
-        return PlayWithOeisAsyncInternal(store);
-    }
-}
-
-static class StopwatchExtensions
-{
-    public static TimeSpan GetElapsedAndRestart(this Stopwatch sw)
-    {
-        var elapsed = sw.Elapsed;
-        sw.Restart();
-        return elapsed;
+        return new BlobContainerClient(containerUri, new DefaultAzureCredential());
     }
 }

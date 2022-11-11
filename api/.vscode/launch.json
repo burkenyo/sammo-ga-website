@@ -1,11 +1,55 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Attach to .NET Functions",
-      "type": "coreclr",
-      "request": "attach",
-      "processId": "${command:azureFunctions.pickProcess}"
-    }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+            "name": "Launch API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-api",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/Sammo.Oeis.Api/bin/Debug/net7.0/Sammo.Oeis.Api.dll",
+            "args": [ ],
+            "cwd": "${workspaceFolder}/Sammo.Oeis.Api",
+            "stopAtEntry": false,
+            // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
+            // "serverReadyAction": {
+            //     "action": "openExternally",
+            //     "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            // },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                //"UseFileStore": "true",
+                "FileStore:DataDirectory": "${workspaceFolder}/data",
+                "Azure:Blobs:AccountName": "roflninjastorage",
+                "Azure:Blobs:ContainerName": "sammo-ga"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+            "name": "Launch Playground",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-playground",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/Sammo.Oeis.Playground/bin/Debug/net7.0/Sammo.Oeis.Playground.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Sammo.Oeis.Playground",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
 }

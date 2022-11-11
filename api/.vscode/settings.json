@@ -2,9 +2,5 @@
     "cSpell.words": [
         "Oeis",
         "unmanaged"
-    ],
-    "azureFunctions.deploySubpath": "api/bin/Release/net6.0/publish",
-    "azureFunctions.projectLanguage": "C#",
-    "azureFunctions.projectRuntime": "~4",
-    "azureFunctions.preDeployTask": "publish (functions)"
+    ]
 }

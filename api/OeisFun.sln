@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis.Azure", "Sammo.O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis.Playground", "Sammo.Oeis.Playground\Sammo.Oeis.Playground.csproj", "{F24C32BC-8D22-4F29-A757-871A9628AE80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis.Tests", "Sammo.Oeis.Tests\Sammo.Oeis.Tests.csproj", "{D3936B0C-2203-438A-8CF8-D586CBAC6EBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sammo.Oeis.Api", "Sammo.Oeis.Api\Sammo.Oeis.Api.csproj", "{1F6218E5-4221-4885-A1CE-1DF8FA4B1694}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F24C32BC-8D22-4F29-A757-871A9628AE80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3936B0C-2203-438A-8CF8-D586CBAC6EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3936B0C-2203-438A-8CF8-D586CBAC6EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3936B0C-2203-438A-8CF8-D586CBAC6EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3936B0C-2203-438A-8CF8-D586CBAC6EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F6218E5-4221-4885-A1CE-1DF8FA4B1694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F6218E5-4221-4885-A1CE-1DF8FA4B1694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F6218E5-4221-4885-A1CE-1DF8FA4B1694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F6218E5-4221-4885-A1CE-1DF8FA4B1694}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
