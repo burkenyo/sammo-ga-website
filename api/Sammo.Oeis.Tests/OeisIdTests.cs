@@ -70,6 +70,10 @@ public static class OeisIdTests
         Assert.Equal(A001622, OeisId.Parse(nameof(A001622)));
         Assert.Equal(A1234567, OeisId.Parse(nameof(A1234567)));
 
+        Assert.Equal(A000796, OeisId.Parse(nameof(A000796).ToLower(), OeisId.ParseOption.Lax));
+        Assert.Equal(A001622, OeisId.Parse(nameof(A001622).ToLower(), OeisId.ParseOption.Lax));
+        Assert.Equal(A1234567, OeisId.Parse(nameof(A1234567).ToLower(), OeisId.ParseOption.Lax));
+
         Assert.Equal(A000796, OeisId.Parse(A000796.Value.ToString(), OeisId.ParseOption.Lax));
         Assert.Equal(A001622, OeisId.Parse(A001622.Value.ToString(), OeisId.ParseOption.Lax));
         Assert.Equal(A1234567, OeisId.Parse(A1234567.Value.ToString(), OeisId.ParseOption.Lax));

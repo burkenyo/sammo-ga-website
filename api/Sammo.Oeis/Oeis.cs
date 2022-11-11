@@ -72,7 +72,7 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
 
     public static bool TryParse(ReadOnlySpan<char> value, out OeisId id, ParseOption option = ParseOption.Strict)
     {
-        if (value.Length >= 2 && value[0] == 'A')
+        if (value.Length >= 2 && (value[0] == 'A' || (option == ParseOption.Lax && value[0] == 'a')))
         {
             value = value[1..];
         }
