@@ -8,6 +8,9 @@ namespace Sammo.Oeis;
 
 public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
 {
+    /// <summary>
+    /// since every invocation of CreateIfNotExistsAsync will need options, cache this
+    /// </summary>
     static Lazy<BlobOpenWriteOptions> s_expansionWriteOptions = new(() =>
         new BlobOpenWriteOptions
         {
@@ -17,7 +20,9 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             }
         });
 
-    // since every invocation of CreateIfNotExists will need options, cache this
+    /// <summary>
+    /// since every invocation of OpenWrite will need options, cache this
+    /// </summary>
     static Lazy<AppendBlobCreateOptions> s_badSequenceListCreateOptions = new(() =>
         new AppendBlobCreateOptions
         {
@@ -82,7 +87,8 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
     {
         try
         {
-            var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(blobClient.OpenRead());
+            using var stream = await blobClient.OpenReadAsync();
+            var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(stream);
 
             if (expansion.Id != id)
             {
@@ -109,7 +115,8 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
         {
             var options = s_expansionWriteOptions.Value;
 
-            await OeisDozenalExpansionSerializer.WriteToAsync(expansion, blobClient.OpenWrite(true, options));
+            using var stream = await blobClient.OpenWriteAsync(true, options);
+            await OeisDozenalExpansionSerializer.WriteToAsync(expansion, stream);
 
             return blobClient.Uri;
         }
@@ -174,10 +181,8 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
         {
             var badSequenceListClient = await GetBadSequenceListClient();
 
-            Stream stream;
-
-            // explicit using block so stream is closed before any writes
-            using (stream = await badSequenceListClient.OpenReadAsync())
+            // explicit using blocks so stream is closed before any writes
+            using (var stream = await badSequenceListClient.OpenReadAsync())
             {
                 if (await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id) is (true, _))
                 {
@@ -185,9 +190,10 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
                 }
             }
 
-            stream = await badSequenceListClient.OpenWriteAsync(false);
-
-            await OeisBadSequenceListUtil.AddToBadSequenceList(stream, id, reason);
+            using (var stream = await badSequenceListClient.OpenWriteAsync(false))
+            {
+                await OeisBadSequenceListUtil.AddToBadSequenceList(stream, id, reason);
+            }
 
         }
         catch (Exception ex) when (ShouldWrap(ex))

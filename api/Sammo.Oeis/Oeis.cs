@@ -778,7 +778,8 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     {
         try
         {
-            var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(file.OpenRead());
+            using var stream = file.OpenRead();
+            var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(stream);
 
             if (expansion.Id != id)
             {
@@ -815,7 +816,8 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
 
         try
         {
-            await OeisDozenalExpansionSerializer.WriteToAsync(expansion, file.OpenWrite());
+            using var stream = file.OpenWrite();
+            await OeisDozenalExpansionSerializer.WriteToAsync(expansion, stream);
 
             return new Uri(file.FullName);
         }
@@ -837,11 +839,14 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
         return (true, await RetrieveAsyncInternal(id, file));
     }
 
+    string GetBadSequenceListPath() =>
+        Path.Combine(_directory.FullName, "bad.txt");
+
     public async Task<(bool result, string? reason)> BadSequenceListContainsAsync(OeisId id)
     {
         try
         {
-            using var stream = File.Open(Path.Combine(_directory.FullName, "bad.txt"), FileMode.OpenOrCreate, FileAccess.Read);
+            using var stream = File.Open(GetBadSequenceListPath(), FileMode.OpenOrCreate, FileAccess.Read);
 
             return await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id);
         }
@@ -855,13 +860,14 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     {
         try
         {
-            using var stream = File.Open(Path.Combine(_directory.FullName, "bad.txt"), FileMode.OpenOrCreate);
+            using var stream = File.Open(GetBadSequenceListPath(), FileMode.OpenOrCreate);
 
             if (await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id) is (true, _))
             {
                 return;
             }
 
+            // append the new item
             stream.Seek(0, SeekOrigin.End);
             await OeisBadSequenceListUtil.AddToBadSequenceList(stream, id, message);
         }

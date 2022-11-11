@@ -36,7 +36,7 @@ if (config.GetValue<bool>("UseFileStore"))
 
         if (!dataDir.Exists)
         {
-            throw new DirectoryNotFoundException();
+            dataDir.Create();
         }
 
         return new OeisDozenalExpansionFileStore(dataDir);
