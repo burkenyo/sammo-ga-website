@@ -1,8 +1,11 @@
-#if !DEBUG
 using System.Text.Json.Serialization;
-#endif
 
 namespace Sammo.Oeis.Api;
+
+[JsonSerializable(typeof(OeisExpansionDto))]
+[JsonSerializable(typeof(ErrorDto))]
+[JsonSerializable(typeof(OeisClientErrorDto))]
+partial class DtoSerializationContext : JsonSerializerContext { }
 
 class OeisExpansionDto
 {
