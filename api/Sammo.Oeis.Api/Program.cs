@@ -1,26 +1,10 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using System.Text.Json.Serialization;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Http.Json;
 using Sammo.Oeis;
 using Sammo.Oeis.Api;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
-
-using OeisExpansionOrErrorResult = Microsoft.AspNetCore.Http.HttpResults.Results<
-    Microsoft.AspNetCore.Http.HttpResults.StatusCodeHttpResult,
-    Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult,
-    Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult,
-    Microsoft.AspNetCore.Http.HttpResults.BadRequest<Sammo.Oeis.Api.ErrorDto>,
-    Microsoft.AspNetCore.Http.HttpResults.NotFound<Sammo.Oeis.Api.ErrorDto>,
-    Microsoft.AspNetCore.Http.HttpResults.Ok<Sammo.Oeis.Api.OeisExpansionDto>>;
-
-using static Microsoft.AspNetCore.Http.StatusCodes;
-
-#pragma warning disable CS8524
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -59,12 +43,26 @@ else
 }
 
 builder.Services.AddHttpClient<IOeisDecimalExpansionDownloader, OeisDecimalExpansionDownloader>();
-builder.Services.AddSingleton<IOeisDozenalExpansionService, OeisDozenalExpansionService>();
+
+// because downloader captures an HttpClient-backed downloader, it should not be singleton
+builder.Services.AddScoped<IOeisDozenalExpansionService, OeisDozenalExpansionService>();
+
+builder.Services.AddWebApi<ExpansionsApi>();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var version = ThisAssembly.Version;
 
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+    options.SwaggerDoc(version, new()
+    {
+        Version = version,
+        Title = ThisAssembly.Title,
+        Description = ThisAssembly.Description,
+    });
+});
+
+builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     options.SerializerOptions.TypeInfoResolver = DtoSerializationContext.Default;
@@ -73,160 +71,19 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI();
-
-app.MapGet("expansions/{id}",
-    async Task<OeisExpansionOrErrorResult> (
-        string id, [FromHeader] StringValues? accept, IOeisDozenalExpansionService expansionService) =>
+app.UseSwaggerUI(options =>
 {
-    if (!TryGetResultContentType(accept, out var resultContentType))
-    {
-        return TypedResults.StatusCode(Status406NotAcceptable);
-    }
+    var version = ThisAssembly.Version;
 
-    if (!OeisId.TryParse(id, out var oeisId, OeisId.ParseOption.Lax))
-    {
-        var message = "Invalid ID value! ID should be a value comprising ‘A’ followed by a positive integer.";
-
-        return resultContentType switch
-        {
-            ResultContentType.TextPlain =>
-                TypedResults.Content(message, statusCode: Status400BadRequest),
-            ResultContentType.ApplicationJson =>
-                TypedResults.BadRequest(new ErrorDto(message))
-        };
-    }
-
-    try
-    {
-        switch (resultContentType)
-        {
-            case ResultContentType.TextPlain:
-                var (_, uri) = await expansionService.GetPlainTextUri(oeisId);
-
-                app.Logger.LogInformation("Returning plain-text URL for {id}.", oeisId);
-
-                return TypedResults.Redirect(uri.ToString(), preserveMethod: true);
-            case ResultContentType.ApplicationJson:
-                var expansion = await expansionService.RetrieveAsync(oeisId);
-
-                app.Logger.LogInformation("Returning expansion for {id} as json.", oeisId);
-
-                return TypedResults.Ok(new OeisExpansionDto(expansion));
-        }
-    }
-    catch (OeisClientException ex)
-    {
-        return HandleOeisClientException(ex, resultContentType);
-    }
-
-    // not reached
-    return null!;
+    options.SwaggerEndpoint($"/swagger/{version}/swagger.json", ThisAssembly.Title + ' ' + version);
 });
 
-app.MapGet("randomExpansion",
-    async Task<OeisExpansionOrErrorResult> (
-        [FromHeader] StringValues? accept, IOeisDozenalExpansionService expansionService) =>
-{
-    if (!TryGetResultContentType(accept, out var resultContentType))
-    {
-        return TypedResults.StatusCode(Status406NotAcceptable);
-    }
+app.MapGet("/", () => Results.Redirect("/swagger", preserveMethod: true))
+    .ExcludeFromDescription(); // prevent showing up in Swagger
 
-    try
-    {
-        switch (resultContentType)
-        {
-            case ResultContentType.TextPlain:
-                var (oeisId, uri) = await expansionService.GetPlainTextUriForRandom();
-
-                app.Logger.LogInformation("Returning plain-text URL for {id}.", oeisId);
-
-                return TypedResults.Redirect(uri.ToString(), preserveMethod: true);
-            case ResultContentType.ApplicationJson:
-                var expansion = await expansionService.RetrieveRandomAsync();
-
-                app.Logger.LogInformation("Returning expansion for {id} as json.", expansion.Id);
-
-                return TypedResults.Ok(new OeisExpansionDto(expansion));
-        }
-    }
-    catch (OeisClientException ex)
-    {
-        return HandleOeisClientException(ex, resultContentType);
-    }
-
-    // not reached
-    return null!;
-});
+app.Map<ExpansionsApi>();
 
 app.Run();
-
-static bool TryGetResultContentType(
-    [NotNullWhen(true)] StringValues? header, out ResultContentType resultContentType)
-{
-    if (!MediaTypeHeaderValue.TryParseList(header, out var values))
-    {
-        resultContentType = default;
-        return false;
-    }
-
-    foreach(var acceptValue in values)
-    {
-        if (acceptValue.MatchesMediaType("text/plain"))
-        {
-            resultContentType = ResultContentType.TextPlain;
-            return true;
-        }
-
-        if (acceptValue.MatchesMediaType("application/json"))
-        {
-            resultContentType = ResultContentType.ApplicationJson;
-            return true;
-        }
-    }
-
-    resultContentType = default;
-    return false;
-}
-
-OeisExpansionOrErrorResult HandleOeisClientException(OeisClientException ex, ResultContentType resultContentType)
-{
-    var error = new OeisClientErrorDto(ex);
-
-    app.Logger.Log(LogLevel.Error, $"{nameof(OeisClientException)} occurred. ",
-        ("cause: {cause}", error.Details.Cause),
-        ("ID: {id}", error.Details.Id),
-        ("reason: “{message}”", error.Message),
-        ("inner exception: “{innerException}”", error.Details.InnerException));
-
-    switch (ex.Cause)
-    {
-        case OeisClientExceptionCause.InvalidSequence:
-            return resultContentType switch
-            {
-                ResultContentType.TextPlain =>
-                    TypedResults.Content(error.Message, statusCode: Status400BadRequest),
-                ResultContentType.ApplicationJson =>
-                    TypedResults.BadRequest((ErrorDto) error)
-            };
-
-        case OeisClientExceptionCause.NotFound:
-            return resultContentType switch
-            {
-                ResultContentType.TextPlain =>
-                    TypedResults.Content(error.Message, statusCode: Status404NotFound),
-                ResultContentType.ApplicationJson =>
-                    TypedResults.NotFound((ErrorDto) error)
-            };
-    }
-
-    // Use this utility to keep the original stack trace in the exception.
-    ExceptionDispatchInfo.Throw(ex);
-
-    // never reached
-    return null!;
-}
 
 static string GetRequiredConfigValue(IConfiguration config, string key)
 {
@@ -250,17 +107,20 @@ static string GetRequiredConfigValue(IConfiguration config, string key)
 [Conditional("DEBUG")]
 static void CheckDebugAllowed(IConfiguration config)
 {
+    const string allowFlag = "AllowDebugBuildInContainer";
+
     var isInContainer = config.GetValue<bool>("DOTNET_RUNNING_IN_CONTAINER");
-    var allowDebug = config.GetValue<bool>("AllowDebugBuildInContainer");
+    var allowDebug = config.GetValue<bool>(allowFlag);
 
     if (isInContainer && !allowDebug)
     {
-        Console.Error.WriteLine("Cannot run a debug build in a container unless “AllowDebugInContainer” is set!");
+        while (true)
+        {
+            Console.Error.WriteLine($"Cannot run a debug build in a container unless “{allowFlag}” is set!");
 
-        // Rather than throw an error, which might cause the container manager to repeatedly try to restart the app,
-        // simply go to sleep forever
-        Thread.Sleep(Timeout.Infinite);
+            // Rather than throw an error, which might cause the container manager to repeatedly try to restart the app,
+            // simply go to sleep for a while
+            Thread.Sleep(TimeSpan.FromMinutes(5));
+        }
     }
 }
-
-enum ResultContentType { TextPlain, ApplicationJson }

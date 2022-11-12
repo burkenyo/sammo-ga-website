@@ -28,7 +28,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
         {
             HttpHeaders = new()
             {
-                ContentType = "text/csv; charset=utf-8"
+                ContentType = "text/plain; charset=utf-8"
             }
         });
 
@@ -152,7 +152,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
 
     async Task<AppendBlobClient> GetBadSequenceListClient()
     {
-        var badSequenceListClient = _client.GetAppendBlobClient("bad.csv");
+        var badSequenceListClient = _client.GetAppendBlobClient("bad.txt");
 
         await badSequenceListClient.CreateIfNotExistsAsync(s_badSequenceListCreateOptions.Value);
 
@@ -190,7 +190,8 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
                 }
             }
 
-            using (var stream = await badSequenceListClient.OpenWriteAsync(false))
+            // use “overwrite: false” to stipulate appending
+            using (var stream = await badSequenceListClient.OpenWriteAsync(overwrite: false))
             {
                 await OeisBadSequenceListUtil.AddToBadSequenceList(stream, id, reason);
             }

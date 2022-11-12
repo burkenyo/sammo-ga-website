@@ -93,6 +93,9 @@ static class BufferUtils
     /// <param name="buffer">The buffer provided to the delegate</param>
     public delegate TResult BufferFunc<TItem, TResult>(Span<TItem> buffer) where TItem : unmanaged;
 
+    public static int MaxStackAlloc<T>() where T : unmanaged =>
+        MaxStackAllocBytes / Unsafe.SizeOf<T>();
+
     // <summary>
     /// Calls the given <see cref="BufferAction{TItem}" /> delegate with a provided buffer.
     /// The buffer is allocated on the stack if the necessary size of the buffer is

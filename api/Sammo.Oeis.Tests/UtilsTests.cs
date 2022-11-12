@@ -1,3 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Sammo.Oeis.Tests;
 
 public static class UtilsTests
@@ -79,5 +83,28 @@ public static class UtilsTests
         Assert.Equal(remainingCapacity -= "1970-01-01".Length, builder.RemainingCapacity);
 
         Assert.Equal("90foo#1970-01-01", builder.ToString());
+    }
+
+    [Fact]
+    [SuppressMessage("xUnit", "xUnit2000:UseConstsAsExpectedValue",
+        Justification = "This checks that the const is defined as expected")]
+    public static void BufferUtils_MaxStackAllocT_ComputesCorrectly()
+    {
+        var expectedCount = BufferUtils.MaxStackAllocBytes / sizeof(char);
+        Assert.Equal(expectedCount, BufferUtils.MaxStackAllocChars);
+
+        expectedCount = BufferUtils.MaxStackAllocBytes / Unsafe.SizeOf<CrunchyStruct>();
+        Assert.Equal(expectedCount, BufferUtils.MaxStackAlloc<CrunchyStruct>());
+
+        expectedCount = BufferUtils.MaxStackAllocBytes / Unsafe.SizeOf<(int, int)>();
+        Assert.Equal(expectedCount, BufferUtils.MaxStackAlloc<(int, int)>());
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    readonly struct CrunchyStruct
+    {
+        readonly int A;
+        readonly bool B;
+        readonly short C;
     }
 }

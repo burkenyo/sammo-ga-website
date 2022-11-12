@@ -1,12 +1,15 @@
-﻿{
+{
   "profiles": {
-    "http": {
+    "test": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5191",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "UseFileStore": "true",
+        "FileStore:DataDirectory": "../data",
+        "Azure:Blobs:AccountName": "roflninjastorage",
+        "Azure:Blobs:ContainerName": "sammo-ga"
       }
     }
   }

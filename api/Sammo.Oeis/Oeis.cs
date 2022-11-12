@@ -698,9 +698,10 @@ public static class OeisDozenalExpansionSerializer
 
 /// <summary>
 /// Reads and writes the list of OEIS Sequence known not to be valid decimal expansions
-/// using a simple CSV format, where:<para />
-///     • The first column is sequence ID.<para />
-///     • The second column it the reason why the sequence is invalid.
+/// using a simple text-based format, where each line is:<para />
+///     • The sequence ID, then<para />
+///     • A colon followed by a single space, then<para />
+///     • The reason why the sequence is invalid.
 /// </summary>
 public static class OeisBadSequenceListUtil
 {
@@ -710,13 +711,14 @@ public static class OeisBadSequenceListUtil
 
         await foreach (var line in reader.EnumerateLinesAsync())
         {
-            var indexOfComma = line.IndexOf(',');
+            var indexOfColon = line.IndexOf(':');
 
-            var parsedId = OeisId.Parse(line.AsSpan(0, indexOfComma));
+            var parsedId = OeisId.Parse(line.AsSpan(0, indexOfColon));
 
             if (parsedId == id)
             {
-                return (true, line[(indexOfComma + 2)..]);
+                // skip the colon and the space
+                return (true, line[(indexOfColon + 2)..]);
             }
         }
 
@@ -728,7 +730,7 @@ public static class OeisBadSequenceListUtil
         using var writer = new StreamWriter(stream, leaveOpen: true);
 
         await writer.WriteAsync(id.ToString());
-        await writer.WriteAsync(", ");
+        await writer.WriteAsync(": ");
         await writer.WriteLineAsync(reason);
         await writer.FlushAsync();
     }
