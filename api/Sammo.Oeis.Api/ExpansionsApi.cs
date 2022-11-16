@@ -64,7 +64,8 @@ class ExpansionsApi : IWebApi
 
         if (!OeisId.TryParse(id, out var oeisId, OeisId.ParseOption.Lax))
         {
-            var message = "Invalid ID value! ID should be a value comprising ‘A’ followed by a positive integer.";
+            var message = "Invalid ID value! ID should be a value comprising ‘A’ followed by a positive integer "
+                + $"less than {OeisId.MaxValue + 1:N0}.";
 
             return BadRequest(new ErrorDto(message), resultContentType);
         }

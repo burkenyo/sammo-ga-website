@@ -18,9 +18,13 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
         Lax
     }
 
+    public const int MinValue = 1;
+
+    public const int MaxValue = 999_999_999;
+
     public OeisId(int value)
     {
-        if (value < 1)
+        if (value is < MinValue or > MaxValue)
         {
             throw new ArgumentOutOfRangeException(nameof(value));
         }
@@ -34,10 +38,10 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
 
     public override string ToString()
     {
-        // the maximum possible length is 11 chars:
+        // the maximum possible length is 10 chars:
         //   • the ‘A’ prefix
-        //   • 10 chars for the largest possible int
-        Span<char> buffer = stackalloc char[11];
+        //   • 9 chars for the MaxValue
+        Span<char> buffer = stackalloc char[10];
 
         TryFormat(buffer, out var charsWritten);
 
@@ -82,7 +86,7 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
             return false;
         }
 
-        if (Int32.TryParse(value, out var intVal) && intVal >= 1)
+        if (Int32.TryParse(value, out var intVal) && intVal is >= MinValue and <= MaxValue)
         {
             id = new OeisId(intVal);
             return true;
@@ -564,7 +568,7 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
 
             digits.Fill(parsedTerms);
 
-            return new OeisDecimalExpansion(sequence.Id, sequence.Name, BigDecimal.Create(digits, sequence.Offset));;
+            return new OeisDecimalExpansion(sequence.Id, sequence.Name, BigDecimal.Create(digits, sequence.Offset));
         }
         catch (Exception ex) when (ex is HttpRequestException || ex is IOException)
         {
