@@ -5,11 +5,7 @@
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5191",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "UseFileStore": "true",
-        "FileStore:DataDirectory": "../data",
-        "Azure:Blobs:AccountName": "roflninjastorage",
-        "Azure:Blobs:ContainerName": "sammo-ga"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

@@ -270,3 +270,6 @@ Desktop.ini
 data/
 *.temp.cs
 .ipynb_checkpoints
+[Oo]ut
+
+sammo-oeis-api--config.json

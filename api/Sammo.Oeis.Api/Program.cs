@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Azure.Identity;
 using Azure.Storage.Blobs;
@@ -8,8 +8,6 @@ using Sammo.Oeis.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
-
-CheckDebugAllowed(config);
 
 if (config.GetValue<bool>("UseFileStore"))
 {
@@ -28,6 +26,12 @@ if (config.GetValue<bool>("UseFileStore"))
 }
 else
 {
+    var credOptions = new DefaultAzureCredentialOptions();
+    credOptions.AdditionallyAllowedTenants.Add("*");
+    var cred = new DefaultAzureCredential(credOptions);
+    
+    AddKeyVaultStoredConfiguration(cred);
+    
     builder.Services.AddSingleton<IOeisDozenalExpansionStore>(provider =>
     {
         var blobConfig = config.GetRequiredSection("Azure:Blobs");
@@ -36,7 +40,7 @@ else
         var containerName = GetRequiredConfigValue(blobConfig, "ContainerName");
 
         var containerUri = new Uri($"https://{accountName}.blob.core.windows.net/{containerName}");
-        var client = new BlobContainerClient(containerUri, new DefaultAzureCredential());
+        var client = new BlobContainerClient(containerUri, cred);
 
         return new OeisDozenalExpansionAzureBlobStore(client);
     });
@@ -62,6 +66,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+{
+    policy.AllowAnyOrigin();
+}));
+
 builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
@@ -69,6 +78,8 @@ builder.Services.Configure<JsonOptions>(options =>
 });
 
 var app = builder.Build();
+
+app.UseCors();
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>
@@ -83,44 +94,77 @@ app.MapGet("/", () => Results.Redirect("/swagger", preserveMethod: true))
 
 app.Map<ExpansionsApi>();
 
+CheckDebugAllowed();
+
 app.Run();
 
-static string GetRequiredConfigValue(IConfiguration config, string key)
+void AddKeyVaultStoredConfiguration(DefaultAzureCredential cred)
+{
+    try
+    {
+        var keyVaultName = GetRequiredConfigValue(config, "Azure:KeyVaultName");
+        var configSecretName = ThisAssembly.Name.Replace('.', '-').ToLower() + "--config";
+        
+        config.AddAzureKeyVaultJsonSecret(keyVaultName, configSecretName, cred);
+    }
+    catch (Exception ex)
+    {
+        LogErrorAndBail(ex.Message);
+    }
+}
+
+string GetRequiredConfigValue(IConfiguration config, string key)
 {
     var value = config[key];
 
     if (string.IsNullOrEmpty(value))
     {
-        if (config is IConfigurationSection section)
-        {
-            throw new InvalidOperationException($"Required configuration value {section.Path}:{key} not found!");
-        }
-
-        throw new InvalidOperationException($"Required configuration value {key} not found!");
+        var message = config is IConfigurationSection section
+            ? $"Required configuration value {section.Path}:{key} not found!"
+            : $"Required configuration value {key} not found!";
+        
+        LogErrorAndBail(message);
     }
 
-    return value;
+    return value!;
 }
 
 // used to prevent accidentally running a debug build in a production container environment
 // debug builds may leak sensitive information
-[Conditional("DEBUG")]
-static void CheckDebugAllowed(IConfiguration config)
+void CheckDebugAllowed()
 {
+#if DEBUG
     const string allowFlag = "AllowDebugBuildInContainer";
 
-    var isInContainer = config.GetValue<bool>("DOTNET_RUNNING_IN_CONTAINER");
-    var allowDebug = config.GetValue<bool>(allowFlag);
+    var isInContainer = builder.Configuration.GetValue<bool>("DOTNET_RUNNING_IN_CONTAINER");
+    var allowDebug = builder.Configuration.GetValue<bool>(allowFlag);
 
     if (isInContainer && !allowDebug)
     {
-        while (true)
-        {
-            Console.Error.WriteLine($"Cannot run a debug build in a container unless “{allowFlag}” is set!");
+        LogErrorAndBail($"Cannot run a debug build in a container unless “{allowFlag}” is set!");
+    }
+#endif
+}
 
+[SuppressMessage("ASP", "ASP0000:DoNotBuildServiceProvidePriorToRun",
+    Justification = "I need to grab an ILogger, and the program is about to end anyway.")]
+void LogErrorAndBail(string message)
+{
+    var loggerFactory = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger(ThisAssembly.Name);
+
+    logger.LogError(message);
+    
+    if (builder.Configuration.GetValue<bool>("DOTNET_RUNNING_IN_CONTAINER"))
+    {
+        for (var i = 0; i < 5; i++)
+        {
             // Rather than throw an error, which might cause the container manager to repeatedly try to restart the app,
-            // simply go to sleep for a while
-            Thread.Sleep(TimeSpan.FromMinutes(5));
+            // simply go to sleep for a while and rewrite the message
+            Thread.Sleep(TimeSpan.FromMinutes(1));
+            logger.LogError(message);
         }
     }
+
+    Environment.Exit(1);
 }
