@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyTitle>sammo.ga API</AssemblyTitle>
     <Description>This web API powers the sammo.ga site.</Description>
-    <Version>0.9.3</Version>
+    <Version>0.9.4</Version>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

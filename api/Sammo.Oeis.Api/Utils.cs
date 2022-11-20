@@ -81,8 +81,14 @@ static class ServiceCollectionExtensions
     }
 }
 
-static class ApplicationExtensions
+static class EndpointRouteBuilderExtensions
 {
     public static void Map<TApi>(this IEndpointRouteBuilder builder) where TApi : class, IWebApi =>
         TApi.MapRoutes(builder);
+}
+
+static class WebHostEnvironmentExtensions
+{
+    public static bool IsRunningInContainer(this IWebHostEnvironment env) =>
+        Convert.ToBoolean(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"));
 }
