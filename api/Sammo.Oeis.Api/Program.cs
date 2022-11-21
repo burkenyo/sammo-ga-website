@@ -2,7 +2,7 @@ using Sammo.Oeis;
 using Sammo.Oeis.Api;
 
 var builder = WebApplication.CreateBuilder(args);
-var config = builder.Configuration.Get<Config>() ?? new Config();
+var config = builder.Configuration.Get<Config>() ?? new();
 WebApplication app;
 
 // Add dependency-injection services.
@@ -23,7 +23,7 @@ try
         // Rebind config now that I’ve loaded the rest
         builder.Configuration.Bind(config);
 
-        services.AddOeisDozenalExpansionAzureBlobStore(config.Azure?.Blobs, cred);
+        services.AddOeisDozenalExpansionAzureBlobStore(config.Azure.Blobs, cred);
     }
 
     services.AddHttpClient<IOeisDecimalExpansionDownloader, OeisDecimalExpansionDownloader>();
@@ -35,6 +35,11 @@ try
 
     services.AddEndpointsApiExplorer();
     services.AddThisAssemblySwaggerGen();
+
+    if (config.UseCors)
+    {
+        services.AddCors(config.Cors);
+    }
 
     services.ConfigureJsonOptions();
 
@@ -56,6 +61,11 @@ try
 {
     app.UseSwagger();
     app.UseThisAssemblySwaggerUi();
+
+    if (config.UseCors)
+    {
+        app.UseCors();
+    }
 
     app.MapRootToSwagger();
     app.Map<ExpansionsApi>();

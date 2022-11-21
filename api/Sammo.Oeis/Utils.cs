@@ -231,7 +231,7 @@ public static class TextReaderExtensions
 {
     public static IEnumerable<string> EnumerateLines(this TextReader reader)
     {
-        while(reader.ReadLine() is string line)
+        while(reader.ReadLine() is var line && line is not null)
         {
            yield return line;
         }
@@ -240,7 +240,7 @@ public static class TextReaderExtensions
     public static async IAsyncEnumerable<string> EnumerateLinesAsync(this TextReader reader,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        while(await reader.ReadLineAsync().ConfigureAwait(false) is string line)
+        while(await reader.ReadLineAsync().ConfigureAwait(false) is { } line)
         {
             yield return line;
 
