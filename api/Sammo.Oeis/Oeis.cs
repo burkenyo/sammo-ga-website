@@ -691,7 +691,10 @@ public static class OeisDozenalExpansionSerializer
 
     public static async Task WriteToAsync(OeisDozenalExpansion expansion, Stream stream)
     {
-        using var writer = new StreamWriter(stream, leaveOpen: true);
+        using var writer = new StreamWriter(stream, leaveOpen: true)
+        {
+            NewLine = "\n"
+        };
 
         await writer.WriteLineAsync(expansion.Id.ToString());
         await writer.WriteLineAsync(expansion.Name);
@@ -731,7 +734,10 @@ public static class OeisBadSequenceListUtil
 
     public static async Task AddToBadSequenceList(Stream stream, OeisId id, string reason)
     {
-        using var writer = new StreamWriter(stream, leaveOpen: true);
+        using var writer = new StreamWriter(stream,  leaveOpen: true)
+        {
+            NewLine = "\n"
+        };
 
         await writer.WriteAsync(id.ToString());
         await writer.WriteAsync(": ");
