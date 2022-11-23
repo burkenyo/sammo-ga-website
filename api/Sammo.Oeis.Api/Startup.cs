@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Microsoft.Net.Http.Headers;
 using Sammo.Oeis;
 using Sammo.Oeis.Api;
 
@@ -20,7 +21,7 @@ static class StartupExtensions
 
         configManager.AddAzureKeyVaultJsonSecret(keyVaultName, configSecretName, cred);
     }
-    
+
     public static void AddOeisDozenalExpansionFileStore(this IServiceCollection services,
         Config.FileStoreConfig config)
     {
@@ -31,7 +32,7 @@ static class StartupExtensions
         {
             dataDir.Create();
         }
-        
+
         var fileStore = new OeisDozenalExpansionFileStore(dataDir);
         services.AddSingleton<IOeisDozenalExpansionStore>(fileStore);
     }
@@ -64,6 +65,9 @@ static class StartupExtensions
     public static void AddCors(this IServiceCollection services, Config.CorsConfig corsConfig) =>
         services.AddCors(options => options.AddDefaultPolicy(policy =>
         {
+            // the ExpansionsApi uses the location header to indicate where to request the full expansion
+            policy.WithExposedHeaders(HeaderNames.ContentLocation);
+
             if (corsConfig.AllowAnyOrigin)
             {
                 policy.AllowAnyOrigin();
@@ -74,7 +78,7 @@ static class StartupExtensions
                     // GetLeftPart(UriPartial.Authority) returns the scheme and authority with no trailing slash
                     .Select(o => o.GetLeftPart(UriPartial.Authority))
                     .ToArray();
-                
+
                 policy.WithOrigins(allowedOrigins);
             }
         }));
@@ -83,7 +87,7 @@ static class StartupExtensions
         services.ConfigureHttpJsonOptions(static options =>
         {
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.SerializerOptions.TypeInfoResolver = DtoSerializationContext.Default;
+            options.SerializerOptions.TypeInfoResolver = DtoSerializerContext.Default;
         });
 
     public static void UseThisAssemblySwaggerUi(this WebApplication app) =>
@@ -104,7 +108,7 @@ static class StartupExtensions
 /// Contains program startup utility methods
 /// </summary>
 static class Startup
-{ 
+{
     public static TokenCredential GetAzureCredential(Config.AzureConfig azureConfig)
     {
         if (azureConfig.UseClientSecretCredential is true)
@@ -121,7 +125,7 @@ static class Startup
 
         return new DefaultAzureCredential(options2);
     }
-    
+
     /// <summary>
     /// Used to prevent accidentally running a debug build in a production container environment,
     /// as debug builds may leak sensitive information.
@@ -142,7 +146,7 @@ static class Startup
         var logger = factory.CreateLogger(ThisAssembly.Name);
 
         logger.LogError(ex,"Error during startup!");
-    
+
         if (env.IsRunningInContainer())
         {
             for (var i = 0; i < 5; i++)

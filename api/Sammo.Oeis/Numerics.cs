@@ -285,8 +285,9 @@ public partial class Fractional : IEquatable<Fractional>
             HashCode.Combine(Radix, Count, _blocks.Length == 0 ? 0 : _blocks[0]);
     }
 
-    const char s_defaultFractionalSeparator = ';';
+    private protected const char s_defaultFractionalSeparator = ';';
 
+    public const int DefaultMaxDigits = 120;
     public const int MinRadix = 2;
     public const int MaxRadix = Byte.MaxValue + 1;
 
@@ -420,7 +421,7 @@ public partial class Fractional : IEquatable<Fractional>
             {
                 var num = intPart;
                 using var rented = new RentedArray<byte>(numIntDigits);
-                var intDigits = rented.Array;
+                var intDigits = new ArraySegment<byte>(rented.Array, 0, numIntDigits);
 
                 // Integer-part digits get filled in reverse.
                 for (var i = intDigits.Count - 1; i >= 0; i--)
@@ -812,13 +813,13 @@ public partial class Fractional : IEquatable<Fractional>
     }
 
     public override string ToString() =>
-        ToStringInternal();
+        ToStringInternal(null, s_defaultFractionalSeparator, DefaultMaxDigits);
 
     public virtual string ToString(int? maxDigits) =>
-        ToStringInternal(maxDigits: maxDigits);
+        ToStringInternal(null, s_defaultFractionalSeparator, maxDigits);
 
     public string ToString(
-        string? digitMap, char fractionalSeparator = s_defaultFractionalSeparator, int? maxDigits = 120)
+        string? digitMap, char fractionalSeparator = s_defaultFractionalSeparator, int? maxDigits = DefaultMaxDigits)
     {
         if (!char.IsPunctuation(fractionalSeparator))
         {
@@ -844,32 +845,27 @@ public partial class Fractional : IEquatable<Fractional>
             }
         }
 
-        return digitMap is null
-            ? ToStringInternal(fractionalSeparator, maxDigits)
-            : ToStringInternal(digitMap, fractionalSeparator, maxDigits);
+        return ToStringInternal(digitMap, fractionalSeparator, maxDigits);
     }
 
-    private protected string ToStringInternal(
-        string digitMap, char fractionalSeparator = s_defaultFractionalSeparator, int? maxDigits = 120)
-    {
-        return ToStringInternal(d => digitMap[d], fractionalSeparator, maxDigits);
-    }
-
-
-    private protected string ToStringInternal(
-        char fractionalSeparator = s_defaultFractionalSeparator, int? maxDigits = 120)
-    {
-        return ToStringInternal(
-            static d => (char)(d <= 9 ? '0' + d : d <= 35 ? 'A' - 10 + d : '?'),
-            fractionalSeparator, maxDigits);
-    }
-
-    string ToStringInternal(Func<byte, char> getDigit, char fractionalSeparator, int? maxDigits)
+    private protected string ToStringInternal(string? digitMap, char fractionalSeparator, int? maxDigits)
     {
         if (maxDigits < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(maxDigits));
         }
+
+        Func<byte, char> getDigit = digitMap is null
+            ? static d => d switch
+            {
+                <= 9 =>
+                    (char)('0' + d),
+                <= 35 =>
+                    (char)('A' - 10 + d),
+                _ =>
+                    '?'
+            }
+            : d => digitMap[d];
 
         const int INT_PART_ONLY = 0;
         const int FRAC_PART_ONLY = 1;
@@ -1008,10 +1004,10 @@ public partial class BigDecimal : Fractional
         (BigDecimal) ParseInternal(input, GetDigitMatcherRegex(), Radix, null);
 
     public override string ToString() =>
-        ToStringInternal(s_decimalSeparator);
+        ToStringInternal(null, s_decimalSeparator, DefaultMaxDigits);
 
     public override string ToString(int? maxDigits) =>
-        ToStringInternal(s_decimalSeparator, maxDigits);
+        ToStringInternal(null, s_decimalSeparator, maxDigits);
 }
 
 public partial class Dozenal : Fractional
@@ -1055,8 +1051,8 @@ public partial class Dozenal : Fractional
         (Dozenal) ParseInternal(input, GetDigitMatcherRegex(), Radix, s_digitMap);
 
     public override string ToString()
-        => ToStringInternal(s_digitMap);
+        => ToStringInternal(s_digitMap, s_defaultFractionalSeparator, DefaultMaxDigits);
 
     public override string ToString(int? maxDigits)
-        => ToStringInternal(s_digitMap, maxDigits: maxDigits);
+        => ToStringInternal(s_digitMap, s_defaultFractionalSeparator, maxDigits);
 }

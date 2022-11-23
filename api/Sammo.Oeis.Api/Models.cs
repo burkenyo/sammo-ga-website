@@ -3,23 +3,49 @@ using System.Text.Json.Serialization;
 namespace Sammo.Oeis.Api;
 
 [JsonSerializable(typeof(OeisExpansionDto))]
-[JsonSerializable(typeof(ErrorDto))]
 [JsonSerializable(typeof(OeisClientErrorDto))]
-partial class DtoSerializationContext : JsonSerializerContext { }
+[JsonSerializable(typeof(StoredOeisExpansionInfoDto))]
+[JsonSerializable(typeof(OeisExpansionDto))]
+partial class DtoSerializerContext : JsonSerializerContext { }
 
-class OeisExpansionDto
+class OeisExpansionInfoDto
 {
     public string Id { get; }
 
     public string Name { get; }
 
+    public int Radix { get; }
+
+    private protected OeisExpansionInfoDto(string id, string name, int radix)
+    {
+        Id = id;
+        Name = name;
+        Radix = radix;
+    }
+}
+
+class StoredOeisExpansionInfoDto : OeisExpansionInfoDto
+{
+    public string Preview { get; }
+
+    internal Uri Uri { get; }
+
+    public StoredOeisExpansionInfoDto(StoredOeisExpansionInfo info) :
+        base(info.Id.ToString(), info.Name, info.Radix)
+    {
+        Preview = info.Preview;
+        Uri = info.Uri;
+    }
+}
+
+class OeisExpansionDto : OeisExpansionInfoDto
+{
     public string Expansion { get; }
 
     internal OeisExpansionDto(IOeisFractionalExpansion expansion)
+        : base(expansion.Id.ToString(), expansion.Name, expansion.Expansion.Radix)
     {
-        Id = expansion.Id.ToString();
-        Name = expansion.Name.ToString();
-        Expansion = expansion.Expansion.ToString();
+        Expansion = expansion.Expansion.ToString(maxDigits: null);
     }
 }
 

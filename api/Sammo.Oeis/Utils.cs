@@ -12,35 +12,21 @@ struct RentedArray<T> : IDisposable where T : unmanaged
 
     readonly T[] _array;
 
-    readonly int _size;
-
     bool _disposed = false;
 
-    readonly public ArraySegment<T> Array
+    readonly public T[] Array
     {
         get
         {
             CheckDisposed();
 
-            return new ArraySegment<T>(_array, 0, _size);
-        }
-    }
-
-    readonly public Span<T> Span
-    {
-        get
-        {
-            CheckDisposed();
-
-            return new Span<T>(_array, 0, _size);
+            return _array;
         }
     }
 
     public RentedArray(int size)
     {
         _array = s_pool.Rent(size);
-
-        _size = size;
     }
 
     [DebuggerStepThrough]
@@ -108,7 +94,7 @@ static class BufferUtils
     public static void CallWithBuffer<TItem>(int bufferLength, BufferAction<TItem> bufferAction)
         where TItem : unmanaged
     {
-        if (Unsafe.SizeOf<TItem>() * bufferLength <= MaxStackAllocBytes)
+        if (bufferLength <= MaxStackAlloc<TItem>())
         {
             Span<TItem> buffer = stackalloc TItem[bufferLength];
 
@@ -118,7 +104,7 @@ static class BufferUtils
         {
             using var rented = new RentedArray<TItem>(bufferLength);
 
-            bufferAction(rented.Span);
+            bufferAction(rented.Array.AsSpan(0, bufferLength));
         }
     }
 
@@ -136,7 +122,7 @@ static class BufferUtils
     public static TResult CallWithBuffer<TItem, TResult>(int bufferLength, BufferFunc<TItem, TResult> bufferFunc)
         where TItem : unmanaged
     {
-        if (Unsafe.SizeOf<TItem>() * bufferLength <= MaxStackAllocBytes)
+        if (bufferLength <= MaxStackAlloc<TItem>())
         {
             Span<TItem> buffer = stackalloc TItem[bufferLength];
 
@@ -146,7 +132,7 @@ static class BufferUtils
         {
             using var rented = new RentedArray<TItem>(bufferLength);
 
-            return bufferFunc(rented.Span);
+            return bufferFunc(rented.Array.AsSpan(0, bufferLength));
         }
     }
 }

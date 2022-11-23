@@ -32,16 +32,17 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
         Value = value;
     }
 
-    public const int MaxStringLength = 11;
+    // the maximum possible length is 10 chars:
+    //   • the ‘A’ prefix
+    //   • 9 chars for the MaxValue
+    public const int MaxStringLength = 10;
 
     readonly public int Value { get; }
 
     public override string ToString()
     {
-        // the maximum possible length is 10 chars:
-        //   • the ‘A’ prefix
-        //   • 9 chars for the MaxValue
-        Span<char> buffer = stackalloc char[10];
+
+        Span<char> buffer = stackalloc char[MaxStringLength];
 
         TryFormat(buffer, out var charsWritten);
 
@@ -134,7 +135,7 @@ public interface IOeisSequence
     string Name { get; }
 }
 
-public class OeisSequence
+public class OeisSequence : IOeisSequence
 {
     public OeisId Id { get; }
 
@@ -147,6 +148,28 @@ public class OeisSequence
         Id = id;
         Name = name;
         Offset = offset;
+    }
+}
+
+public class StoredOeisExpansionInfo : IOeisSequence
+{
+    public OeisId Id { get; }
+
+    public string Name { get; }
+
+    public int Radix { get; }
+
+    public string Preview { get; }
+
+    public Uri Uri { get; }
+
+    public StoredOeisExpansionInfo(OeisId id, string name, int radix, string preview, Uri uri)
+    {
+        Id = id;
+        Name = name;
+        Radix = radix;
+        Preview = preview;
+        Uri = uri;
     }
 }
 
@@ -641,13 +664,13 @@ public interface IOeisDozenalExpansionStore
 
     }
 
-    Task<Uri> StoreAsync(OeisDozenalExpansion expansion);
+    Task<StoredOeisExpansionInfo> StoreAsync(OeisDozenalExpansion expansion);
 
     Task<bool> ExistsAsync(OeisId id);
 
-    Task<Uri> GetUriAsync(OeisId id);
+    Task<StoredOeisExpansionInfo> GetInfoAsync(OeisId id);
 
-    Task<(bool, Uri?)> TryGetUriAsync(OeisId id);
+    Task<(bool success, StoredOeisExpansionInfo? info)> TryGetInfoAsync(OeisId id);
 
     Task<OeisDozenalExpansion> RetrieveAsync(OeisId id);
 
@@ -670,13 +693,38 @@ public static class OeisDozenalExpansionSerializer
     {
         using var reader = new StreamReader(stream, leaveOpen: true);
 
+        var (id, name) = await ReadHeaderAsync(reader);
+        var expansion = await ReadExpansionAsync(reader);
+
+        return new OeisDozenalExpansion(id, name, expansion);
+    }
+
+    public static async Task<(OeisId id, string name, string preview)> ReadHeaderAndPreviewAsync(Stream stream)
+    {
+        using var reader = new StreamReader(stream, leaveOpen: true);
+
+        var (id, name) = await ReadHeaderAsync(reader);
+
+        return (id, name, await ReadPreviewAsync(reader));
+    }
+
+    static async Task<(OeisId id, string name)> ReadHeaderAsync(StreamReader reader)
+    {
         var idString = await reader.ReadLineAsync()
-            ?? throw new IOException("Could not read the OEIS Sequence ID of the expansion!");
+                       ?? throw new IOException("Could not read the OEIS Sequence ID of the expansion!");
         var id = OeisId.Parse(idString);
 
         var name = await reader.ReadLineAsync()
-            ?? throw new IOException("Could not read the name of the expansion!");
+                   ?? throw new IOException("Could not read the name of the expansion!");
 
+        return (id, name);
+    }
+
+    /// <summary>
+    /// This must always be called after <see cref="ReadHeaderAndPreviewAsync"/>
+    /// </summary>
+    static async Task<Dozenal> ReadExpansionAsync(StreamReader reader)
+    {
         var dozenalString = await reader.ReadLineAsync()
             ?? throw new IOException("Could not read the digit sequence of the expansion!");
         var dozenal = Dozenal.Parse(dozenalString);
@@ -686,7 +734,43 @@ public static class OeisDozenalExpansionSerializer
             throw new IOException("Unexpected lines in serialized expansion format!");
         }
 
-        return new OeisDozenalExpansion(id, name, dozenal);
+        return dozenal;
+    }
+
+    static async Task<string> ReadPreviewAsync(StreamReader reader)
+    {
+        using var buffer = new RentedArray<char>(Fractional.DefaultMaxDigits + 1);
+        var array = buffer.Array;
+
+        var read = await reader.ReadAsync(array);
+
+        if (read == 0)
+        {
+            throw new IOException("Could not read the digit sequence of the expansion!");
+        }
+
+        // constrain the IndexOf operation because rented arrays can have more elements than requested.
+        var indexOfNewLine = array.AsSpan(0, Fractional.DefaultMaxDigits + 1).IndexOf('\n');
+
+        if (indexOfNewLine == -1)
+        {
+            if (read <= Fractional.DefaultMaxDigits)
+            {
+                // the file lacked a terminal new-line
+                return new String(array, 0, read);
+            }
+
+            // the file has more digits
+            array[Fractional.DefaultMaxDigits] = '…';
+            return new String(array, 0, Fractional.DefaultMaxDigits + 1);
+        }
+
+        if (indexOfNewLine != read - 1)
+        {
+            throw new IOException("Unexpected lines in serialized expansion format!");
+        }
+
+        return new String(array, 0, indexOfNewLine);
     }
 
     public static async Task WriteToAsync(OeisDozenalExpansion expansion, Stream stream)
@@ -756,9 +840,29 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     }
 
     FileInfo GetFile(OeisId id) =>
-        new FileInfo(Path.Combine(_directory.FullName, id.ToString() + ".txt"));
+        new FileInfo(Path.Combine(_directory.FullName, id + ".txt"));
 
-    public Task<Uri> GetUriAsync(OeisId id)
+    async Task<StoredOeisExpansionInfo> GetInfoAsyncInternal(OeisId id, FileInfo file)
+    {
+        try
+        {
+            using var stream = file.OpenRead();
+            var (readId, name, preview) = await OeisDozenalExpansionSerializer.ReadHeaderAndPreviewAsync(stream);
+
+            if (readId != id)
+            {
+                throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id);
+            }
+
+            return new StoredOeisExpansionInfo(id, name, Dozenal.Radix, preview, new Uri(file.FullName));
+        }
+        catch (IOException ex)
+        {
+            throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id, ex);
+        }
+    }
+
+    public Task<StoredOeisExpansionInfo> GetInfoAsync(OeisId id)
     {
         var file = GetFile(id);
 
@@ -767,19 +871,19 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
             throw IOeisDozenalExpansionStore.Errors.NotFound(id);
         }
 
-        return Task.FromResult(new Uri(file.FullName));
+        return GetInfoAsyncInternal(id, file);
     }
 
-    public Task<(bool, Uri?)> TryGetUriAsync(OeisId id)
+    public async Task<(bool, StoredOeisExpansionInfo?)> TryGetInfoAsync(OeisId id)
     {
         var file = GetFile(id);
 
         if (!file.Exists)
         {
-            return Task.FromResult<(bool, Uri?)>((false, null));
+            return (false, null);
         }
 
-        return Task.FromResult<(bool, Uri?)>((true, new Uri(file.FullName)));
+        return (true, await GetInfoAsyncInternal(id, file));
     }
 
 
@@ -822,7 +926,7 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
         return RetrieveAsyncInternal(id, file);
     }
 
-    public async Task<Uri> StoreAsync(OeisDozenalExpansion expansion)
+    public async Task<StoredOeisExpansionInfo> StoreAsync(OeisDozenalExpansion expansion)
     {
         var file = GetFile(expansion.Id);
 
@@ -831,7 +935,8 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
             using var stream = file.OpenWrite();
             await OeisDozenalExpansionSerializer.WriteToAsync(expansion, stream);
 
-            return new Uri(file.FullName);
+            return new StoredOeisExpansionInfo(expansion.Id, expansion.Name, Dozenal.Radix,
+                expansion.Expansion.ToString(Fractional.DefaultMaxDigits), new Uri(file.FullName));
         }
         catch (IOException ex)
         {
@@ -892,11 +997,11 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
 
 public interface IOeisDozenalExpansionService
 {
-    Task<(OeisId, Uri)> GetPlainTextUri(OeisId id);
+    Task<StoredOeisExpansionInfo> GetInfoAsync(OeisId id);
 
     Task<OeisDozenalExpansion> RetrieveAsync(OeisId id);
 
-    Task<(OeisId, Uri)> GetPlainTextUriForRandom(int maxTries = 3);
+    Task<StoredOeisExpansionInfo> GetInfoForRandomAsync(int maxTries = 3);
 
     Task<OeisDozenalExpansion> RetrieveRandomAsync(int maxTries = 3);
 }
@@ -921,17 +1026,17 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
         _logger = logger;
     }
 
-    public async Task<(OeisId, Uri)> GetPlainTextUri(OeisId id)
+    public async Task<StoredOeisExpansionInfo> GetInfoAsync(OeisId id)
     {
-        if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, var message))
+        if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, { } message))
         {
-            throw OeisClientException.InvalidSequence(message!, id);
+            throw OeisClientException.InvalidSequence(message, id);
         }
 
         // Try to find an expansion that was already downloaded and converted.
-        if (await _dozenalExpansionStore.TryGetUriAsync(id) is (true, var expansionUri))
+        if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info))
         {
-            return (id, expansionUri!);
+            return info;
         }
 
         using var semaphore = s_locks.Borrow(id);
@@ -941,9 +1046,9 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
         // This is predicated on the assumption that it’s cheaper to try to find the expansion again
         // if another request just downloaded and converted it than doing that here
         // and overwriting any stored result.
-        if (await _dozenalExpansionStore.TryGetUriAsync(id) is (true, var expansionUri2))
+        if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
         {
-            return (id, expansionUri2!);
+            return info2;
         };
 
         try
@@ -952,9 +1057,9 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
             var expansion = (await _decimalExpansionDownloader.DownloadAsync(id)).ConvertToDozenal();
 
-            expansionUri = await _dozenalExpansionStore.StoreAsync(expansion);
+            info = await _dozenalExpansionStore.StoreAsync(expansion);
 
-            return (id, expansionUri);
+            return info;
         }
         catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
         {
@@ -968,15 +1073,15 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
     public async Task<OeisDozenalExpansion> RetrieveAsync(OeisId id)
     {
-        if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, var message))
+        if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, { } message))
         {
-            throw OeisClientException.InvalidSequence(message!, id);
+            throw OeisClientException.InvalidSequence(message, id);
         }
 
         // Try to find an expansion that was already downloaded and converted.
-        if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, var existingExpansion))
+        if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion))
         {
-            return existingExpansion!;
+            return existingExpansion;
         }
 
         using var semaphore = s_locks.Borrow(id);
@@ -986,9 +1091,9 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
         // This is predicated on the assumption that it’s cheaper to try to find the expansion again
         // if another request just downloaded and converted it than doing that here
         // and overwriting any stored result.
-        if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, var existingExpansion2))
+        if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
         {
-            return existingExpansion2!;
+            return existingExpansion2;
         };
 
         try
@@ -1011,7 +1116,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
         }
     }
 
-    public async Task<(OeisId, Uri)> GetPlainTextUriForRandom(int maxTries = 3)
+    public async Task<StoredOeisExpansionInfo> GetInfoForRandomAsync(int maxTries = 3)
     {
         if (maxTries < 1)
         {
@@ -1040,17 +1145,17 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
             var id = sequence.Id;
 
-            if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, var message))
+            if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, { } message))
             {
-                (failures ??= new()).Add(OeisClientException.InvalidSequence(message!, id));
+                (failures ??= new()).Add(OeisClientException.InvalidSequence(message, id));
 
                 continue;
             }
 
             // Try to find an expansion that was already downloaded and converted.
-            if (await _dozenalExpansionStore.TryGetUriAsync(id) is (true, var expansionUri))
+            if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info))
             {
-                return (id, expansionUri!);
+                return info;
             }
 
             using var semaphore = s_locks.Borrow(id);
@@ -1060,9 +1165,9 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             // This is predicated on the assumption that it’s cheaper to try to find the expansion again
             // if another request just downloaded and converted it than doing that here
             // and overwriting any stored result.
-            if (await _dozenalExpansionStore.TryGetUriAsync(id) is (true, var expansionUri2))
+            if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
             {
-                return (id, expansionUri2!);
+                return info2;
             };
 
             try
@@ -1071,9 +1176,9 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
                 var expansion = (await _decimalExpansionDownloader.HydrateAsync(sequence)).ConvertToDozenal();
 
-                expansionUri = await _dozenalExpansionStore.StoreAsync(expansion);
+                info = await _dozenalExpansionStore.StoreAsync(expansion);
 
-                return (id, expansionUri);
+                return info;
             }
             catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
             {
@@ -1117,17 +1222,17 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
             var id = sequence.Id;
 
-            if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, var message))
+            if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, { } message))
             {
-                (failures ??= new()).Add(OeisClientException.InvalidSequence(message!, id));
+                (failures ??= new()).Add(OeisClientException.InvalidSequence(message, id));
 
                 continue;
             }
 
             // Try to find an expansion that was already downloaded and converted.
-            if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, var existingExpansion))
+            if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion))
             {
-                return existingExpansion!;
+                return existingExpansion;
             };
 
             using var semaphore = s_locks.Borrow(id);
@@ -1137,9 +1242,9 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             // This is predicated on the assumption that it’s cheaper to try to find the expansion again
             // if another request just downloaded and converted it than doing that here
             // and overwriting any stored result.
-            if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, var existingExpansion2))
+            if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
             {
-                return existingExpansion2!;
+                return existingExpansion2;
             };
 
             try

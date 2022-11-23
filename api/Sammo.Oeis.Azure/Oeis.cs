@@ -40,7 +40,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
     }
 
     BlobClient GetBlobClient(OeisId id) =>
-        _client.GetBlobClient(id.ToString() + ".txt");
+        _client.GetBlobClient(id + ".txt");
 
     static async Task<bool> ExistsAsyncInternal(OeisId id, BlobClient blobClient)
     {
@@ -59,7 +59,28 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
     public Task<bool> ExistsAsync(OeisId id) =>
         ExistsAsyncInternal(id, GetBlobClient(id));
 
-    public async Task<Uri> GetUriAsync(OeisId id)
+    async Task<StoredOeisExpansionInfo> GetInfoAsyncInternal(OeisId id, BlobClient blobClient)
+    {
+        try
+        {
+            // optimize for only pulling the header from the blob
+            using var stream = blobClient.OpenRead(bufferSize: 1024);
+            var (readId, name, preview) = await OeisDozenalExpansionSerializer.ReadHeaderAndPreviewAsync(stream);
+
+            if (readId != id)
+            {
+                throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id);
+            }
+
+            return new StoredOeisExpansionInfo(id, name, Dozenal.Radix, preview, blobClient.Uri);
+        }
+        catch (Exception ex) when (ShouldWrap(ex))
+        {
+            throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id, ex);
+        }
+    }
+
+    public async Task<StoredOeisExpansionInfo> GetInfoAsync(OeisId id)
     {
         var blobClient = GetBlobClient(id);
 
@@ -68,10 +89,10 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             throw IOeisDozenalExpansionStore.Errors.NotFound(id);
         }
 
-        return blobClient.Uri;
+        return await GetInfoAsyncInternal(id, blobClient);
     }
 
-    public async Task<(bool, Uri?)> TryGetUriAsync(OeisId id)
+    public async Task<(bool, StoredOeisExpansionInfo?)> TryGetInfoAsync(OeisId id)
     {
         var blobClient = GetBlobClient(id);
 
@@ -80,14 +101,15 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             return (false, null);
         }
 
-        return (true, blobClient.Uri);
+        return (true, await GetInfoAsyncInternal(id, blobClient));
     }
 
     static async Task<OeisDozenalExpansion> RetrieveAsyncInternal(OeisId id, BlobClient blobClient)
     {
         try
         {
-            using var stream = await blobClient.OpenReadAsync();
+            // optimize for reading the whole expansion (131_072 is 2^17)
+            using var stream = await blobClient.OpenReadAsync(bufferSize: 131_072);
             var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(stream);
 
             if (expansion.Id != id)
@@ -107,7 +129,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
         }
     }
 
-    public async Task<Uri> StoreAsync(OeisDozenalExpansion expansion)
+    public async Task<StoredOeisExpansionInfo> StoreAsync(OeisDozenalExpansion expansion)
     {
         var blobClient = GetBlobClient(expansion.Id);
 
@@ -118,7 +140,8 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             using var stream = await blobClient.OpenWriteAsync(true, options);
             await OeisDozenalExpansionSerializer.WriteToAsync(expansion, stream);
 
-            return blobClient.Uri;
+            return new StoredOeisExpansionInfo(expansion.Id, expansion.Name, Dozenal.Radix,
+                expansion.Expansion.ToString(maxDigits: Fractional.DefaultMaxDigits), blobClient.Uri);
         }
         catch (Exception ex) when (ShouldWrap(ex))
         {
