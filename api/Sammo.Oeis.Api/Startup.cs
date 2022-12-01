@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using Sammo.Oeis;
 using Sammo.Oeis.Api;
@@ -13,20 +14,11 @@ using Sammo.Oeis.Api;
 /// </summary>
 static class StartupExtensions
 {
-    public static void AddKeyVaultStoredConfiguration(
-        this ConfigurationManager configManager, Config.AzureConfig config, TokenCredential cred)
-    {
-        var keyVaultName = config.Require(c => c.KeyVaultName);
-        var configSecretName = ThisAssembly.Name.Replace('.', '-').ToLower() + "--config";
-
-        configManager.AddAzureKeyVaultJsonSecret(keyVaultName, configSecretName, cred);
-    }
-
-    public static void AddOeisDozenalExpansionFileStore(this IServiceCollection services,
-        Config.FileStoreConfig config)
+    public static void AddOeisDozenalExpansionFileStore(
+        this IServiceCollection services, Config.FileStoreConfig config, out DirectoryInfo dataDir)
     {
         var dataDirPath = config.Require(c => c.DataDirectory);
-        var dataDir = new DirectoryInfo(dataDirPath);
+        dataDir = new DirectoryInfo(dataDirPath);
 
         if (!dataDir.Exists)
         {
@@ -35,6 +27,22 @@ static class StartupExtensions
 
         var fileStore = new OeisDozenalExpansionFileStore(dataDir);
         services.AddSingleton<IOeisDozenalExpansionStore>(fileStore);
+    }
+
+    public static void AddLocalTestingOeisDozenalExpansionService(
+        this IServiceCollection services, DirectoryInfo dataDir)
+    {
+        services.AddScoped<IOeisDozenalExpansionService>(provider =>
+            ActivatorUtilities.CreateInstance<LocalTestingOeisDozenalExpansionService>(provider, dataDir));
+    }
+
+    public static void AddKeyVaultStoredConfiguration(
+        this ConfigurationManager configManager, Config.AzureConfig config, TokenCredential cred)
+    {
+        var keyVaultName = config.Require(c => c.KeyVaultName);
+        var configSecretName = ThisAssembly.Name.Replace('.', '-').ToLower() + "--config";
+
+        configManager.AddAzureKeyVaultJsonSecret(keyVaultName, configSecretName, cred);
     }
 
     public static void AddOeisDozenalExpansionAzureBlobStore(
@@ -96,6 +104,13 @@ static class StartupExtensions
             var version = ThisAssembly.Version;
 
             options.SwaggerEndpoint($"/swagger/{version}/swagger.json", ThisAssembly.Title + ' ' + version);
+        });
+
+    public static void UseDataDirStaticFiles(this WebApplication app, DirectoryInfo dataDir) =>
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(dataDir.FullName),
+            RequestPath = LocalTestingOeisDozenalExpansionService.UriPath
         });
 
     public static void MapRootToSwagger(this WebApplication app) =>

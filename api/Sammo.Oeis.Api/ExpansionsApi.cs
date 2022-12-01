@@ -31,7 +31,7 @@ class ExpansionsApi : IWebApi
         public StoredOeisExpansionInfoDto Value =>
             _result.Value!;
 
-        object? IValueHttpResult.Value =>
+        object IValueHttpResult.Value =>
             Value;
     }
 
