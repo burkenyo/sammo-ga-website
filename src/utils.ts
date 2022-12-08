@@ -10,6 +10,18 @@ export function assert<T>(value: T, message: string, param?: any) {
   }
 }
 
+export function require<T>(value: T, message: string, param?: any): NonNullable<T> {
+  if (!value) {
+    if (param) {
+      message += param;
+    }
+
+    throw new TypeError(message);
+  }
+
+  return value as NonNullable<T>;
+}
+
 export function lazy<T extends {}>(factory: () => T): () => T {
   let value: T;
 
