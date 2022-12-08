@@ -1,0 +1,3 @@
+A334073
+Decimal expansion of Sum_{k >= 1} e(k)/2^k, where e(k) = 1 if gpf(k+1) > gpf(k) and 0 otherwise, and gpf(k) is the greatest prime dividing k (A006530).
+0;X0332E2X7EX08065900X0E634X4140392E519E71206258X562427X3X3X35427796012736E2E95742

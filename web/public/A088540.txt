@@ -1,0 +1,3 @@
+A088540
+Decimal expansion of 4/sqrt(Pi)*exp(-gamma/2)*K where K is the Landau-Ramanujan constant and gamma the Euler-Mascheroni constant.
+1;36112765291623909974E2630016944E522E0XE011036684315218229E3751X202E4985861E27125068772800607110E
