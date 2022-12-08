@@ -19,7 +19,9 @@ import ConstantsListing from "./components/ConstantsListing.vue";
   </header>
 
   <main>
-    <ConstantsListing />
+    <Suspense>
+      <ConstantsListing />
+    </Suspense>
   </main>
 </template>
 
