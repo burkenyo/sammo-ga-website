@@ -22,6 +22,14 @@ export function require<T>(value: T, message: string, param?: any): NonNullable<
   return value as NonNullable<T>;
 }
 
+export function isTrue(value: boolean | string | number | bigint | undefined | null): boolean {
+  if (typeof value == "string") {
+    return value.toLowerCase() == "true";
+  }
+
+  return !!value;
+}
+
 export function lazy<T extends {}>(factory: () => T): () => T {
   let value: T;
 

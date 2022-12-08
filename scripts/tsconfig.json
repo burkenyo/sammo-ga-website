@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "target": "ES6",
+    "paths": {
+        "@/*": ["../src/*"]
+    }
+  }
+}

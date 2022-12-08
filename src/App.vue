@@ -1,6 +1,17 @@
 <script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
-import ConstantsListing from "./components/ConstantsListing.vue";
+import HelloWorld from "@/components/HelloWorld.vue";
+import ConstantsListing from "@/components/ConstantsListing.vue";
+import * as oeis from "@/services/oeis";
+import { useServices } from "@/services";
+
+if (import.meta.env.DEV) {
+  const debugHelpers = Object.freeze({
+    oeis: oeis,
+    getService: (key: any) => useServices().retrieve(key),
+  });
+
+  Object.defineProperty(window, "debugHelpers", { value: debugHelpers });
+}
 </script>
 
 <template>
