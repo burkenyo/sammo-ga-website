@@ -1,4 +1,4 @@
-import { OeisFractionalExpansion, OeisId } from "./oeis";
+import { OeisFractionalExpansion, OeisId } from "@/oeis";
 import type { ExpansionsDb } from "./expansionsDb";
 
 export enum ApiErrorCause {

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import HelloWorld from "@/components/HelloWorld.vue";
 import ConstantsListing from "@/components/ConstantsListing.vue";
-import * as oeis from "@/services/oeis";
+import * as oeis from "@/oeis";
 import { useServices } from "@/services";
+import { Permutation } from "./permutation";
 
 if (import.meta.env.DEV) {
   const debugHelpers = Object.freeze({
     oeis: oeis,
+    Permutation: Permutation,
     getService: (key: any) => useServices().retrieve(key),
   });
 

@@ -1,5 +1,5 @@
 import * as serviceNames from "@/serviceNames"
-import { OeisFractionalExpansion, OeisId } from "@/services/oeis";
+import { OeisFractionalExpansion, OeisId } from "@/oeis";
 import type { ApiRunner } from "@/services/apiRunner";
 import { dependencies } from "@/dependencyInjection";
 

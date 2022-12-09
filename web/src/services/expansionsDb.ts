@@ -1,6 +1,6 @@
 import { lazy } from "@/utils";
 import { ApiError } from "./apiRunner";
-import { Fractional, OeisFractionalExpansion, type OeisId } from "./oeis";
+import { Fractional, OeisFractionalExpansion, type OeisId } from "@/oeis";
 
 type Stored<T extends { id: OeisId }> = { className: string } & Omit<T, "id">;
 
