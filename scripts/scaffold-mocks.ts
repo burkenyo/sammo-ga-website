@@ -4,7 +4,7 @@
 import * as fs from "node:fs";
 import path from "node:path";
 
-import { OeisFractionalExpansion } from "@/services/oeis";
+import { OeisFractionalExpansion } from "@/oeis";
 
 // Create the list of expansions used by the MockApiRunner
 const idStrings = fs.readdirSync("public")

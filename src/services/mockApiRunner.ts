@@ -1,4 +1,4 @@
-import { OeisFractionalExpansion, OeisId } from "./oeis";
+import { OeisFractionalExpansion, OeisId } from "@/oeis";
 import { ApiError, ApiErrorCause, type ApiRunner } from "./apiRunner";
 
 export class MockApiRunner implements ApiRunner {
