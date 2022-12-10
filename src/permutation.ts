@@ -141,7 +141,7 @@ export class Permutation {
   }
 
   static fromSequence(sequence: readonly number[]): Permutation {
-    if (new Set(sequence).size != sequence.length) {
+    if (!sequence.every(e => Number.isInteger(e)) || new Set(sequence).size != sequence.length) {
       throw new TypeError("sequence");
     }
 
