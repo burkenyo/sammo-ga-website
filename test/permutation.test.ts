@@ -1,4 +1,5 @@
 import { test, assert } from "vitest";
+import { testIntParamPreconditions } from "./helpers";
 import { Permutation } from "@/permutation";
 
 const BASE = 12;
@@ -25,14 +26,6 @@ function explode(permutation: Permutation) {
     base: permutation.base,
     offset: permutation.offset,
   } as const;
-}
-
-function testIntParamPreconditions(func: (i: number) => void, tooLow: number, tooHigh: number) {
-  // should validate number is an int
-  assert.throws(() => func(NaN));
-  // should validate number is within the allowed range
-  assert.throws(() => func(tooLow));
-  assert.throws(() => func(tooHigh));
 }
 
 test("Permutation_GetMaxNumberWithGarbage_Throws", () => {
