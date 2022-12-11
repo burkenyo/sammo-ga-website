@@ -6,11 +6,11 @@ export class OeisId {
   readonly value: number;
 
   constructor(value: number) {
-    if (typeof value !== "number") {
+    if (!Number.isInteger(value)) {
       throw new TypeError("value");
     }
 
-    if (!Number.isInteger(value) || value < 1 || value > OeisId.MAX_VALUE) {
+    if (value < 1 || value > OeisId.MAX_VALUE) {
       throw new RangeError("value");
     }
 
