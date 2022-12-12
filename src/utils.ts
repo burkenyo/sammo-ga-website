@@ -46,6 +46,15 @@ export function lazy<T extends {}>(factory: () => T): () => T {
   return get;
 }
 
+// Here clazz is typed as Function rather than new (...args: any[]) => object
+// because TypeScript won’t allow me to assign a private constructor to the latter definition
+export function validateConstructorKey(providedKey: symbol, constructorKey: symbol, clazz: Function) {
+  if (providedKey != constructorKey) {
+    throw new TypeError(
+      clazz.name + " constructor is private! It cannot be constructed outside of the class definition.")
+  }
+}
+
 type TypedArrayMutableProperties = 'copyWithin' | 'fill' | 'reverse' | 'set' | 'sort' | 'buffer';
 
 export interface ReadonlyUint8Array extends Omit<Uint8Array, TypedArrayMutableProperties> {
