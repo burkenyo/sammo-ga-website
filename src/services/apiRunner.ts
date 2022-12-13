@@ -27,12 +27,12 @@ export interface ApiRunner {
 }
 
 export class DefaultApiRunner implements ApiRunner {
-  private _baseUrl: URL;
-  private _db: ExpansionsDb;
+  #baseUrl: URL;
+  #db: ExpansionsDb;
 
   constructor(baseURL: URL, db: ExpansionsDb) {
-    this._baseUrl = baseURL;
-    this._db = db;
+    this.#baseUrl = baseURL;
+    this.#db = db;
   }
 
   async getExpansionById(id: OeisId): Promise<OeisFractionalExpansion | ApiError> {
@@ -41,37 +41,37 @@ export class DefaultApiRunner implements ApiRunner {
     }
 
     // attempt to see if the expansion is already in the db
-    const expansionOrError = await this._db.getFromDb(id);
+    const expansionOrError = await this.#db.getFromDb(id);
     if (expansionOrError) {
       return expansionOrError;
     }
 
     // call the API to pull down the expansion
-    const response = await fetch(new URL(`dozenalExpansions/byId/${id}`, this._baseUrl));
+    const response = await fetch(new URL(`dozenalExpansions/byId/${id}`, this.#baseUrl));
 
-    const error = await this.checkApiResponse(response);
+    const error = await this.#checkApiResponse(response);
     if (error) {
       return error;
     }
 
-    return this.getRawExpansionData(response);
+    return this.#getRawExpansionData(response);
   }
 
   async getRandomExpansion(): Promise<OeisFractionalExpansion> {
-    const response = await fetch(new URL('dozenalExpansions/random', this._baseUrl));
+    const response = await fetch(new URL('dozenalExpansions/random', this.#baseUrl));
 
     const id = OeisId.parse((await response.json()).id);
 
     // attempt to see if the expansion is already in the db
-    const expansion = await this._db.getFromDb(id);
+    const expansion = await this.#db.getFromDb(id);
     if (expansion) {
       return expansion as OeisFractionalExpansion;
     }
 
-    return this.getRawExpansionData(response);
+    return this.#getRawExpansionData(response);
   }
 
-  private async checkApiResponse(response: Response): Promise<ApiError | undefined> {
+  async #checkApiResponse(response: Response): Promise<ApiError | null> {
     if (!response.ok) {
       const result = (await response.json()) as { message: string, details: { cause: string, id: string } };
 
@@ -81,18 +81,20 @@ export class DefaultApiRunner implements ApiRunner {
         OeisId.parse(result.details.id)
       );
 
-      await this._db.addToDb(error);
+      await this.#db.addToDb(error);
 
       return error;
     }
+
+    return null;
   }
 
-  private async getRawExpansionData(response: Response): Promise<OeisFractionalExpansion> {
+  async #getRawExpansionData(response: Response): Promise<OeisFractionalExpansion> {
     const blobUrl = new URL(response.headers.get('Content-Location')!);
     response = await fetch(blobUrl);
     const parsed = OeisFractionalExpansion.parseRawText(await response.text());
 
-    await this._db.addToDb(parsed);
+    await this.#db.addToDb(parsed);
 
     return parsed;
   }

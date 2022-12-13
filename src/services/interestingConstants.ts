@@ -50,16 +50,17 @@ export interface InterestingConstant {
 export class InterestingConstants {
   static readonly [dependencies] = [serviceNames.apiRunner] as const;
 
-  private readonly _apiRunner: ApiRunner;
+  readonly #apiRunner: ApiRunner;
 
   constructor(apiRunner: ApiRunner) {
-    this._apiRunner = apiRunner;
+    this.#apiRunner = apiRunner;
   }
 
-  get = () =>
-    interestingConstantsInfo.map(async c => {
-      const downloaded = (await this._apiRunner.getExpansionById(c.id)) as OeisFractionalExpansion;
+  get(): readonly Promise<InterestingConstant>[] {
+    return interestingConstantsInfo.map(async c => {
+      const downloaded = (await this.#apiRunner.getExpansionById(c.id)) as OeisFractionalExpansion;
 
       return { tag: c.tag, expansion: downloaded, description: c.description } as InterestingConstant;
     });
+  }
 }

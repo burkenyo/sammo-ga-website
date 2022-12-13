@@ -2,6 +2,8 @@
 //   http://en.wikipedia.org/wiki/Factorial_number_system
 //   https://en.wikipedia.org/wiki/Lehmer_code
 
+import { validateConstructorKey } from "./utils";
+
 namespace Helpers {
   // the largest base for which maxPermutation <= MAX_SAFE_INTEGER
   export const MAX_BASE = 19;
@@ -45,6 +47,8 @@ namespace Helpers {
 }
 
 export class Permutation {
+  static readonly #CONSTRUCTOR_KEY = Symbol();
+
   static readonly MAX_BASE = Helpers.MAX_BASE;
 
   readonly number: number;
@@ -58,12 +62,14 @@ export class Permutation {
     return this.sequence[0];
   }
 
-  private constructor(number: number, sequence: readonly number[]) {
+  private constructor(key: symbol, number: number, sequence: readonly number[]) {
+    validateConstructorKey(key, Permutation.#CONSTRUCTOR_KEY, Permutation);
+
     this.number = number;
     this.sequence = sequence;
   }
 
-  private static validateBase(base: number) {
+  static #validateBase(base: number) {
     if (!Number.isInteger(base)) {
       throw new TypeError("base");
     }
@@ -73,7 +79,7 @@ export class Permutation {
     }
   }
 
-  private static validateOffset(base: number, offset: number) {
+  static #validateOffset(base: number, offset: number) {
     if (!Number.isInteger(offset)) {
       throw new TypeError("offset");
     }
@@ -84,8 +90,8 @@ export class Permutation {
   }
 
   static create(base: number, number: number, offset: number): Permutation {
-    this.validateBase(base);
-    this.validateOffset(base, offset);
+    this.#validateBase(base);
+    this.#validateOffset(base, offset);
 
     if (!Number.isInteger(number)) {
       throw new TypeError("number");
@@ -95,19 +101,19 @@ export class Permutation {
       throw new RangeError("number");
     }
 
-    return this._create(base, number, offset);
+    return this.#create(base, number, offset);
   }
 
   static createRandom(base: number): Permutation {
-    this.validateBase(base);
+    this.#validateBase(base);
 
     const number = Math.floor(Math.random() * Helpers.getMaxPermutationNumber(base)) + 1;
     const offset = Math.floor(Math.random() * base);
 
-    return this._create(base, number, offset);
+    return this.#create(base, number, offset);
   }
 
-  private static _create(base: number, number: number, offset: number): Permutation {
+  static #create(base: number, number: number, offset: number): Permutation {
     const factorials = Helpers.getFactorials(base);
     // This is a “zero-based” Lehmer code.
     // It is used to pull digits out of the digitBag.
@@ -137,7 +143,7 @@ export class Permutation {
     // the remaining digit goes last in the sequence
     sequence.push((digitBag[0] + offset) % base);
 
-    return new Permutation(number, sequence);
+    return new Permutation(this.#CONSTRUCTOR_KEY, number, sequence);
   }
 
   static fromSequence(sequence: readonly number[]): Permutation {
@@ -146,16 +152,16 @@ export class Permutation {
     }
 
     const base = sequence.length;
-    this.validateBase(base);
+    this.#validateBase(base);
 
     if (Math.min(...sequence) != 0 || Math.max(...sequence) != base - 1) {
       throw new TypeError("sequence");
     }
 
-    return this._fromSequence(sequence);
+    return this.#fromSequence(sequence);
   }
 
-  private static _fromSequence(sequence: readonly number[]): Permutation {
+  static #fromSequence(sequence: readonly number[]): Permutation {
     const base = sequence.length;
     const factorials = Helpers.getFactorials(base);
     const digitBag = Helpers.getDigitBag(base);
@@ -168,11 +174,11 @@ export class Permutation {
       digitBag.splice(index, 1);
     }
 
-    return new Permutation(number, sequence);
+    return new Permutation(this.#CONSTRUCTOR_KEY, number, sequence);
   }
 
   static getMaxNumber(base: number) {
-    this.validateBase(base);
+    this.#validateBase(base);
 
     return Helpers.getMaxPermutationNumber(base);
   }
@@ -180,7 +186,7 @@ export class Permutation {
   reverse(): Permutation {
     const reversed = [...this.sequence].reverse();
 
-    return Permutation._fromSequence(reversed);
+    return Permutation.#fromSequence(reversed);
   }
 
   reflect(): Permutation {
@@ -192,7 +198,7 @@ export class Permutation {
     // Note that 0 is special-cased because it would wrap-around, i.e. (base - 0) % base = 0.
     const flipped = this.sequence.map(e => e == 0 ? 0 : this.base - e);
 
-    return new Permutation(number, flipped);
+    return new Permutation(Permutation.#CONSTRUCTOR_KEY, number, flipped);
   }
 
   invert(): Permutation {
@@ -206,7 +212,7 @@ export class Permutation {
   }
 
   withOffset(offset: number) {
-    Permutation.validateOffset(this.base, offset);
+    Permutation.#validateOffset(this.base, offset);
 
     // “bias” the delta by base so that it is known to never be negative
     const delta = this.base + offset - this.offset;
@@ -214,6 +220,6 @@ export class Permutation {
     const offsetApplied = this.sequence.map(e => (e + delta) % this.base);
 
     // The permutation number does not change when only modifying the offset.
-    return new Permutation(this.number, offsetApplied);
+    return new Permutation(Permutation.#CONSTRUCTOR_KEY, this.number, offsetApplied);
   }
 }

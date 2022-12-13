@@ -5,7 +5,7 @@ import { Fractional, OeisFractionalExpansion, type OeisId } from "@/oeis";
 type Stored<T extends { id: OeisId }> = { className: string } & Omit<T, "id">;
 
 export class ExpansionsDb {
-  private getDb = lazy(() => {
+  #getDb = lazy(() => {
     const request = indexedDB.open("DozenalExpansionsDB");
 
     return new Promise<IDBDatabase>((resolve, reject) => {
@@ -26,8 +26,8 @@ export class ExpansionsDb {
     });
   });
 
-  async getFromDb(id: OeisId): Promise<OeisFractionalExpansion | ApiError | undefined> {
-    const db = await this.getDb();
+  async getFromDb(id: OeisId): Promise<OeisFractionalExpansion | ApiError | null> {
+    const db = await this.#getDb();
     const xact = db.transaction("DozenalExpansions");
     const store = xact.objectStore("DozenalExpansions");
     const request = store.get(String(id));
@@ -46,7 +46,7 @@ export class ExpansionsDb {
         const result = (e.target as IDBRequest).result as Stored<OeisFractionalExpansion | ApiError> | undefined;
 
         if (!result) {
-          resolve(undefined);
+          resolve(null);
           return;
         }
 
@@ -64,7 +64,7 @@ export class ExpansionsDb {
             const expansion = new OeisFractionalExpansion(
               id,
               result.name,
-              new Fractional(stored.expansion.radix, stored.expansion.offset, stored.expansion.digits)
+              Fractional.create(stored.expansion.radix, stored.expansion.offset, stored.expansion.digits)
             );
 
             resolve(expansion);
@@ -78,7 +78,7 @@ export class ExpansionsDb {
   }
 
   async addToDb(expansionOrError: OeisFractionalExpansion | ApiError): Promise<void> {
-    const db = await this.getDb();
+    const db = await this.#getDb();
     const xact = db.transaction("DozenalExpansions", "readwrite");
     const store = xact.objectStore("DozenalExpansions");
 
