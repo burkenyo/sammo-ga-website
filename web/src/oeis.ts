@@ -1,4 +1,4 @@
-import type { ReadonlyUint8Array } from "@/utils";
+import { validateConstructorKey, type ReadonlyUint8Array } from "@/utils";
 
 export class OeisId {
   static readonly MAX_VALUE = 999_999_999;
@@ -30,17 +30,40 @@ export class OeisId {
   }
 }
 
+// currently, this class only supports dozenal (base-12)
 export class Fractional {
-  private static readonly DOZENAL_DIGIT_MAP = "0123456789XE";
+  static readonly #CONSTRUCTOR_KEY = Symbol();
+
+  static readonly #DOZENAL_DIGIT_MAP = "0123456789XE";
 
   readonly radix: number;
   readonly offset: number;
   readonly digits: ReadonlyUint8Array;
 
-  constructor(radix: number, offset: number, digits: ReadonlyUint8Array) {
+  private constructor(key: symbol, radix: number, offset: number, digits: ReadonlyUint8Array) {
+    validateConstructorKey(key, Fractional.#CONSTRUCTOR_KEY, Fractional);
+
     this.radix = radix;
     this.offset = offset;
     this.digits = digits;
+  }
+
+  static create(radix: number, offset: number, digits: ReadonlyUint8Array) {
+    if (radix != 12) {
+      throw TypeError("radix");
+    }
+
+    if (offset < 0 || offset > digits.length) {
+      throw RangeError("offset");
+    }
+
+    for (const digit of digits) {
+      if (digit < 0 || digit >= radix) {
+        throw new TypeError("digits");
+      }
+    }
+
+    return new Fractional(this.#CONSTRUCTOR_KEY, radix, offset, digits);
   }
 
   static parseDozenal(dozenal: string): Fractional {
@@ -60,7 +83,7 @@ export class Fractional {
           continue;
         }
 
-        const digit = Fractional.DOZENAL_DIGIT_MAP.indexOf(dozenal[i]);
+        const digit = Fractional.#DOZENAL_DIGIT_MAP.indexOf(dozenal[i]);
 
         if (digit == -1) {
           throw new RangeError(`Invalid digit! ${dozenal[i]}`);
@@ -70,7 +93,7 @@ export class Fractional {
       }
     })();
 
-    return new Fractional(12, offset, new Uint8Array(getDigits));
+    return new Fractional(this.#CONSTRUCTOR_KEY, 12, offset, new Uint8Array(getDigits));
   }
 
   toString(): string {
@@ -87,7 +110,7 @@ export class Fractional {
         chars.push(";");
       }
 
-      chars.push(Fractional.DOZENAL_DIGIT_MAP[digit]);
+      chars.push(Fractional.#DOZENAL_DIGIT_MAP[digit]);
 
       i++;
     }

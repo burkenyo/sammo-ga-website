@@ -48,8 +48,8 @@ enum ServiceStyle {
 }
 
 class ServiceDescriptor<TInt extends object> {
-  private readonly _implementingClass: ServiceClass<TInt> | null;
-  private readonly _style: ServiceStyle;
+  readonly #implementingClass: ServiceClass<TInt> | null;
+  readonly #style: ServiceStyle;
 
   readonly key: ServiceKey<TInt>;
   readonly lifetime: ServiceLifetime;
@@ -63,9 +63,9 @@ class ServiceDescriptor<TInt extends object> {
 
     this.key = key;
     this.lifetime = lifetime;
-    this._style = style;
+    this.#style = style;
     this.factory = factory;
-    this._implementingClass = implementingClass;
+    this.#implementingClass = implementingClass;
   }
 
   static forSingletonInstance<TInt extends object>(
@@ -111,41 +111,39 @@ class ServiceDescriptor<TInt extends object> {
   }
 
   toString(): string {
-    const name = this._implementingClass?.name ?? this.key.description ?? "(anonymous)";
+    const name = this.#implementingClass?.name ?? this.key.description ?? "(anonymous)";
     const lifetimeString = ServiceLifetime[this.lifetime].toLowerCase();
-    const styleString = ServiceStyle[this._style].toLowerCase();
+    const styleString = ServiceStyle[this.#style].toLowerCase();
 
     return `<${lifetimeString} ${styleString} of ${name}>`;
   }
 }
 
 export class ContainerBuilder {
-  private readonly _services = new Map<ServiceKey<object>, ServiceDescriptor<object>>();
+  readonly #services = new Map<ServiceKey<object>, ServiceDescriptor<object>>();
 
   registerSingletonInstance<TInt extends Object>(key: ServiceKey<TInt>, instance: TInt) {
     const descriptor = ServiceDescriptor.forSingletonInstance(key, instance);
 
-    this._services.set(key, descriptor);
+    this.#services.set(key, descriptor);
   }
 
-  registerFactory<TInt extends object>(
-    lifetime: ServiceLifetime, key: ServiceKey<TInt>, factory: ServiceFactory<TInt>
-  ) {
+  registerFactory<TInt extends object>(lifetime: ServiceLifetime, key: ServiceKey<TInt>, factory: ServiceFactory<TInt>)
+  {
     const descriptor = ServiceDescriptor.forFactory(lifetime, key, factory);
 
-    this._services.set(key, descriptor);
+    this.#services.set(key, descriptor);
   }
 
-  registerInjected<TInt extends object>(
-    lifetime: ServiceLifetime, key: ServiceKey<TInt>, impl: ServiceClass<TInt>
-  ) {
+  registerInjected<TInt extends object>(lifetime: ServiceLifetime, key: ServiceKey<TInt>, impl: ServiceClass<TInt>)
+  {
     const descriptor = ServiceDescriptor.forInjected(lifetime, key, impl);
 
-    this._services.set(key, descriptor);
+    this.#services.set(key, descriptor);
   }
 
   build(): Container {
-    const container = new DefaultContainer(new Map(this._services));
+    const container = new DefaultContainer(new Map(this.#services));
 
     return container;
   }
@@ -156,31 +154,31 @@ export interface Container {
 }
 
 class DefaultContainer implements Container {
-  private readonly _validatedKeys = new Set<ServiceKey<object>>();
-  private readonly _singletonCache = new Map<ServiceKey<object>, object>();
-  private readonly _services: ReadonlyMap<ServiceKey<object>, ServiceDescriptor<object>>;
-  private readonly _nameMap: ReadonlyMap<string, ServiceKey<object>>;
+  readonly #validatedKeys = new Set<ServiceKey<object>>();
+  readonly #singletonCache = new Map<ServiceKey<object>, object>();
+  readonly #services: ReadonlyMap<ServiceKey<object>, ServiceDescriptor<object>>;
+  readonly #nameMap: ReadonlyMap<string, ServiceKey<object>>;
 
   constructor(services: ReadonlyMap<ServiceKey<object>, ServiceDescriptor<object>>) {
-    this._services = services;
+    this.#services = services;
 
     const nameMap = new Map<string, ServiceKey<object>>();
     for (const key of services.keys()) {
       nameMap.set(key.description!, key);
     }
 
-    this._nameMap = nameMap;
+    this.#nameMap = nameMap;
   }
 
   retrieve<TInt extends object>(key: ServiceKey<TInt>): TInt {
-    return this.retrieveInternal(key, null, null);
+    return this.#retrieve(key, null, null);
   }
 
-  private retrieveInternal<TInt extends object>(
+  #retrieve<TInt extends object>(
     key: ServiceKey<TInt> | string, stack: Set<ServiceKey<object>> | null, requiredBy: ServiceDescriptor<object> | null
   ): TInt {
     if (typeof key === "string") {
-      const lookedUp = this._nameMap.get(key);
+      const lookedUp = this.#nameMap.get(key);
 
       if (!lookedUp) {
         throw new TypeError(`No service key found for “${key}”`);
@@ -189,7 +187,7 @@ class DefaultContainer implements Container {
       key = lookedUp;
     }
 
-    const descriptor = this._services.get(key);
+    const descriptor = this.#services.get(key);
 
     if (!descriptor) {
       const message = key.description
@@ -199,10 +197,10 @@ class DefaultContainer implements Container {
       throw new TypeError(message);
     }
 
-    const validated = this._validatedKeys.has(key);
+    const validated = this.#validatedKeys.has(key);
 
     // Singleton services are cached because they shouldn’t get rebuilt
-    const cached = this._singletonCache.get(key) as TInt | undefined;
+    const cached = this.#singletonCache.get(key) as TInt | undefined;
     if (cached) {
       assert(validated,
         "Expected descriptor to be validated when returning a cached instance! Service: ", descriptor);
@@ -217,7 +215,7 @@ class DefaultContainer implements Container {
       stack ??= new Set();
 
       if (stack.has(key)) {
-        const descriptors = [...stack].map(k => this._services.get(k));
+        const descriptors = [...stack].map(k => this.#services.get(k));
         descriptors.push(descriptor);
 
         const message = "Cyclic dependency detected! Cycle was: " + descriptors.join(" → ");
@@ -234,13 +232,13 @@ class DefaultContainer implements Container {
       }
     }
 
-    const instance = descriptor.factory(key => this.retrieveInternal(key, stack, descriptor));
+    const instance = descriptor.factory(key => this.#retrieve(key, stack, descriptor));
 
     if (descriptor.lifetime == ServiceLifetime.Singleton) {
-      this._singletonCache.set(key, instance);
+      this.#singletonCache.set(key, instance);
     }
 
-    this._validatedKeys.add(key);
+    this.#validatedKeys.add(key);
 
     stack?.delete(key);
 
