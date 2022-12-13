@@ -122,24 +122,34 @@ class ServiceDescriptor<TInt extends object> {
 export class ContainerBuilder {
   readonly #services = new Map<ServiceKey<object>, ServiceDescriptor<object>>();
 
-  registerSingletonInstance<TInt extends Object>(key: ServiceKey<TInt>, instance: TInt) {
+  registerSingletonInstance<TInt extends Object>(
+    key: ServiceKey<TInt>, instance: TInt
+  ) {
     const descriptor = ServiceDescriptor.forSingletonInstance(key, instance);
 
     this.#services.set(key, descriptor);
+
+    return this;
   }
 
-  registerFactory<TInt extends object>(lifetime: ServiceLifetime, key: ServiceKey<TInt>, factory: ServiceFactory<TInt>)
-  {
+  registerFactory<TInt extends object>(
+    lifetime: ServiceLifetime, key: ServiceKey<TInt>, factory: ServiceFactory<TInt>
+  ) {
     const descriptor = ServiceDescriptor.forFactory(lifetime, key, factory);
 
     this.#services.set(key, descriptor);
+
+    return this;
   }
 
-  registerInjected<TInt extends object>(lifetime: ServiceLifetime, key: ServiceKey<TInt>, impl: ServiceClass<TInt>)
-  {
+  registerInjected<TInt extends object>(
+    lifetime: ServiceLifetime, key: ServiceKey<TInt>, impl: ServiceClass<TInt>
+  ) {
     const descriptor = ServiceDescriptor.forInjected(lifetime, key, impl);
 
     this.#services.set(key, descriptor);
+
+    return this;
   }
 
   build(): Container {
@@ -181,7 +191,11 @@ class DefaultContainer implements Container {
       const lookedUp = this.#nameMap.get(key);
 
       if (!lookedUp) {
-        throw new TypeError(`No service key found for “${key}”`);
+        const message = requiredBy
+          ? `No service key found for “${key}”! Required by ${requiredBy}.`
+          : `No service key found for “${key}”!`;
+
+        throw new TypeError(message);
       }
 
       key = lookedUp;
