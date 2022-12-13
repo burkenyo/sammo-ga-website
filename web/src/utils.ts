@@ -10,7 +10,7 @@ export function assert<T>(value: T, message: string, param?: any) {
   }
 }
 
-export function require<T>(value: T, message: string, param?: any): NonNullable<T> {
+export function requireTruthy<T>(value: T, message: string, param?: any): NonNullable<T> {
   if (!value) {
     if (param) {
       message += param;

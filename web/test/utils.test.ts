@@ -25,7 +25,7 @@ test("utils_assertWithTruthy_ok", () => {
 
 test("utils_requireWithFalsy_throws", () => {
   try {
-    utils.require(false, "Assert failure! ", 1);
+    utils.requireTruthy(false, "Assert failure! ", 1);
 
     assert.fail("Expected an error to be thrown!");
   } catch (error: any) {
@@ -33,7 +33,7 @@ test("utils_requireWithFalsy_throws", () => {
   }
 
   try {
-    utils.require(0, "Assert failure!");
+    utils.requireTruthy(0, "Assert failure!");
 
     assert.fail("Expected an error to be thrown!");
   } catch (error: any) {
@@ -44,7 +44,7 @@ test("utils_requireWithFalsy_throws", () => {
 test("utils_requireWithTruthy_ok", () => {
   const expected = Symbol();
 
-  assert.strictEqual(utils.require(expected, "all good!"), expected);
+  assert.strictEqual(utils.requireTruthy(expected, "all good!"), expected);
 });
 
 test("utils_isTrue_returnsAsExpected", () => {

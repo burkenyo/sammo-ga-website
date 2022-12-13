@@ -1,4 +1,4 @@
-import { lazy, require, isTrue } from "@/utils";
+import { lazy, requireTruthy, isTrue } from "@/utils";
 import { type ApiRunner, DefaultApiRunner } from "@/services/apiRunner";
 import { ContainerBuilder, serviceKey, ServiceLifetime } from "@/dependencyInjection";
 import * as serviceNames from "@/serviceNames";
@@ -21,7 +21,7 @@ export const useServices = lazy(() => {
     builder.registerInjected(ServiceLifetime.Singleton, serviceKeys.expansionsDb, ExpansionsDb);
 
     const apiBaseUrl =
-      new URL(require(import.meta.env.VITE__API_BASE_URL, "Required env value VITE_API_BASE_URL was not set!"));
+      new URL(requireTruthy(import.meta.env.VITE__API_BASE_URL, "Required env value VITE_API_BASE_URL was not set!"));
 
     builder.registerFactory(ServiceLifetime.Singleton, serviceKeys.apiRunner,
       provider => new DefaultApiRunner(apiBaseUrl, provider(serviceKeys.expansionsDb)));
