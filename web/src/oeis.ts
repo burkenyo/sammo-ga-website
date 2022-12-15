@@ -22,11 +22,14 @@ export class OeisId implements Equatable {
   }
 
   static parse(value: string): OeisId {
-    const intValue = value[0] == "A"
-      ? Number.parseInt(value.substring(1))
-      : Number.parseInt(value);
+    // Parse out the number exactly and let the constructor reject it if it’s not an integer.
+    // This is to avoid the implicit rounding that Number.parseInt() does.
+    // It also prevents implicit parsing of other bases.
+    const floatValue = value[0] == "A"
+      ? Number.parseFloat(value.substring(1))
+      : Number.parseFloat(value);
 
-    return new OeisId(intValue);
+    return new OeisId(floatValue);
   }
 
   equals(other: unknown): boolean {
