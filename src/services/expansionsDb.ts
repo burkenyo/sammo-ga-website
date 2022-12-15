@@ -26,7 +26,7 @@ export class ExpansionsDb {
     });
   });
 
-  async getFromDb(id: OeisId): Promise<OeisFractionalExpansion | ApiError | null> {
+  async getFromDb(id: OeisId): Promise<Optional<Either<ApiError, OeisFractionalExpansion>>> {
     const db = await this.#getDb();
     const xact = db.transaction("DozenalExpansions");
     const store = xact.objectStore("DozenalExpansions");
@@ -43,7 +43,7 @@ export class ExpansionsDb {
       request.onsuccess = (e) => {
         xact.commit();
 
-        const result = (e.target as IDBRequest).result as Stored<OeisFractionalExpansion | ApiError> | undefined;
+        const result = (e.target as IDBRequest).result as Optional<Stored<OeisFractionalExpansion | ApiError>>;
 
         if (!result) {
           resolve(null);
@@ -56,7 +56,7 @@ export class ExpansionsDb {
             const stored = result as Stored<ApiError>;
             const error = new ApiError(stored.message, stored.cause, id);
 
-            resolve(error);
+            resolve({ left: error });
             return;
           }
           case OeisFractionalExpansion.name: {
@@ -67,7 +67,7 @@ export class ExpansionsDb {
               Fractional.create(stored.expansion.radix, stored.expansion.offset, stored.expansion.digits)
             );
 
-            resolve(expansion);
+            resolve({ right: expansion });
             return;
           }
         }

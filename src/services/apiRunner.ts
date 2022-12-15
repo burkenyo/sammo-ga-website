@@ -22,7 +22,7 @@ export class ApiError extends Error {
 }
 
 export interface ApiRunner {
-  getExpansionById(id: OeisId): Promise<OeisFractionalExpansion | ApiError>;
+  getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>>;
   getRandomExpansion(): Promise<OeisFractionalExpansion>;
 }
 
@@ -35,7 +35,7 @@ export class DefaultApiRunner implements ApiRunner {
     this.#db = db;
   }
 
-  async getExpansionById(id: OeisId): Promise<OeisFractionalExpansion | ApiError> {
+  async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {
     if (!(id instanceof OeisId)) {
       throw new TypeError('id');
     }
@@ -51,10 +51,10 @@ export class DefaultApiRunner implements ApiRunner {
 
     const error = await this.#checkApiResponse(response);
     if (error) {
-      return error;
+      return { left: error };
     }
 
-    return this.#getRawExpansionData(response);
+    return { right: await this.#getRawExpansionData(response) };
   }
 
   async getRandomExpansion(): Promise<OeisFractionalExpansion> {
@@ -65,13 +65,13 @@ export class DefaultApiRunner implements ApiRunner {
     // attempt to see if the expansion is already in the db
     const expansion = await this.#db.getFromDb(id);
     if (expansion) {
-      return expansion as OeisFractionalExpansion;
+      return expansion.right!;
     }
 
     return this.#getRawExpansionData(response);
   }
 
-  async #checkApiResponse(response: Response): Promise<ApiError | null> {
+  async #checkApiResponse(response: Response): Promise<Optional<ApiError>> {
     if (!response.ok) {
       const result = (await response.json()) as { message: string, details: { cause: string, id: string } };
 

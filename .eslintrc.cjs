@@ -11,5 +11,15 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: "latest",
-  }
+  },
+  // needed to prevent false-positives for “missing” interfaces
+  // defined in global.d.ts and referenced in .vue files
+  overrides: [
+    {
+      files: ['*.ts', '*.vue'],
+      rules: {
+        'no-undef': 'off',
+      },
+    },
+  ],
 };

@@ -1,4 +1,4 @@
-export class AssertError extends Error {}
+export class AssertError extends Error { }
 
 export function assert<T>(value: T, message: string, param?: any) {
   if (!value) {
@@ -22,7 +22,7 @@ export function requireTruthy<T>(value: T, message: string, param?: any): NonNul
   return value as NonNullable<T>;
 }
 
-export function isTrue(value: boolean | string | number | bigint | undefined | null): boolean {
+export function isTrue(value: Optional<boolean | string | number | bigint>): boolean {
   if (typeof value == "string") {
     return value.toLowerCase() == "true";
   }

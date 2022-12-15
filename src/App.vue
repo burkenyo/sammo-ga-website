@@ -5,7 +5,6 @@ import ConstantsListing from "@/components/ConstantsListing.vue";
 import { useState, BASE } from "@/shared";
 import { serviceKeys, useServices } from "@/services";
 import type { OeisId, OeisFractionalExpansion } from "./oeis";
-import { ApiError } from "./services/apiRunner";
 
 const state = useState();
 
@@ -31,27 +30,27 @@ const apiRunner = useServices().retrieve(serviceKeys.apiRunner);
 const melody = ref([] as readonly string[]);
 const expansionPreview = ref("");
 
-let data: OeisFractionalExpansion;
-let oldOeisId: OeisId | null = null;
+let data: Optional<OeisFractionalExpansion>;
+let oldOeisId: Optional<OeisId>;
 watch(state, async () => {
   inputs.number = state.permutation.number;
   inputs.offset = state.permutation.offset;
 
-  if (state.oeisId.equals(oldOeisId)) {
+  if (!state.oeisId.equals(oldOeisId)) {
     // TODO error-handling
     const dataOrError = await apiRunner.getExpansionById(state.oeisId);
-    if (dataOrError instanceof ApiError) {
-      console.error(dataOrError);
+    if (dataOrError.left) {
+      console.error(dataOrError.left);
 
       return;
     }
 
-    data = dataOrError;
+    data = dataOrError.right;
     oldOeisId = state.oeisId;
   }
 
-    expansionPreview.value = String(data.expansion).slice(0, 40);
-    melody.value = [...data.expansion.digits].map(d => state.noteSequence[d]);
+    expansionPreview.value = String(data!.expansion).slice(0, 40);
+    melody.value = [...data!.expansion.digits].map(d => state.noteSequence[d]);
   },
   { immediate: true }
 );
