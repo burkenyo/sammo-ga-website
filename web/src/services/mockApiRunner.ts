@@ -2,7 +2,7 @@ import { OeisFractionalExpansion, OeisId } from "@/oeis";
 import { ApiError, ApiErrorCause, type ApiRunner } from "./apiRunner";
 
 export class MockApiRunner implements ApiRunner {
-  async getExpansionById(id: OeisId): Promise<OeisFractionalExpansion | ApiError> {
+  async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {
     if (!(id instanceof OeisId)) {
       throw new TypeError('id');
     }
@@ -10,12 +10,12 @@ export class MockApiRunner implements ApiRunner {
     const response = await fetch(`/${id}.txt`);
 
     if (response.ok) {
-      return OeisFractionalExpansion.parseRawText(await response.text());
+      return { right: OeisFractionalExpansion.parseRawText(await response.text()) };
     }
 
     const error = new ApiError("Not found!", ApiErrorCause.NotFound, id);
 
-    return error;
+    return { left: error };
   }
 
   async getRandomExpansion(): Promise<OeisFractionalExpansion> {
@@ -25,6 +25,6 @@ export class MockApiRunner implements ApiRunner {
 
     const id = ids[Math.floor(Math.random() * ids.length)];
 
-    return this.getExpansionById(id) as Promise<OeisFractionalExpansion>;
+    return (await this.getExpansionById(id)).right!;
   }
 }

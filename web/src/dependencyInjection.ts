@@ -48,7 +48,7 @@ enum ServiceStyle {
 }
 
 class ServiceDescriptor<TInt extends object> {
-  readonly #implementingClass: ServiceClass<TInt> | null;
+  readonly #implementingClass: Optional<ServiceClass<TInt>>;
   readonly #style: ServiceStyle;
 
   readonly key: ServiceKey<TInt>;
@@ -56,7 +56,7 @@ class ServiceDescriptor<TInt extends object> {
   readonly factory: ServiceFactoryWithString<TInt>;
 
   private constructor(key: ServiceKey<TInt>, lifetime: ServiceLifetime, style: ServiceStyle,
-    factory: ServiceFactoryWithString<TInt>, implementingClass: ServiceClass<TInt> | null
+    factory: ServiceFactoryWithString<TInt>, implementingClass: Optional<ServiceClass<TInt>>
   ) {
     assert(style == ServiceStyle.Injected != !implementingClass,
       "implementingClass must be provided if and only if style is ServiceStyle.Injected!");
@@ -122,7 +122,7 @@ class ServiceDescriptor<TInt extends object> {
 export class ContainerBuilder {
   readonly #services = new Map<ServiceKey<object>, ServiceDescriptor<object>>();
 
-  registerSingletonInstance<TInt extends Object>(
+  registerSingletonInstance<TInt extends object>(
     key: ServiceKey<TInt>, instance: TInt
   ) {
     const descriptor = ServiceDescriptor.forSingletonInstance(key, instance);
@@ -185,7 +185,7 @@ class DefaultContainer implements Container {
   }
 
   #retrieve<TInt extends object>(
-    key: ServiceKey<TInt> | string, stack: Set<ServiceKey<object>> | null, requiredBy: ServiceDescriptor<object> | null
+    key: ServiceKey<TInt> | string, stack: Optional<Set<ServiceKey<object>>>, requiredBy: Optional<ServiceDescriptor<object>>
   ): TInt {
     if (typeof key === "string") {
       const lookedUp = this.#nameMap.get(key);

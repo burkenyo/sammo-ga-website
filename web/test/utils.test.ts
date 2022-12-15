@@ -48,7 +48,7 @@ test("utils_requireWithTruthy_ok", () => {
 });
 
 test("utils_isTrue_returnsAsExpected", () => {
-  function testIsTrue(value: boolean | string | number | bigint | undefined | null, expected: boolean) {
+  function testIsTrue(value: Optional<boolean | string | number | bigint>, expected: boolean) {
     assert.strictEqual(utils.isTrue(value), expected);
   }
 

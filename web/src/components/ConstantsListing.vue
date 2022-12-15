@@ -12,7 +12,7 @@ const inputs = reactive({
 });
 
 let timeoutId = 0;
-let oldParsedOeisId: OeisId | null = null;
+let oldParsedOeisId: Optional<OeisId>;
 watch(inputs, () => {
   const parsedOeisId = customRadio.value?.checked
     ? OeisId.parse(inputs.entered)
