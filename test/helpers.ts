@@ -7,3 +7,17 @@ export function testIntParamPreconditions(func: (i: number) => void, tooLow: num
   assert.throws(() => func(tooLow));
   assert.throws(() => func(tooHigh));
 }
+
+export function testEquals<T extends Equatable>(example: T, shouldEqualExample: T, shouldNotEqualExample: T) {
+  // should not be equal under standard js reference equality
+  assert.notEqual(example, shouldEqualExample);
+  // should be equal under implemented value equality
+  assert.isTrue(example.equals(shouldEqualExample));
+
+  // different value
+  assert.isFalse(example.equals(shouldNotEqualExample));
+  // different types
+  assert.isFalse(example.equals(null));
+  // same shape but different type
+  assert.isFalse(example.equals({ ...example }));
+}

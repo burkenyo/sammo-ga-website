@@ -4,7 +4,7 @@ import { Permutation } from "@/permutation";
 import ConstantsListing from "@/components/ConstantsListing.vue";
 import { useState, BASE } from "@/shared";
 import { serviceKeys, useServices } from "@/services";
-import { OeisId, type OeisFractionalExpansion } from "./oeis";
+import type { OeisId, OeisFractionalExpansion } from "./oeis";
 import { ApiError } from "./services/apiRunner";
 
 const state = useState();
@@ -33,12 +33,11 @@ const expansionPreview = ref("");
 
 let data: OeisFractionalExpansion;
 let oldOeisId: OeisId | null = null;
-
 watch(state, async () => {
   inputs.number = state.permutation.number;
   inputs.offset = state.permutation.offset;
 
-  if (!oldOeisId || !OeisId.equals(oldOeisId, state.oeisId)) {
+  if (state.oeisId.equals(oldOeisId)) {
     // TODO error-handling
     const dataOrError = await apiRunner.getExpansionById(state.oeisId);
     if (dataOrError instanceof ApiError) {

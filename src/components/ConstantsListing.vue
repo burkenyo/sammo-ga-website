@@ -22,7 +22,7 @@ watch(inputs, () => {
   //   • inputs.entered was set to be the same as inputs.selected when inputs.selected changed
   //   • inputs.entered was changed to pad with zeroes as the user typed
   // But if the actual value of the OeisID has not changed, bail
-  if (oldParsedOeisId && OeisId.equals(oldParsedOeisId, parsedOeisId)) {
+  if (parsedOeisId.equals(oldParsedOeisId)) {
     return;
   }
 
