@@ -31,6 +31,8 @@ test("OeisId_ParseWithGarbage_Throws", () => {
   assert.throws(() => OeisId.parse(""));
   // Value out of range
   assert.throws(() => OeisId.parse("0"));
+  // Not an int
+  assert.throws(() => OeisId.parse("12.8"));
   assert.throws(() => OeisId.parse(String(OeisId.MAX_VALUE + 1)));
 });
 
