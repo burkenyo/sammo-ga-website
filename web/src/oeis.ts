@@ -28,6 +28,10 @@ export class OeisId {
 
     return new OeisId(intValue);
   }
+
+  static equals(a: OeisId, b: OeisId) {
+    return a.value == b.value;
+  }
 }
 
 // currently, this class only supports dozenal (base-12)
