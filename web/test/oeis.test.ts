@@ -1,5 +1,5 @@
 import { test, assert } from "vitest";
-import { testIntParamPreconditions } from "./helpers";
+import { testEquals, testIntParamPreconditions } from "./helpers";
 import { OeisId } from "@/oeis";
 
 const A000796 = new OeisId(796);
@@ -41,4 +41,8 @@ test("OeisId_ParseVarious_ValueExtractedCorrectly", () => {
   assert.strictEqual(A001622.value, OeisId.parse("1622").value);
   assert.strictEqual(A1234567.value, OeisId.parse("A1234567").value);
   assert.strictEqual(A1234567.value, OeisId.parse("1234567").value);
+});
+
+test("OeisId_EqualsVarious_ReturnExpected", () => {
+  testEquals(A000796, new OeisId(A000796.value), A001622);
 });

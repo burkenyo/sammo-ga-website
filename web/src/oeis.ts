@@ -1,6 +1,6 @@
-import { validateConstructorKey, type ReadonlyUint8Array } from "@/utils";
+import { validateConstructorKey } from "@/utils";
 
-export class OeisId {
+export class OeisId implements Equatable {
   static readonly MAX_VALUE = 999_999_999;
 
   readonly value: number;
@@ -29,8 +29,8 @@ export class OeisId {
     return new OeisId(intValue);
   }
 
-  static equals(a: OeisId, b: OeisId) {
-    return a.value == b.value;
+  equals(other: unknown): boolean {
+    return other instanceof OeisId && this.value == other.value;
   }
 }
 

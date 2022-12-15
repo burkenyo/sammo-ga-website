@@ -46,7 +46,7 @@ namespace Helpers {
   }
 }
 
-export class Permutation {
+export class Permutation implements Equatable  {
   static readonly #CONSTRUCTOR_KEY = Symbol();
 
   static readonly MAX_BASE = Helpers.MAX_BASE;
@@ -221,5 +221,9 @@ export class Permutation {
 
     // The permutation number does not change when only modifying the offset.
     return new Permutation(Permutation.#CONSTRUCTOR_KEY, this.number, offsetApplied);
+  }
+
+  equals(other: unknown): boolean {
+    return other instanceof Permutation && this.number == other.number && this.offset == other.offset;
   }
 }

@@ -54,9 +54,3 @@ export function validateConstructorKey(providedKey: symbol, constructorKey: symb
       clazz.name + " constructor is private! It cannot be constructed outside of the class definition.")
   }
 }
-
-type TypedArrayMutableProperties = 'copyWithin' | 'fill' | 'reverse' | 'set' | 'sort' | 'buffer';
-
-export interface ReadonlyUint8Array extends Omit<Uint8Array, TypedArrayMutableProperties> {
-  readonly [index: number]: number;
-}

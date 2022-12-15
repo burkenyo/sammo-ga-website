@@ -1,5 +1,5 @@
 import { test, assert } from "vitest";
-import { testIntParamPreconditions } from "./helpers";
+import { testEquals, testIntParamPreconditions } from "./helpers";
 import { Permutation } from "@/permutation";
 
 const BASE = 12;
@@ -157,4 +157,11 @@ test("Permutation_WithOffset_AdjustsSequence", () => {
   const actual = explode(create().withOffset(7));
 
   assert.deepStrictEqual(actual, example);
+});
+
+test("Permutation_EqualsVarious_ReturnExpected", () => {
+  const a = create();
+  const b = create();
+
+  testEquals(a, b, a.withOffset(7));
 });
