@@ -2,9 +2,8 @@
 import { reactive, ref, watch } from "vue";
 import { Permutation } from "@/permutation";
 import ConstantsListing from "@/components/ConstantsListing.vue";
-import { useState, BASE } from "@/shared";
-import { serviceKeys, useServices } from "@/services";
-import type { OeisId, OeisFractionalExpansion } from "./oeis";
+import { BASE, initialOeisId, useState } from "@/shared";
+import type { OeisId } from "./oeis";
 
 const state = useState();
 
@@ -25,35 +24,23 @@ watch(inputs, () => {
   }
 });
 
-const apiRunner = useServices().retrieve(serviceKeys.apiRunner);
-
 const melody = ref([] as readonly string[]);
 const expansionPreview = ref("");
 
-let data: Optional<OeisFractionalExpansion>;
 let oldOeisId: Optional<OeisId>;
-watch(state, async () => {
-  inputs.number = state.permutation.number;
-  inputs.offset = state.permutation.offset;
-
-  if (!state.oeisId.equals(oldOeisId)) {
-    // TODO error-handling
-    const dataOrError = await apiRunner.getExpansionById(state.oeisId);
-    if (dataOrError.left) {
-      console.error(dataOrError.left);
-
-      return;
-    }
-
-    data = dataOrError.right;
-    oldOeisId = state.oeisId;
+let oldPermutation: Optional<Permutation>;
+watch(state, () => {
+  if (!state.expansion || (state.expansion.id.equals(oldOeisId) && state.permutation.equals(oldPermutation))) {
+    return;
   }
 
-    expansionPreview.value = String(data!.expansion).slice(0, 40);
-    melody.value = [...data!.expansion.digits].map(d => state.noteSequence[d]);
-  },
-  { immediate: true }
-);
+  oldOeisId = state.expansion.id;
+  oldPermutation = state.permutation;
+  expansionPreview.value = String(state.expansion.expansion).slice(0, 40);
+  melody.value = [...state.expansion.expansion.digits].map(d => state.noteSequence[d]);
+});
+
+state.getExpansionById(initialOeisId);
 </script>
 
 <template>
@@ -65,7 +52,7 @@ watch(state, async () => {
   <button @click="state.reflectPermutation">reflect</button>
   <button @click="state.invertPermutation">invert</button>
   <h3>Permutation number is: {{ state.permutation.number }}</h3>
-  <h3>Selected constant is: {{ String(state.oeisId) }}</h3>
+  <h3>Selected constant is: {{ String(state.expansion?.id) }}</h3>
   <table>
     <tr>
       <td v-for="i in BASE" :key="i">
