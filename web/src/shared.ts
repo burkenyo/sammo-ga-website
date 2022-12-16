@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
-import { computed, shallowRef } from "vue";
-import { OeisId } from "./oeis";
+import { computed, shallowRef, readonly } from "vue";
+import { OeisFractionalExpansion, OeisId } from "./oeis";
 import { Permutation } from "./permutation";
+import { serviceKeys, useServices } from "./services";
 
 interface InterestingConstant {
   readonly tag: string;
@@ -47,6 +48,8 @@ export const interestingConstantsInfo: readonly InterestingConstant[] = [
   },
 ];
 
+export const initialOeisId = interestingConstantsInfo[0].id;
+
 const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"] as const;
 export const BASE = NOTES.length;
 
@@ -55,22 +58,41 @@ export const BASE = NOTES.length;
 // e.g. instance where shared the permutation or oeisId objects were replaced,
 // but their values are still equal
 export const useState = defineStore("state", () => {
+  const apiRunner = useServices().retrieve(serviceKeys.apiRunner);
+
   const permutation = shallowRef(Permutation.create(BASE, 1, 0));
-  const oeisId = shallowRef(interestingConstantsInfo[0].id);
   const noteSequence = computed(() => permutation.value.sequence.map(e => NOTES[e]));
+  const expansion = shallowRef<OeisFractionalExpansion>();
 
   const randomizePermutation = () => permutation.value = Permutation.createRandom(BASE);
   const reversePermutation = () => permutation.value = permutation.value.reverse();
   const reflectPermutation = () => permutation.value = permutation.value.reflect();
   const invertPermutation = () => permutation.value = permutation.value.invert();
 
+  async function getExpansionById(id: OeisId) {
+    const expansionOrError = await apiRunner.getExpansionById(id);
+
+    if (expansionOrError.left) {
+      // TODO handle errors
+      throw expansionOrError.left;
+    }
+
+    expansion.value = expansionOrError.right;
+  }
+
+  async function getRandomExpansion() {
+    expansion.value = await apiRunner.getRandomExpansion();
+  }
+
   return {
     permutation,
-    oeisId,
     noteSequence,
+    expansion: readonly(expansion),
     randomizePermutation,
     reversePermutation,
     reflectPermutation,
     invertPermutation,
+    getExpansionById,
+    getRandomExpansion,
   };
 });

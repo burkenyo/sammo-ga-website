@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import ConstIcons from "./icons/ConstIcons.vue";
-import { interestingConstantsInfo, useState } from "@/shared";
+import { initialOeisId, interestingConstantsInfo, useState } from "@/shared";
 import { reactive, ref, watch } from "vue";
 import { OeisId } from "@/oeis";
 
 const state = useState();
 
 const inputs = reactive({
-  selected: ref(String(interestingConstantsInfo[0].id)),
-  entered: ref(String(interestingConstantsInfo[0].id)),
+  selected: ref(String(initialOeisId)),
+  entered: ref(String(initialOeisId)),
 });
 
 let timeoutId = 0;
-let oldParsedOeisId: Optional<OeisId>;
+let oldParsedOeisId = initialOeisId;
 watch(inputs, () => {
   const parsedOeisId = customRadio.value?.checked
     ? OeisId.parse(inputs.entered)
@@ -26,7 +26,7 @@ watch(inputs, () => {
     return;
   }
 
-  clearTimeout(timeoutId);
+  window.clearTimeout(timeoutId);
 
   oldParsedOeisId = parsedOeisId;
 
@@ -38,8 +38,25 @@ watch(inputs, () => {
   inputs.entered = String(parsedOeisId);
 
   // use a timeout to prevent updating the state with every keystroke
-  timeoutId = setTimeout(() => state.oeisId = parsedOeisId, 200) as any as number;
+  timeoutId = window.setTimeout(() => state.getExpansionById(parsedOeisId), 200);
 });
+
+watch(state, () => {
+  if (!state.expansion || state.expansion.id.equals(oldParsedOeisId)) {
+    return;
+  }
+
+  oldParsedOeisId = state.expansion.id;
+  inputs.entered = String(state.expansion.id);
+});
+
+function getRandom() {
+  window.clearTimeout(timeoutId);
+
+  checkCustomRadio();
+
+  timeoutId = window.setTimeout(() => state.getRandomExpansion(), 200);
+}
 
 const customInput = ref<HTMLInputElement>();
 const customRadio = ref<HTMLInputElement>();
@@ -72,5 +89,5 @@ function focusCustomInput() {
   <label for="custom">custom</label>
   <input type="radio" id="custom" ref="customRadio" name="constant" @change="focusCustomInput"/>
   <input required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio"/>
-  <button @click.stop>random</button>
+  <button @click="getRandom">random</button>
 </template>
