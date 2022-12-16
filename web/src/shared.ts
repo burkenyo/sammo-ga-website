@@ -53,10 +53,9 @@ export const initialOeisId = interestingConstantsInfo[0].id;
 const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"] as const;
 export const BASE = NOTES.length;
 
-// state uses immutable domain types, hence shallow refs;
-// this also means watchers need to be aware of “false positives”,
-// e.g. instance where shared the permutation or oeisId objects were replaced,
-// but their values are still equal
+// State uses immutable domain types, hence shallow refs.
+// Functions that mutate the state check for domain type equality before committing the updates.
+// This should prevent false-positives in watches monitoring (all or part of) the state.
 export const useState = defineStore("state", () => {
   const apiRunner = useServices().retrieve(serviceKeys.apiRunner);
 
@@ -64,12 +63,26 @@ export const useState = defineStore("state", () => {
   const noteSequence = computed(() => permutation.value.sequence.map(e => NOTES[e]));
   const expansion = shallowRef<OeisFractionalExpansion>();
 
-  const randomizePermutation = () => permutation.value = Permutation.createRandom(BASE);
-  const reversePermutation = () => permutation.value = permutation.value.reverse();
-  const reflectPermutation = () => permutation.value = permutation.value.reflect();
-  const invertPermutation = () => permutation.value = permutation.value.invert();
+  function updatePermutation(newPermutation: Permutation) {
+    if (newPermutation.equals(permutation.value)) {
+      console.debug("state Permutation update canceled because of equality");
+      return;
+    }
+
+    permutation.value = newPermutation;
+  }
+
+  const randomizePermutation = () => updatePermutation(Permutation.createRandom(BASE));
+  const reversePermutation = () => updatePermutation(permutation.value.reverse());
+  const reflectPermutation = () => updatePermutation(permutation.value.reflect());
+  const invertPermutation = () => updatePermutation(permutation.value.invert());
 
   async function getExpansionById(id: OeisId) {
+    if (id.equals(expansion.value?.id)) {
+      console.debug("state getExpansionById canceled because of OeisId equality");
+      return;
+    }
+
     const expansionOrError = await apiRunner.getExpansionById(id);
 
     if (expansionOrError.left) {
@@ -81,13 +94,21 @@ export const useState = defineStore("state", () => {
   }
 
   async function getRandomExpansion() {
-    expansion.value = await apiRunner.getRandomExpansion();
+    const newExpansion = await apiRunner.getRandomExpansion();
+
+    if (newExpansion.id.equals(expansion.value?.id)) {
+      console.debug("state getRandomExpansion canceled because of OeisId equality");
+      return;
+    }
+
+    expansion.value = newExpansion;
   }
 
   return {
-    permutation,
+    permutation: readonly(permutation),
     noteSequence,
     expansion: readonly(expansion),
+    updatePermutation,
     randomizePermutation,
     reversePermutation,
     reflectPermutation,

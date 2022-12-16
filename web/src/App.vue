@@ -13,31 +13,25 @@ const inputs = reactive({
 });
 
 watch(inputs, () => {
+  console.debug("App.vue inputs watch triggered");
   // TODO is there a better way?
   if (document.querySelector(":invalid")) {
     return;
   }
 
-  // if inputs watch was triggered because states watch was, the permutation will already be updated
-  if (inputs.number != state.permutation.number || inputs.offset != state.permutation.offset) {
-    state.permutation = Permutation.create(BASE, inputs.number, inputs.offset);
-  }
+  state.updatePermutation(Permutation.create(BASE, inputs.number, inputs.offset));
 });
 
 const melody = ref([] as readonly string[]);
 const expansionPreview = ref("");
 
-let oldOeisId: Optional<OeisId>;
-let oldPermutation: Optional<Permutation>;
-watch(state, () => {
-  if (!state.expansion || (state.expansion.id.equals(oldOeisId) && state.permutation.equals(oldPermutation))) {
-    return;
-  }
+watch([() => state.permutation, () => state.expansion], () => {
+  console.debug("[() => state.permutation, () => state.expansion] watch triggered in App.vue");
+  expansionPreview.value = String(state.expansion!.expansion).slice(0, 40);
+  melody.value = [...state.expansion!.expansion.digits].map(d => state.noteSequence[d]);
 
-  oldOeisId = state.expansion.id;
-  oldPermutation = state.permutation;
-  expansionPreview.value = String(state.expansion.expansion).slice(0, 40);
-  melody.value = [...state.expansion.expansion.digits].map(d => state.noteSequence[d]);
+  inputs.number = state.permutation.number;
+  inputs.offset = state.permutation.offset;
 });
 
 state.getExpansionById(initialOeisId);

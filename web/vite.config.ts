@@ -11,4 +11,8 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  esbuild: {
+    drop: ["debugger"],
+    pure: ["console.debug", "console.trace"],
+  },
 });

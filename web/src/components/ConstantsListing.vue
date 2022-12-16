@@ -12,8 +12,8 @@ const inputs = reactive({
 });
 
 let timeoutId = 0;
-let oldParsedOeisId = initialOeisId;
 watch(inputs, () => {
+  console.debug("ConstantsListing.vue inputs watch triggered");
   const parsedOeisId = customRadio.value?.checked
     ? OeisId.parse(inputs.entered)
     : OeisId.parse(inputs.selected);
@@ -22,13 +22,12 @@ watch(inputs, () => {
   //   • inputs.entered was set to be the same as inputs.selected when inputs.selected changed
   //   • inputs.entered was changed to pad with zeroes as the user typed
   // But if the actual value of the OeisID has not changed, bail
-  if (parsedOeisId.equals(oldParsedOeisId)) {
+  if (parsedOeisId.equals(state.expansion?.id)) {
+    console.debug("ConstantsListing.vue inputs update canceled because of OeisId equality");
     return;
   }
 
   window.clearTimeout(timeoutId);
-
-  oldParsedOeisId = parsedOeisId;
 
   // TODO is there a better way?
   if (document.querySelector(":invalid")) {
@@ -37,17 +36,13 @@ watch(inputs, () => {
 
   inputs.entered = String(parsedOeisId);
 
-  // use a timeout to prevent updating the state with every keystroke
+  // use a timeout to avoid updating the state with every keystroke
   timeoutId = window.setTimeout(() => state.getExpansionById(parsedOeisId), 200);
 });
 
-watch(state, () => {
-  if (!state.expansion || state.expansion.id.equals(oldParsedOeisId)) {
-    return;
-  }
-
-  oldParsedOeisId = state.expansion.id;
-  inputs.entered = String(state.expansion.id);
+watch(() => state.expansion, () => {
+  console.debug("[() => state.expansion] watch triggered in ConstantsListing.vue");
+  inputs.entered = String(state.expansion!.id);
 });
 
 function getRandom() {
