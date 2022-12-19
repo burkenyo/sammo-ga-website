@@ -41,7 +41,7 @@ export class OeisId implements Equatable {
 export class Fractional {
   static readonly #CONSTRUCTOR_KEY = Symbol();
 
-  static readonly #DOZENAL_DIGIT_MAP = "0123456789XE";
+  static readonly DOZENAL_DIGIT_MAP = "0123456789XE";
 
   readonly radix: number;
   readonly offset: number;
@@ -90,7 +90,7 @@ export class Fractional {
           continue;
         }
 
-        const digit = Fractional.#DOZENAL_DIGIT_MAP.indexOf(dozenal[i]);
+        const digit = Fractional.DOZENAL_DIGIT_MAP.indexOf(dozenal[i]);
 
         if (digit == -1) {
           throw new RangeError(`Invalid digit! ${dozenal[i]}`);
@@ -117,7 +117,7 @@ export class Fractional {
         chars.push(";");
       }
 
-      chars.push(Fractional.#DOZENAL_DIGIT_MAP[digit]);
+      chars.push(Fractional.DOZENAL_DIGIT_MAP[digit]);
 
       i++;
     }

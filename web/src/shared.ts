@@ -50,8 +50,7 @@ export const interestingConstantsInfo: readonly InterestingConstant[] = [
 
 export const initialOeisId = interestingConstantsInfo[0].id;
 
-const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"] as const;
-export const BASE = NOTES.length;
+export const BASE = 12;
 
 // State uses immutable domain types, hence shallow refs.
 // Functions that mutate the state check for domain type equality before committing the updates.
@@ -60,7 +59,6 @@ export const useState = defineStore("state", () => {
   const apiRunner = useServices().retrieve(serviceKeys.apiRunner);
 
   const permutation = shallowRef(Permutation.create(BASE, 1, 0));
-  const noteSequence = computed(() => permutation.value.sequence.map(e => NOTES[e]));
   const expansion = shallowRef<OeisFractionalExpansion>();
 
   function updatePermutation(newPermutation: Permutation) {
@@ -106,7 +104,6 @@ export const useState = defineStore("state", () => {
 
   return {
     permutation: readonly(permutation),
-    noteSequence,
     expansion: readonly(expansion),
     updatePermutation,
     randomizePermutation,
