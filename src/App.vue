@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, watch } from "vue";
 import { Permutation } from "@/permutation";
 import ConstantsListing from "@/components/ConstantsListing.vue";
-import { BASE, initialOeisId, useState } from "@/shared";
-import type { OeisId } from "./oeis";
+import { BASE, useState } from "@/shared";
+import ScoreRenderer from "./components/ScoreRenderer.vue";
+import { Fractional } from "./oeis";
 
 const state = useState();
 
@@ -22,19 +23,30 @@ watch(inputs, () => {
   state.updatePermutation(Permutation.create(BASE, inputs.number, inputs.offset));
 });
 
-const melody = ref([] as readonly string[]);
-const expansionPreview = ref("");
+const DISPLAY_NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"] as const;
+const DISPLAY_DIGIT_MAP = "0123456789XL";
+const noteSequence = computed(() => state.permutation.sequence.map(e => DISPLAY_NOTES[e]));
+const expansionPreview = computed(() => state.expansion
+  ? String(state.expansion.expansion)
+    .slice(0, 40)
+    .split("")
+    .map(c => {
+      const index = Fractional.DOZENAL_DIGIT_MAP.indexOf(c);
+
+      return index > -1
+        ? DISPLAY_DIGIT_MAP.charAt(index)
+        : c
+    })
+    .join("")
+  : ""
+);
 
 watch([() => state.permutation, () => state.expansion], () => {
   console.debug("[() => state.permutation, () => state.expansion] watch triggered in App.vue");
-  expansionPreview.value = String(state.expansion!.expansion).slice(0, 40);
-  melody.value = [...state.expansion!.expansion.digits].map(d => state.noteSequence[d]);
 
   inputs.number = state.permutation.number;
   inputs.offset = state.permutation.offset;
 });
-
-state.getExpansionById(initialOeisId);
 </script>
 
 <template>
@@ -49,18 +61,18 @@ state.getExpansionById(initialOeisId);
   <h3>Selected constant is: {{ String(state.expansion?.id) }}</h3>
   <table>
     <tr>
-      <td v-for="i in BASE" :key="i">
-        {{ i - 1 }}
+      <td v-for="d in DISPLAY_DIGIT_MAP" :key="d">
+        {{ d }}
       </td>
     </tr>
     <tr>
-      <td v-for="note in state.noteSequence" :key="note">
+      <td v-for="note in noteSequence" :key="note">
         {{ note }}
       </td>
     </tr>
   </table>
   <p>{{ expansionPreview }}</p>
-  <p>{{ melody }}</p>
+  <ScoreRenderer />
 </template>
 
 <style>
