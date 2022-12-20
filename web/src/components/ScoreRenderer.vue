@@ -28,5 +28,5 @@ watch([() => state.permutation, () => state.expansion], () => {
 </script>
 
 <template>
-  <div ref="engraveArea" style="width: 50vw" />
+  <div id="engrave-area" ref="engraveArea" />
 </template>

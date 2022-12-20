@@ -3,6 +3,7 @@ import ConstIcons from "./icons/ConstIcons.vue";
 import { initialOeisId, interestingConstantsInfo, useState } from "@/shared";
 import { reactive, ref, watch } from "vue";
 import { OeisId } from "@/oeis";
+import RingLoader from "vue-spinner/src/RingLoader.vue";
 
 const state = useState();
 
@@ -10,6 +11,8 @@ const inputs = reactive({
   selected: ref(String(initialOeisId)),
   entered: ref(String(initialOeisId)),
 });
+
+const loading = ref(false);
 
 let timeoutId = 0;
 watch(inputs, () => {
@@ -37,7 +40,15 @@ watch(inputs, () => {
   inputs.entered = String(parsedOeisId);
 
   // use a timeout to avoid updating the state with every keystroke
-  timeoutId = window.setTimeout(() => state.getExpansionById(parsedOeisId), 200);
+  timeoutId = window.setTimeout(async () => {
+    try {
+      fixupHider();
+      loading.value = true;
+      state.getExpansionById(parsedOeisId);
+    } finally {
+      loading.value = false;
+    }
+  }, 200);
 });
 
 watch(() => state.expansion, () => {
@@ -50,7 +61,15 @@ function getRandom() {
 
   checkCustomRadio();
 
-  timeoutId = window.setTimeout(() => state.getRandomExpansion(), 200);
+  timeoutId = window.setTimeout(async () => {
+    try {
+      fixupHider();
+      loading.value = true;
+      await state.getRandomExpansion();
+    } finally {
+      loading.value = false;
+    }
+  }, 200);
 }
 
 const customInput = ref<HTMLInputElement>();
@@ -72,17 +91,35 @@ function focusCustomInput() {
     enteringCustom = false;
   }
 }
+
+const controls = ref<HTMLDivElement>();
+const hider = ref<HTMLDivElement>();
+
+// HACK: Should use proper CSS!
+function fixupHider() {
+  hider.value!.style.width = controls.value!.clientWidth + "px";
+  hider.value!.style.height = controls.value!.clientHeight + "px";
+}
 </script>
 
 <template>
-  <template v-for="item in interestingConstantsInfo" :key="item.tag">
-    <label class="form-check-label" :for="item.tag">
-      <ConstIcons :tag="item.tag" />
-    </label>
-    <input type="radio" :value="String(item.id)" :id="item.tag" v-model="inputs.selected" name="constant" />
-  </template>
-  <label for="custom">custom</label>
-  <input type="radio" id="custom" ref="customRadio" name="constant" @change="focusCustomInput"/>
-  <input required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio"/>
-  <button @click="getRandom">random</button>
+  <div>
+    <div ref="hider" :hidden="!loading" style="position: fixed; background-color:rgba(255, 255, 255, 0.8)">
+      <div style="margin: auto; display: flex; align-items: center">
+        <RingLoader :loading="loading" color="#0066FF" style="margin: auto" />
+      </div>
+    </div>
+    <div ref="controls" style="width: fit-content">
+      <template v-for="item in interestingConstantsInfo" :key="item.tag">
+        <label class="form-check-label" :for="item.tag">
+          <ConstIcons :tag="item.tag" />
+        </label>
+        <input type="radio" :value="String(item.id)" :id="item.tag" v-model="inputs.selected" name="constant" :disabled="loading" />
+      </template>
+      <label for="custom-radio">custom</label>
+      <input type="radio" id="custom-radio" ref="customRadio" name="constant" @change="focusCustomInput" :disabled="loading"/>
+      <input class="wide" required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio" :disabled="loading"/>
+      <button @click="getRandom" :disabled="loading">random</button>
+    </div>
+  </div>
 </template>

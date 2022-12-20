@@ -18,7 +18,8 @@
   "dependencies": {
     "pinia": "^2.0.28",
     "vexflow": "^4.1.0",
-    "vue": "^3.2.41"
+    "vue": "^3.2.41",
+    "vue-spinner": "^1.0.4"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",

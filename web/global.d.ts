@@ -17,3 +17,5 @@ type Either<E extends Error, T extends {}> = {
   left?: never,
   right: T
 }
+
+declare module "vue-spinner/src/RingLoader.vue";

@@ -25,6 +25,9 @@ export class MockApiRunner implements ApiRunner {
 
     const id = ids[Math.floor(Math.random() * ids.length)];
 
+    const delay = 2000 + Math.random() * 500;
+    await new Promise<void>(resolve => window.setTimeout(resolve, delay));
+
     return (await this.getExpansionById(id)).right!;
   }
 }
