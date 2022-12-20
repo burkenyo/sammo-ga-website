@@ -26,9 +26,15 @@ watch(inputs, () => {
 const DISPLAY_NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"] as const;
 const DISPLAY_DIGIT_MAP = "0123456789XL";
 const noteSequence = computed(() => state.permutation.sequence.map(e => DISPLAY_NOTES[e]));
-const expansionPreview = computed(() => state.expansion
-  ? String(state.expansion.expansion)
-    .slice(0, 40)
+const expansionPreview = computed(() => {
+  if (!state.expansion) {
+    return { text: "", abbreviated: false };
+  }
+
+  const fullString = String(state.expansion.expansion);
+
+  const displayString = String(state.expansion.expansion)
+    .slice(0, 90)
     .split("")
     .map(c => {
       const index = Fractional.DOZENAL_DIGIT_MAP.indexOf(c);
@@ -37,9 +43,10 @@ const expansionPreview = computed(() => state.expansion
         ? DISPLAY_DIGIT_MAP.charAt(index)
         : c
     })
-    .join("")
-  : ""
-);
+    .join("");
+
+  return {text: displayString, abbreviated: fullString.length > displayString.length};
+});
 
 watch([() => state.permutation, () => state.expansion], () => {
   console.debug("[() => state.permutation, () => state.expansion] watch triggered in App.vue");
@@ -50,33 +57,41 @@ watch([() => state.permutation, () => state.expansion], () => {
 </script>
 
 <template>
+  <h3>Sequence</h3>
   <ConstantsListing />
-  <input required type="number" min="1" :max="Permutation.getMaxNumber(BASE)" v-model="inputs.number" />
-  <input required type="number" min="0" :max="BASE - 1" v-model="inputs.offset" />
-  <button @click="state.randomizePermutation">randomize</button>
-  <button @click="state.reversePermutation">reverse</button>
-  <button @click="state.reflectPermutation">reflect</button>
-  <button @click="state.invertPermutation">invert</button>
-  <h3>Permutation number is: {{ state.permutation.number }}</h3>
-  <h3>Selected constant is: {{ String(state.expansion?.id) }}</h3>
+  <h3>Permutation</h3>
+  <span class="control-group">
+    <label for="permutation-number">Number</label>
+    <input id="permutation-number" class="wide" required type="number" min="1" :max="Permutation.getMaxNumber(BASE)" v-model="inputs.number" />
+  </span>
+  <span class="control-group">
+    <label for="offset">Transposition</label>
+    <input id="offset"  class="narrow" required type="number" min="0" :max="BASE - 1" v-model="inputs.offset" />
+  </span>
+  <span class="control-group">
+    <button @click="state.randomizePermutation">randomize</button>
+    <button @click="state.reversePermutation">reverse</button>
+    <button @click="state.reflectPermutation">reflect</button>
+    <button @click="state.invertPermutation">invert</button>
+  </span>
+  <h3>Mapping</h3>
   <table>
     <tr>
-      <td v-for="d in DISPLAY_DIGIT_MAP" :key="d">
+      <td class="key" v-for="d in DISPLAY_DIGIT_MAP" :key="d">
         {{ d }}
       </td>
     </tr>
     <tr>
-      <td v-for="note in noteSequence" :key="note">
+      <td class="key" v-for="note in noteSequence" :key="note">
         {{ note }}
       </td>
     </tr>
   </table>
-  <p>{{ expansionPreview }}</p>
+  <h3>Digits</h3>
+  <p>
+    <span id="digits-bold">{{ expansionPreview.text }}</span>
+    <span v-if="expansionPreview.abbreviated">...</span>
+  </p>
+  <h3>Generated Melody</h3>
   <ScoreRenderer />
 </template>
-
-<style>
-input:invalid {
-  border: 2px dashed red;
-}
-</style>

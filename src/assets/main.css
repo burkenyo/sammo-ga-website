@@ -1,39 +1,105 @@
-@import './base.css';
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  font-weight: normal;
+body {
+  margin: 1em;
 }
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
+.hidden {
+  visibility: hidden;
 }
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+table
+{
+  border-collapse:collapse;
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+h3 {
+  margin-bottom: 0.5em;
 }
 
-.math {
-  font-family: Times, "Times New Roman", serif;
+td {
+  width: 2em;
+}
+
+p {
+  margin-top: 0em;
+  margin-left: 1em;
+  word-wrap: break-word;
+}
+
+div#engrave-area {
+  margin-left: 1em;
+}
+
+td:not(.div) {
+  padding-left: 1em;
+}
+
+td div {
+  padding-left: 1em;
+}
+
+div.cell {
+  padding-left: 1em;
+  width: 2em;
+  float: left;
+  margin-bottom: 1em;
+}
+
+span#digits-bold {
+  font-weight: bold;
+  color: RoyalBlue;
+}
+
+span.control-group {
+  margin-left: 1em;
+}
+
+span.option-group {
+  margin-left: 0.5em;
+}
+
+pre, span.option-group, input{
+  border: 0.1em solid SkyBlue;
+  border-radius: 0.4em;
+  padding-left: 0.2em;
+}
+
+label:not(:first-of-type) {
+  margin-left: 1em;
+}
+
+div.highlight {
+  margin-top: -2px;
+  margin-left: -2px;
+  margin-bottom: -2px;
+  border: 2px solid CornflowerBlue;
+  border-radius: 0.4em;
+}
+
+div.cell:nth-of-type(even), td.key:nth-of-type(even) {
+  background-color: Lavender;
+}
+
+input, button {
+  margin-left: 0.3em;
+  padding-left: 0.2em;
+}
+
+input.narrow {
+  width: 3em;
+}
+
+input.wide {
+  width: 7em;
+}
+
+input#start-pos, input#stop-pos {
+  width: 4em;
+}
+
+input:invalid {
+  border: 1.5px dashed red;
+}
+
+div#engrave-area {
+  width: 75vw;
 }
