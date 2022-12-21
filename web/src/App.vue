@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
+import { computed, defineAsyncComponent, reactive, watch } from "vue";
 import { Permutation } from "@/permutation";
 import ConstantsListing from "@/components/ConstantsListing.vue";
-import { BASE, useState } from "@/shared";
-import ScoreRenderer from "./components/ScoreRenderer.vue";
+import { BASE, initialOeisId, useState } from "@/shared";
 import { Fractional } from "./oeis";
 import ConstantIcon from "@/components/ConstantIcon.vue";
 import OeisLinks from "@/components/OeisLinks.vue";
+
+const ScoreRenderer = defineAsyncComponent(() => import("./components/ScoreRenderer.vue"));
 
 const state = useState();
 
@@ -65,6 +66,8 @@ function fixUpName(name: string): string {
   // remove the word decimal (because we’re in dozenal) and any final period from the description
   return name.replace(/[Dd]ecimal |\.$/g, "");
 }
+
+state.getExpansionById(initialOeisId);
 </script>
 
 <template>
@@ -114,5 +117,12 @@ function fixUpName(name: string): string {
     <template v-if="expansionPreview.abbreviated">...</template>
   </p>
   <h3>Generated Melody</h3>
-  <ScoreRenderer />
+  <Suspense>
+    <ScoreRenderer />
+    <template #fallback>
+      <div class="control-group">
+        <PacmanLoader color="#0066FF" />
+      </div>
+    </template>
+  </Suspense>
 </template>
