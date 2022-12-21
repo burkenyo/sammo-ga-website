@@ -48,9 +48,11 @@ export const interestingConstantsInfo: readonly InterestingConstant[] = [
   },
 ];
 
-export const initialOeisId = interestingConstantsInfo[0].id;
+export const INITIAL_OEIS_ID = interestingConstantsInfo[0].id;
 
 export const BASE = 12;
+
+export const MAX_PERMUTATION = Permutation.getMaxNumber(BASE);
 
 // State uses immutable domain types, hence shallow refs.
 // Functions that mutate the state check for domain type equality before committing the updates.
