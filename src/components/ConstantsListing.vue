@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ConstIcons from "./icons/ConstIcons.vue";
 import { initialOeisId, interestingConstantsInfo, useState } from "@/shared";
 import { reactive, ref, watch } from "vue";
 import { OeisId } from "@/oeis";
-import RingLoader from "vue-spinner/src/RingLoader.vue";
+import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
+import ConstantIcon from "./ConstantIcon.vue";
 
 const state = useState();
 
@@ -69,7 +69,7 @@ function getRandom() {
     } finally {
       loading.value = false;
     }
-  }, 200);
+  }, 50);
 }
 
 const customInput = ref<HTMLInputElement>();
@@ -103,23 +103,27 @@ function fixupHider() {
 </script>
 
 <template>
-  <div>
-    <div ref="hider" :hidden="!loading" style="position: fixed; background-color:rgba(255, 255, 255, 0.8)">
+  <div style="position: relative">
+    <div ref="hider" :hidden="!loading" style="position: absolute; background-color: rgba(255, 255, 255, 0.7)">
       <div style="margin: auto; display: flex; align-items: center">
-        <RingLoader :loading="loading" color="#0066FF" style="margin: auto" />
+        <PacmanLoader :loading="loading" color="#0066FF" style="margin: auto" />
       </div>
     </div>
     <div ref="controls" style="width: fit-content">
-      <template v-for="item in interestingConstantsInfo" :key="item.tag">
-        <label class="form-check-label" :for="item.tag">
-          <ConstIcons :tag="item.tag" />
-        </label>
-        <input type="radio" :value="String(item.id)" :id="item.tag" v-model="inputs.selected" name="constant" :disabled="loading" />
-      </template>
-      <label for="custom-radio">custom</label>
-      <input type="radio" id="custom-radio" ref="customRadio" name="constant" @change="focusCustomInput" :disabled="loading"/>
-      <input class="wide" required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio" :disabled="loading"/>
-      <button @click="getRandom" :disabled="loading">random</button>
+      <span class="control-group">
+        <template v-for="item in interestingConstantsInfo" :key="item.tag">
+          <label class="form-check-label" :for="item.tag">
+            <ConstantIcon :tag="item.tag"/>
+          </label>
+          <input type="radio" :value="String(item.id)" :id="item.tag" v-model="inputs.selected" name="constant" :disabled="loading" />
+        </template>
+      </span>
+      <span class="control-group">
+        <label for="custom-radio">custom</label>
+        <input type="radio" id="custom-radio" ref="customRadio" name="constant" @change="focusCustomInput" :disabled="loading"/>
+        <input class="wide" required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio" :disabled="loading"/>
+        <button @click="getRandom" :disabled="loading">random</button>
+      </span>
     </div>
   </div>
 </template>

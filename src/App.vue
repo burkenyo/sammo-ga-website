@@ -5,6 +5,8 @@ import ConstantsListing from "@/components/ConstantsListing.vue";
 import { BASE, useState } from "@/shared";
 import ScoreRenderer from "./components/ScoreRenderer.vue";
 import { Fractional } from "./oeis";
+import ConstantIcon from "@/components/ConstantIcon.vue";
+import OeisLinks from "@/components/OeisLinks.vue";
 
 const state = useState();
 
@@ -54,6 +56,15 @@ watch([() => state.permutation, () => state.expansion], () => {
   inputs.number = state.permutation.number;
   inputs.offset = state.permutation.offset;
 });
+
+function fixUpName(name: string): string {
+  if (name.startsWith("Decimal")) {
+    name = "the " + name;
+  }
+
+  // remove the word decimal (because we’re in dozenal) and any final period from the description
+  return name.replace(/[Dd]ecimal |\.$/g, "");
+}
 </script>
 
 <template>
@@ -61,15 +72,17 @@ watch([() => state.permutation, () => state.expansion], () => {
   <ConstantsListing />
   <h3>Permutation</h3>
   <span class="control-group">
-    <label for="permutation-number">Number</label>
+    <label for="permutation-number">number</label>
     <input id="permutation-number" class="wide" required type="number" min="1" :max="Permutation.getMaxNumber(BASE)" v-model="inputs.number" />
   </span>
   <span class="control-group">
-    <label for="offset">Transposition</label>
+    <label for="offset">transposition</label>
     <input id="offset"  class="narrow" required type="number" min="0" :max="BASE - 1" v-model="inputs.offset" />
   </span>
   <span class="control-group">
-    <button @click="state.randomizePermutation">randomize</button>
+    <button @click="state.randomizePermutation">random</button>
+  </span>
+  <span class="control-group">
     <button @click="state.reversePermutation">reverse</button>
     <button @click="state.reflectPermutation">reflect</button>
     <button @click="state.invertPermutation">invert</button>
@@ -89,8 +102,16 @@ watch([() => state.permutation, () => state.expansion], () => {
   </table>
   <h3>Digits</h3>
   <p>
+    <template v-if="state.selectedInterestingConstant">
+      <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
+      {{ state.selectedInterestingConstant.description }} (<OeisLinks :text="state.selectedInterestingConstant.id" />),
+    </template>
+    <template v-else-if="state.expansion">
+      <OeisLinks :text="state.expansion.id" />, <OeisLinks :text="fixUpName(state.expansion.name)" />
+    </template>
+    is
     <span id="digits-bold">{{ expansionPreview.text }}</span>
-    <span v-if="expansionPreview.abbreviated">...</span>
+    <template v-if="expansionPreview.abbreviated">...</template>
   </p>
   <h3>Generated Melody</h3>
   <ScoreRenderer />
