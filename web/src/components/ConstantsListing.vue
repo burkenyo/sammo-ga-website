@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { initialOeisId, interestingConstantsInfo, useState } from "@/shared";
+import { INITIAL_OEIS_ID, interestingConstantsInfo, useState } from "@/shared";
 import { reactive, ref, watch } from "vue";
 import { OeisId } from "@/oeis";
 import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
@@ -8,8 +8,8 @@ import ConstantIcon from "./ConstantIcon.vue";
 const state = useState();
 
 const inputs = reactive({
-  selected: ref(String(initialOeisId)),
-  entered: ref(String(initialOeisId)),
+  selected: ref(String(INITIAL_OEIS_ID)),
+  entered: ref(String(INITIAL_OEIS_ID)),
 });
 
 const loading = ref(false);

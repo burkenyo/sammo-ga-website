@@ -2,10 +2,11 @@
 import { computed, defineAsyncComponent, reactive, watch } from "vue";
 import { Permutation } from "@/permutation";
 import ConstantsListing from "@/components/ConstantsListing.vue";
-import { BASE, initialOeisId, useState } from "@/shared";
+import { BASE, INITIAL_OEIS_ID, MAX_PERMUTATION, useState } from "@/shared";
 import { Fractional } from "./oeis";
 import ConstantIcon from "@/components/ConstantIcon.vue";
 import OeisLinks from "@/components/OeisLinks.vue";
+import Info from "@/markdown/info.md";
 
 const ScoreRenderer = defineAsyncComponent(() => import("./components/ScoreRenderer.vue"));
 
@@ -67,16 +68,31 @@ function fixUpName(name: string): string {
   return name.replace(/[Dd]ecimal |\.$/g, "");
 }
 
-state.getExpansionById(initialOeisId);
+state.getExpansionById(INITIAL_OEIS_ID);
 </script>
 
 <template>
+  <h3>Info</h3>
+  <Info />
   <h3>Sequence</h3>
   <ConstantsListing />
+  <h4>Digits</h4>
+  <p>
+    <template v-if="state.selectedInterestingConstant">
+      <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
+      {{ state.selectedInterestingConstant.description }} (<OeisLinks :text="state.selectedInterestingConstant.id" />),
+    </template>
+    <template v-else-if="state.expansion">
+      <OeisLinks :text="state.expansion.id" />, <OeisLinks :text="fixUpName(state.expansion.name)" />
+    </template>
+    is
+    <span id="digits-bold">{{ expansionPreview.text }}</span>
+    <template v-if="expansionPreview.abbreviated">...</template>
+  </p>
   <h3>Permutation</h3>
   <span class="control-group">
     <label for="permutation-number">number</label>
-    <input id="permutation-number" class="wide" required type="number" min="1" :max="Permutation.getMaxNumber(BASE)" v-model="inputs.number" />
+    <input id="permutation-number" class="wide" required type="number" min="1" :max="MAX_PERMUTATION" v-model="inputs.number" />
   </span>
   <span class="control-group">
     <label for="offset">transposition</label>
@@ -90,7 +106,7 @@ state.getExpansionById(initialOeisId);
     <button @click="state.reflectPermutation">reflect</button>
     <button @click="state.invertPermutation">invert</button>
   </span>
-  <h3>Mapping</h3>
+  <h4>Mapping</h4>
   <table>
     <tr>
       <td class="key" v-for="d in DISPLAY_DIGIT_MAP" :key="d">
@@ -103,19 +119,6 @@ state.getExpansionById(initialOeisId);
       </td>
     </tr>
   </table>
-  <h3>Digits</h3>
-  <p>
-    <template v-if="state.selectedInterestingConstant">
-      <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
-      {{ state.selectedInterestingConstant.description }} (<OeisLinks :text="state.selectedInterestingConstant.id" />),
-    </template>
-    <template v-else-if="state.expansion">
-      <OeisLinks :text="state.expansion.id" />, <OeisLinks :text="fixUpName(state.expansion.name)" />
-    </template>
-    is
-    <span id="digits-bold">{{ expansionPreview.text }}</span>
-    <template v-if="expansionPreview.abbreviated">...</template>
-  </p>
   <h3>Generated Melody</h3>
   <Suspense>
     <ScoreRenderer />

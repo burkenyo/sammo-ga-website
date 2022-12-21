@@ -19,3 +19,11 @@ type Either<E extends Error, T extends {}> = {
 }
 
 declare module "vue-spinner/src/PacmanLoader.vue";
+
+declare module '*.md' {
+  import type { ComponentOptions } from 'vue';
+
+  const Component: ComponentOptions;
+
+  export default Component;
+}
