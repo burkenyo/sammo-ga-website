@@ -18,4 +18,4 @@ type Either<E extends Error, T extends {}> = {
   right: T
 }
 
-declare module "vue-spinner/src/RingLoader.vue";
+declare module "vue-spinner/src/PacmanLoader.vue";

@@ -15,8 +15,14 @@ h3 {
   margin-bottom: 0.5em;
 }
 
+h4 {
+  margin-top: 0.5em;
+  margin-bottom: 0.2em;
+}
+
 td {
-  width: 2em;
+  text-align: center;
+  width: 3em;
 }
 
 p {
@@ -27,14 +33,6 @@ p {
 
 div#engrave-area {
   margin-left: 1em;
-}
-
-td:not(.div) {
-  padding-left: 1em;
-}
-
-td div {
-  padding-left: 1em;
 }
 
 div.cell {
@@ -49,15 +47,11 @@ span#digits-bold {
   color: RoyalBlue;
 }
 
-span.control-group {
+span.control-group, div.control-group  {
   margin-left: 1em;
 }
 
-span.option-group {
-  margin-left: 0.5em;
-}
-
-pre, span.option-group, input{
+pre, input{
   border: 0.1em solid SkyBlue;
   border-radius: 0.4em;
   padding-left: 0.2em;

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, shallowRef, readonly } from "vue";
+import { shallowRef, readonly, computed } from "vue";
 import { OeisFractionalExpansion, OeisId } from "./oeis";
 import { Permutation } from "./permutation";
 import { serviceKeys, useServices } from "./services";
@@ -19,7 +19,7 @@ export const interestingConstantsInfo: readonly InterestingConstant[] = [
   {
     tag: "e",
     id: new OeisId(1113),
-    description: "The base of the natural logarithm",
+    description: "the base of the natural logarithm",
   },
   {
     tag: "gamma",
@@ -34,12 +34,12 @@ export const interestingConstantsInfo: readonly InterestingConstant[] = [
   {
     tag: "root_two",
     id: new OeisId(2193),
-    description: "The square-root of two",
+    description: "the square-root of two",
   },
   {
     tag: "twelfth_root_two",
     id: new OeisId(10774),
-    description: "The ratio of the pitches of any two neighboring notes on the chromatic scale",
+    description: "the ratio of the pitches of any two neighboring notes on the chromatic scale",
   },
   {
     tag: "tau",
@@ -60,6 +60,9 @@ export const useState = defineStore("state", () => {
 
   const permutation = shallowRef(Permutation.create(BASE, 1, 0));
   const expansion = shallowRef<OeisFractionalExpansion>();
+
+  const selectedInterestingConstant =
+    computed(() => interestingConstantsInfo.find(v => v.id.equals(expansion.value?.id)));
 
   function updatePermutation(newPermutation: Permutation) {
     if (newPermutation.equals(permutation.value)) {
@@ -105,6 +108,7 @@ export const useState = defineStore("state", () => {
   return {
     permutation: readonly(permutation),
     expansion: readonly(expansion),
+    selectedInterestingConstant,
     updatePermutation,
     randomizePermutation,
     reversePermutation,
