@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Engraver } from "@/engraver";
-import { initialOeisId, useState } from "@/shared";
+import { useState } from "@/shared";
 import { onMounted, ref, watch } from "vue";
 
 const engraveArea = ref<HTMLDivElement>();
@@ -9,9 +9,6 @@ let engraver: Engraver;
 
 onMounted(() => {
   engraver = new Engraver(engraveArea.value!);
-
-  // trigger initial render
-  state.getExpansionById(initialOeisId);
 
   engrave();
 });
