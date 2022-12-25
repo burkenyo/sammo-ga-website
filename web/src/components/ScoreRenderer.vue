@@ -28,7 +28,7 @@ async function engrave() {
 
   const notes = [...state.expansion.expansion.digits].map(d => noteSequence[d]);
 
-  engraver.drawNotes(notes, 0, engraveArea.value!.clientWidth);
+  engraver.drawNotes(notes.slice(0, 500), 0, engraveArea.value!.clientWidth);
 }
 </script>
 
