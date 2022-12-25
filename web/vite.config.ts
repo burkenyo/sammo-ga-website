@@ -3,13 +3,16 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import markdown from "vite-plugin-vue-markdown";
+import pages, { type VueRoute } from 'vite-plugin-pages'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue({ include: [/\.vue$/, /\.md$/] }),
+
     markdown({
       markdownItSetup(md) {
+        md.use(require("markdown-it-emoji"));
         // enable subscripts using ~X~
         md.use(require("markdown-it-sub"));
         // enable superscripts using ^X^
@@ -22,6 +25,15 @@ export default defineConfig({
           },
         });
       },
+    }),
+
+    pages({
+      extensions: ["vue", "md"],
+      onRoutesGenerated: (routes: VueRoute[]) =>
+        routes.map(r => ({
+          ...r,
+          path: r.path.replace(/(index)?page$/, ""),
+        })),
     }),
   ],
   resolve: {
