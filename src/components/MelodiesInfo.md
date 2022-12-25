@@ -5,6 +5,10 @@ import ConstantIcon from "@/components/ConstantIcon.vue"
 const maxPermutation = MAX_PERMUTATION.toLocaleString();
 </script>
 
+## Mathematical Melodies
+
+### Info
+
 This page generates melodies by mapping the digits of mathematical constants and other decimal expansions expressed in dozenal (base-12) notation to notes of the Western 12-tone chromatic scale. Dozenal notation provides 12 possible values for each digit as opposed to the 10 found in decimal notation, where each position represents a power of 12: the one’s (12^0^ = 1) place, the dozen’s (12^1^ = 12) place, the gross’ (12^2^ = 144) place, etc. The analogy extends to the other side of the fractional point with the negative powers of 12: the “dozen-th’s” (12^-1^ = ^1^/~12~) place, the “gross-th’s” (12^-2^ = ^1^/~144~) place, etc. Thus, any number can be represented in dozenal notation, and since there are twelve digits, we can uniquely each digit to a note to turn the number into a melody.
 
 #### But how should we do the mapping?

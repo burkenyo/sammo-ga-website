@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { OeisId } from '@/oeis';
+import { OeisId } from "@/oeis";
 
 const props = defineProps<{
-  text: OeisId | string;
+  textOrId: any;
 }>();
 
 function getParts() {
-  if (typeof props.text != 'string') {
-    return [props.text];
+  if (typeof props.textOrId != "string") {
+    return [props.textOrId];
   }
 
   let index = 0;
   const parts: (string | OeisId)[] = [];
 
-  for (const match of props.text.matchAll(/A0*[1-9]\d{0,8}/g)) {
+  for (const match of props.textOrId.matchAll(/A0*[1-9]\d{0,8}/g)) {
     if (match.index! > 0) {
-      parts.push(props.text.substring(index, match.index!));
+      parts.push(props.textOrId.substring(index, match.index!));
     }
 
     parts.push(OeisId.parse(match[0]));
     index += match.index! + match[0].length;
   }
 
-  if (index < props.text.length) {
-    parts.push(props.text.substring(index));
+  if (index < props.textOrId.length) {
+    parts.push(props.textOrId.substring(index));
   }
 
   return parts;
