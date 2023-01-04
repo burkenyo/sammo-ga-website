@@ -1,5 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@500&family=Merriweather:wght@300&display=swap');
+
 body {
   margin: 1em;
+  font-family: Merriweather, 'Times New Roman', Times, serif;
+  font-size: 11pt;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Merriweather Sans', Arial, Helvetica, sans-serif;
+  font-weight: 500;
 }
 
 .hidden {
