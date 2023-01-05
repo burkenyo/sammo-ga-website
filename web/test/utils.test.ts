@@ -118,3 +118,80 @@ test("utils_validateConstructorKeyCalledExternally_throws", () => {
 test("utils_validateConstructorKeyCalledInternally_ok", () => {
   Foo.create();
 });
+
+const PROMISE_VALUE = 47;
+
+function getPromise(): { promise: Promise<number>; completer: () => void } {
+  let resolveLocal: (val: typeof PROMISE_VALUE) => void;
+
+  const promise = new Promise<typeof PROMISE_VALUE>(resolve => resolveLocal = resolve);
+
+  return { promise, completer: () => resolveLocal(PROMISE_VALUE) };
+}
+
+async function dontWaitForever<T extends {}>(
+  promise: Promise<Optional<T>>, shouldFailIfNotResolved: boolean
+): Promise<Optional<T>> {
+  const guard = (async () => {
+    // skip two event ticks
+    for (let i = 0; i < 2; i++) {
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 0))
+    }
+
+    assert.isFalse(shouldFailIfNotResolved, "Cancellable promise was not resolved!");
+  })();
+
+  const result = await Promise.race([promise, guard]) as Promise<Optional<T>>;
+
+  shouldFailIfNotResolved = false;
+
+  return result;
+}
+
+test("Delay_awaited_resolves", async () => {
+  await dontWaitForever(utils.delay(0), true);
+});
+
+test("CancellablePromise_noCancel_isNotCanceled", async () => {
+  const cancellable = new utils.CancellablePromise();
+
+  await dontWaitForever(cancellable, false);
+
+  assert.isFalse(cancellable.isCanceled);
+});
+
+test("CancellablePromise_cancel_isCanceled", async () => {
+  const cancellable = new utils.CancellablePromise();
+
+  cancellable.cancel();
+
+  await dontWaitForever(cancellable, true);
+
+  assert.isTrue(cancellable.isCanceled);
+});
+
+test("CancellablePromise_noCancel_hasValueWhenNotCanceled", async () => {
+  const { promise, completer } = getPromise();
+
+  const cancellable = new utils.CancellablePromise(promise);
+
+  completer();
+
+  const result = await dontWaitForever(cancellable, true);
+
+  assert.isFalse(cancellable.isCanceled);
+  assert.strictEqual(result, PROMISE_VALUE);
+});
+
+test("CancellablePromise_cancel_hasNoValueWhenCanceled", async () => {
+  const { promise } = getPromise();
+
+  const cancellable = new utils.CancellablePromise(promise);
+
+  cancellable.cancel();
+
+  const result = await dontWaitForever(cancellable, true);
+
+  assert.isTrue(cancellable.isCanceled);
+  assert.include([null, undefined], result);
+});
