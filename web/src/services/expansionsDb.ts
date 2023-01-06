@@ -4,6 +4,11 @@ import { Fractional, OeisFractionalExpansion, type OeisId } from "@/oeis";
 
 type Stored<T extends { id: OeisId }> = { className: string } & Omit<T, "id">;
 
+const CLASS_NAMES: ReadonlyMap<string, string> = new Map([
+  [ApiError.name, 'ApiError'],
+  [OeisFractionalExpansion.name, 'OeisFractionExpansion']
+]);
+
 export class ExpansionsDb {
   #getDb = lazy(() => {
     const request = indexedDB.open("DozenalExpansionsDB");
@@ -19,7 +24,7 @@ export class ExpansionsDb {
       };
 
       request.onupgradeneeded = (e) => {
-        console.log("creating db");
+        console.log("Creating db...");
         const db = (e.target as IDBOpenDBRequest).result;
         db.createObjectStore("DozenalExpansions");
       };
@@ -28,9 +33,9 @@ export class ExpansionsDb {
 
   async getFromDb(id: OeisId): Promise<Optional<Either<ApiError, OeisFractionalExpansion>>> {
     const db = await this.#getDb();
-    const xact = db.transaction("DozenalExpansions");
+    const xact = db.transaction("DozenalExpansions", "readwrite");
     const store = xact.objectStore("DozenalExpansions");
-    const request = store.get(String(id));
+    let request = store.get(String(id));
 
     return new Promise((resolve, reject) => {
       request.onerror = (e) => {
@@ -41,8 +46,6 @@ export class ExpansionsDb {
       };
 
       request.onsuccess = (e) => {
-        xact.commit();
-
         const result = (e.target as IDBRequest).result as Optional<Stored<OeisFractionalExpansion | ApiError>>;
 
         if (!result) {
@@ -52,14 +55,18 @@ export class ExpansionsDb {
 
         // hydrate into one of our classes
         switch (result.className) {
-          case ApiError.name: {
+          case CLASS_NAMES.get(ApiError.name): {
+            xact.commit();
+
             const stored = result as Stored<ApiError>;
             const error = new ApiError(stored.message, stored.cause, id);
 
             resolve({ left: error });
             return;
           }
-          case OeisFractionalExpansion.name: {
+          case CLASS_NAMES.get(OeisFractionalExpansion.name): {
+            xact.commit();
+
             const stored = result as Stored<OeisFractionalExpansion>;
             const expansion = new OeisFractionalExpansion(
               id,
@@ -72,7 +79,22 @@ export class ExpansionsDb {
           }
         }
 
-        reject(new TypeError(`Unexpected className: ${result.className}!`));
+        // item was found but could not be hydrated, so remove it
+        console.warn(`Unable to hydrate store value for ${id}! Purging from db...`);
+        request = store.delete(String(id));
+
+        request.onerror = (e) => {
+          xact.abort();
+
+          console.log("Error executing delete!", e);
+          reject(new Error("Error executing delete!"));
+        };
+
+        request.onsuccess = () => {
+          xact.commit();
+
+          resolve(null);
+        };
       };
     });
   }
@@ -85,7 +107,7 @@ export class ExpansionsDb {
     const { id, ...rest } = expansionOrError;
 
     const valueToStore: Stored<OeisFractionalExpansion | ApiError> = {
-      className: expansionOrError.constructor.name,
+      className: CLASS_NAMES.get(expansionOrError.constructor.name)!,
       ...rest,
     };
 
