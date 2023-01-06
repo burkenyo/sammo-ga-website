@@ -155,3 +155,12 @@ input:invalid {
 div#engrave-area {
   width: 75vw;
 }
+
+figure {
+  margin: 2em 0;
+}
+
+figure > img {
+  width: 100%;
+  box-shadow: 0 0 8px #bec0cc;
+}

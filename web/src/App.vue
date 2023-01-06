@@ -37,17 +37,17 @@ const simpleLayout = computed(() => !!route.meta.simpleLayout);
 
 <style>
 div.body {
-  max-width: 50em;
-  min-height:100vh;
+  max-width: 800px;
+  min-height: 100vh;
   margin: auto;
   background-color: white;
-  padding: 1em;
+  padding: 16px;
   box-shadow: 0 0 8px #bec0cc;
 }
 
 div.full {
   width: 100vw;
   background-color: white;
-  padding: 1em;
+  padding: 16px;
 }
 </style>
