@@ -1,3 +1,7 @@
+<route>
+{ meta: { title: "Mathematical Melodies", simpleLayout: true, menuOrder: 3 } }
+</route>
+
 <script setup lang="ts">
 import { computed, defineAsyncComponent, reactive, watch } from "vue";
 import { Permutation } from "@/permutation";
@@ -86,7 +90,7 @@ state.getExpansionById(INITIAL_OEIS_ID);
       <OeisLinks :text-or-id="state.expansion.id" />, <OeisLinks :text-or-id="fixUpName(state.expansion.name)" />
     </template>
     is
-    <span id="digits-bold">{{ expansionPreview.text }}</span>
+    <span id="digits-bold" class="sans">{{ expansionPreview.text }}</span>
     <template v-if="expansionPreview.abbreviated">...</template>
   </p>
   <h3>Permutation</h3>

@@ -1,7 +1,7 @@
 <route>
-{ meta: { title: "Home", menuOrder: 0 } }
+{ meta: { title: "Resume", menuOrder: 1 } }
 </route>
 
-## Home
+## Resume
 
 :construction: Coming soon! :construction:
