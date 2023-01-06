@@ -4,6 +4,11 @@ import { Fractional, OeisFractionalExpansion, type OeisId } from "@/oeis";
 
 type Stored<T extends { id: OeisId }> = { className: string } & Omit<T, "id">;
 
+const CLASS_NAMES: ReadonlyMap<string, string> = new Map([
+  [ApiError.name, 'ApiError'],
+  [OeisFractionalExpansion.name, 'OeisFractionExpansion']
+]);
+
 export class ExpansionsDb {
   #getDb = lazy(() => {
     const request = indexedDB.open("DozenalExpansionsDB");
@@ -52,14 +57,14 @@ export class ExpansionsDb {
 
         // hydrate into one of our classes
         switch (result.className) {
-          case ApiError.name: {
+          case CLASS_NAMES.get(ApiError.name): {
             const stored = result as Stored<ApiError>;
             const error = new ApiError(stored.message, stored.cause, id);
 
             resolve({ left: error });
             return;
           }
-          case OeisFractionalExpansion.name: {
+          case CLASS_NAMES.get(OeisFractionalExpansion.name): {
             const stored = result as Stored<OeisFractionalExpansion>;
             const expansion = new OeisFractionalExpansion(
               id,
@@ -85,7 +90,7 @@ export class ExpansionsDb {
     const { id, ...rest } = expansionOrError;
 
     const valueToStore: Stored<OeisFractionalExpansion | ApiError> = {
-      className: expansionOrError.constructor.name,
+      className: CLASS_NAMES.get(expansionOrError.constructor.name)!,
       ...rest,
     };
 
