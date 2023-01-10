@@ -4,6 +4,6 @@
 
 ## Home
 
-Hello there! I am a seasoned software developer and composer in the Greater Boston area. As I continue to build out my site, please check out the [Mathematical Melodies page](/melodies) for something neat!
+Hello there! I am a seasoned software developer and composer in the Greater Boston area. There’s not much here yet, but the [Projects page](/projects) is a good place to start!
 
 ![The way home](VITE__ASSETS_BASE_URL/IMG_1368.png)
