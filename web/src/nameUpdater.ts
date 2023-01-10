@@ -57,7 +57,7 @@ export function useNameUpdater(nameRef: Ref<string>): () => void {
 
   (async () => {
     while (!canceler.isCanceled) {
-      await Promise.race([delay(20000), canceler]);
+      await Promise.race([delay(30000), canceler]);
 
       if (canceler.isCanceled) {
         return;

@@ -52,6 +52,10 @@ export function delay(millis: number): Promise<void> {
   });
 }
 
+export function readonly<T extends object> (array: T[]): readonly Readonly<T>[]  {
+  return array;
+}
+
 export class CancellablePromise<T extends {}> implements Promise<Optional<T>> {
   readonly #promise: Promise<Optional<T>>;
   #isCanceled = false;
