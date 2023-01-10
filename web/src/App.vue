@@ -35,18 +35,19 @@ const simpleLayout = computed(() => !!route.meta.simpleLayout);
   </template>
 </template>
 
-<style>
+<style scoped>
 div.body {
   max-width: 800px;
   min-height: 100vh;
   margin: auto;
   background-color: white;
   padding: 16px;
-  box-shadow: 0 0 8px #bec0cc;
+  box-shadow: 0 0 8px var(--grey-darker);
 }
 
 div.full {
   width: 100vw;
+  min-height: 100vh;
   background-color: white;
   padding: 16px;
 }

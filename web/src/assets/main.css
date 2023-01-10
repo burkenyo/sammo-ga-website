@@ -1,23 +1,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400;500&family=Merriweather:wght@400;500&display=swap');
 
+:root {
+  --blue: #2968d4; /* links */
+  --blue-paler: #9fadd8; /* control borders */
+  --blue-lighter: #668eea /* hover links, project page boxes */;
+  --blue-bold: #0066FF;
+  --purple: #764ba2;
+  --purple-lighter:#a26bd8; /* project page boxes */;
+  --orange: #f8a34f; /* project page boxes */
+  --green: #5fb120; /* project page boxes */;
+  --grey-background: #d3d5db; /* “letterbox” around content on main page */
+  --grey-darker: #bec0cc; /* box shadows, looked a bit better than the above gray */
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  background-color: #d3d5db;
+  background-color: var(--grey-background);
 }
 
 a {
-  text-decoration: none;
-  color: #4e66ce;
+  color: var(--blue);
+}
+
+a:link {
+  text-decoration: underline solid transparent 1px;
+  transition: color 150ms, text-decoration 150ms;
 }
 
 a:visited {
-  color: #764ba2;
+  color: var(--blue);
 }
 
 a:hover {
-  color: #667eea;
-  text-decoration: underline solid #4e66ce 1px;
+  color: var(--blue-lighter);
+  text-decoration: underline solid var(--blue) 1px;
+  transition: color 150ms, text-decoration 150ms;
 }
 
 p {
@@ -33,11 +51,11 @@ h1, h2, h3, h4, h5, h6 {
 
 h1, h2, h3 {
   border-bottom: 2px solid;
-  border-image: linear-gradient(-90deg, #667eea 0%, #764ba2 100%) 1;
+  border-image: linear-gradient(90deg, var(--blue) 0%, var(--blue-lighter) 100%) 1;
 }
 
 button {
-  border: 2px solid #9fadd8;
+  border: 2px solid var(--blue-paler);
   padding: 0.1em 0.4em;
   border-radius: 0.4em;
   background-image: linear-gradient(-45deg, #ebedf4 0%,#f6f8ff 100%);
@@ -48,7 +66,7 @@ button:hover {
 }
 
 button:active {
-  background-image: linear-gradient(-225deg, #d3d5db 0%,#e2e5eb 100%);
+  background-image: linear-gradient(-225deg, var(--grey-background) 0%,#e2e5eb 100%);
 }
 
 label, .sans, input, button {
@@ -99,17 +117,27 @@ div.cell {
 
 span#digits-bold {
   font-weight: 600;
-  color: RoyalBlue;
+  color: var(--blue-bold);
 }
 
 span.control-group, div.control-group  {
   margin-left: 1em;
 }
 
-pre, input{
-  border: 0.1em solid #9fadd8;;
+input {
+  border: 1px solid var(--blue-paler);
   border-radius: 0.4em;
   padding-left: 0.2em;
+}
+
+*:not(:focus-visible) {
+  outline: 2px solid transparent;
+  transition: outline 150ms ease-out;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--blue-bold);
+  transition: outline 150ms ease-in;
 }
 
 label:not(:first-of-type) {
@@ -120,7 +148,7 @@ div.highlight {
   margin-top: -2px;
   margin-left: -2px;
   margin-bottom: -2px;
-  border: 2px solid CornflowerBlue;
+  border: 2px solid var(--blue);
   border-radius: 0.4em;
 }
 
@@ -162,5 +190,5 @@ figure {
 
 figure > img {
   width: 100%;
-  box-shadow: 0 0 8px #bec0cc;
+  box-shadow: 0 0 8px var(--grey-darker);
 }
