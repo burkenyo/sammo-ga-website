@@ -3,6 +3,7 @@ import { shallowRef, readonly, computed } from "vue";
 import { OeisFractionalExpansion, OeisId } from "./oeis";
 import { Permutation } from "./permutation";
 import { serviceKeys, useServices } from "./services";
+import type { ApiRunner } from "./services/apiRunner";
 
 interface InterestingConstant {
   readonly tag: string;
@@ -58,7 +59,10 @@ export const MAX_PERMUTATION = Permutation.getMaxNumber(BASE);
 // Functions that mutate the state check for domain type equality before committing the updates.
 // This should prevent false-positives in watches monitoring (all or part of) the state.
 export const useState = defineStore("state", () => {
-  const apiRunner = useServices().retrieve(serviceKeys.apiRunner);
+  // don’t use the ApiRunner during the build step
+  const apiRunner: Optional<ApiRunner> = import.meta.env.SSR
+    ? null
+    : useServices().retrieve(serviceKeys.apiRunner);
 
   const permutation = shallowRef(Permutation.create(BASE, 1, 0));
   const expansion = shallowRef<OeisFractionalExpansion>();
@@ -86,6 +90,10 @@ export const useState = defineStore("state", () => {
       return;
     }
 
+    if (!apiRunner) {
+      return;
+    }
+
     const expansionOrError = await apiRunner.getExpansionById(id);
 
     if (expansionOrError.left) {
@@ -97,6 +105,10 @@ export const useState = defineStore("state", () => {
   }
 
   async function getRandomExpansion() {
+    if (!apiRunner) {
+      return;
+    }
+
     const newExpansion = await apiRunner.getRandomExpansion();
 
     if (newExpansion.id.equals(expansion.value?.id)) {

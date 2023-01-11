@@ -1,19 +1,19 @@
-import { createApp } from "vue";
 import { createPinia } from "pinia";
 import App from "@/App.vue";
 import "./assets/main.css";
 import "./assets/utils.css";
-import { createRouter, createWebHistory } from 'vue-router'
 import routes from "~pages";
+import { ViteSSG } from 'vite-ssg'
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+export const createApp = ViteSSG(
+  // root component
+  App,
 
-const app = createApp(App);
+  // vue-router options
+  { routes },
 
-app.use(createPinia());
-app.use(router);
-
-app.mount("#app");
+  // Vue setup
+  ({ app }) => {
+    app.use(createPinia());
+  }
+);

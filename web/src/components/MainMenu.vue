@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useNameUpdater } from '@/nameUpdater';
-import { onBeforeUnmount, ref } from 'vue';
-import { readonly } from '@/utils';
+import { readonly, onBeforeUnmount, ref } from 'vue';
 import SocialLink from './SocialLink.vue';
 
 const menuRoutes = readonly(
@@ -18,11 +17,13 @@ const menuRoutes = readonly(
     }))
 );
 
-const myName = ref("");
+const myName = ref("Sammo Gabay");
 
-const canceler = useNameUpdater(myName);
+if (!import.meta.env.SSR) {
+  const canceler = useNameUpdater(myName);
 
-onBeforeUnmount(canceler);
+  onBeforeUnmount(canceler);
+}
 </script>
 
 <template>
