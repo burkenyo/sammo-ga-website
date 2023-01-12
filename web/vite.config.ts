@@ -79,6 +79,14 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         func: () => import("./scripts/build-helper"),
         skip: !ssrBuild,
       }),
+
+      // populate git-related environment variables
+      buildScript({
+        name: "get-git-info",
+        hook: "config",
+        func: () => import("./scripts/get-git-info"),
+        skip: !ssrBuild,
+      }),
     ],
 
     resolve: {
@@ -94,14 +102,13 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   };
 });
 
-function buildScript(options: { name: string; hook: keyof PluginHooks; func: () => Promise<any>; skip?: boolean }) {
+function buildScript(options: { name: string; hook: keyof PluginHooks | "config"; func: () => Promise<any>; skip?: boolean }) {
   return {
     name: options.name,
-    [options.hook]: async () => {
-      if (options.skip) {
-        return;
-      }
 
+    apply: () => !options.skip,
+
+    [options.hook]: async () => {
       console.log(`Running “${options.name}” build script...`);
       await options.func();
     },

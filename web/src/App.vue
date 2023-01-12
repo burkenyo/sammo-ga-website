@@ -3,7 +3,9 @@ import MainMenu from "@/components/MainMenu.vue";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import NotFound from "@/pages/NotFound.md";
-import { useHead } from "@vueuse/head";
+import { useHead, useServerHead } from "@vueuse/head";
+import EnvInfo from "./components/EnvInfo.vue";
+import type { Meta } from "@unhead/schema";
 
 const route = useRoute();
 
@@ -11,10 +13,23 @@ useHead({
   title: computed(() => "SJG – " + (route.meta.title ?? "Not Found")),
 });
 
+// bake git info into the meta tags during build
+const gitInfo = [
+  { name: "git-branch", content: import.meta.env.VITE__GIT_BRANCH },
+  { name: "git-commit", content: import.meta.env.VITE__GIT_COMMIT },
+].filter(v => v.content)
+
+useServerHead({
+  meta: gitInfo as Meta[],
+});
+
 const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading as Optional<string>);
 </script>
 
 <template>
+  <client-only>
+    <EnvInfo />
+  </client-only>
   <template v-if="simpleLayoutHeading">
     <div class="full">
       <header class="simple">
