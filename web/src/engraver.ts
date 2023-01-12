@@ -1,4 +1,4 @@
-import { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, Flow, RenderContext, Stem } from "vexflow";
+import { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, Flow, Stem, type RenderContext } from "vexflow";
 
 const CLEF_OFFSET = 40;
 const NOTE_WIDTH = 24;

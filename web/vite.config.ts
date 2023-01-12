@@ -4,7 +4,8 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import markdown from "vite-plugin-vue-markdown";
-import pages, { type VueRoute } from 'vite-plugin-pages'
+import pages, { type VueRoute } from "vite-plugin-pages";
+import type { PluginHooks } from "rollup";
 
 // markdown-it plugins
 import mdEmoji from "markdown-it-emoji";
@@ -17,7 +18,7 @@ import mdImageFigures from "markdown-it-image-figures";
 const ASSETS_BASE_URL = "VITE__ASSETS_BASE_URL";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode, ssrBuild }) => {
   const env = loadEnv(mode, process.cwd());
 
   return {
@@ -62,15 +63,47 @@ export default defineConfig(({ mode }) => {
             path: r.path.replace(/(index)?page$/, ""),
           })),
       }),
+
+      // setup mock services when testing locally
+      buildScript({
+        name: "scaffold-mocks",
+        hook: "buildStart",
+        func: () => import("./scripts/scaffold-mocks"),
+        skip: command != "serve",
+      }),
+
+      // clean-up output directory when building
+      buildScript({
+        name: "build-helper",
+        hook: "writeBundle",
+        func: () => import("./scripts/build-helper"),
+        skip: !ssrBuild,
+      }),
     ],
+
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
       },
     },
+
     esbuild: {
       drop: ["debugger"],
       pure: ["console.debug", "console.trace"],
     },
   };
 });
+
+function buildScript(options: { name: string; hook: keyof PluginHooks; func: () => Promise<any>; skip?: boolean }) {
+  return {
+    name: options.name,
+    [options.hook]: async () => {
+      if (options.skip) {
+        return;
+      }
+
+      console.log(`Running “${options.name}” build script...`);
+      await options.func();
+    },
+  } as const;
+}
