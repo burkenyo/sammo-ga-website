@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import MainMenu from '@/components/MainMenu.vue';
-import { computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import MainMenu from "@/components/MainMenu.vue";
+import { computed, watch } from "vue";
+import { useRoute } from "vue-router";
+import NotFound from "@/pages/NotFound.md";
 
 const route = useRoute();
 
@@ -30,7 +31,8 @@ const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading as Opt
         <MainMenu />
       </header>
       <main>
-        <RouterView />
+        <RouterView v-if="route.matched.length" />
+        <NotFound v-else />
       </main>
     </div>
   </template>
