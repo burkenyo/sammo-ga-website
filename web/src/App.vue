@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import MainMenu from "@/components/MainMenu.vue";
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
 import NotFound from "@/pages/NotFound.md";
+import { useHead } from "@vueuse/head";
 
 const route = useRoute();
 
-watch(() => route.meta.title, () => {
-  document.title = "SJG – " + route.meta.title;
+useHead({
+  title: computed(() => "SJG – " + (route.meta.title ?? "Not Found")),
 });
 
 const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading as Optional<string>);
