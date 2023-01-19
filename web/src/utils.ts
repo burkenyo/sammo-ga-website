@@ -22,9 +22,11 @@ export function requireTruthy<T>(value: T, message: string, param?: any): NonNul
   return value as NonNullable<T>;
 }
 
+const TRUE_STRING = String(true);
+
 export function isTrue(value: Optional<boolean | string | number | bigint>): boolean {
   if (typeof value == "string") {
-    return value.toLowerCase() == "true";
+    return value.toLowerCase() == TRUE_STRING;
   }
 
   return !!value;

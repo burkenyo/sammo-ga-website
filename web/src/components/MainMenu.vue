@@ -1,26 +1,29 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { useNameUpdater } from '@/nameUpdater';
-import { readonly, onBeforeUnmount, ref } from 'vue';
+import { useStaticName, useNameUpdater } from '@/nameUpdater';
+import { readonly, onBeforeUnmount, type Ref } from 'vue';
 import SocialLink from './SocialLink.vue';
 
 const menuRoutes = readonly(
   useRouter()
     .getRoutes()
     .filter(r => Number.isInteger(r.meta.menuOrder))
-    .sort((a, b) => (a.meta.menuOrder as number) - (b.meta.menuOrder as number))
+    .sort((a, b) => a.meta.menuOrder! - b.meta.menuOrder!)
     .map(r => ({
-      menuOrder: r.meta.menuOrder as number,
+      menuOrder: r.meta.menuOrder!,
       path: r.path,
       // use nbsp so menu links don’t wrap
       title: (r.meta.title as string).replace(/ /g, "\xA0"),
     }))
 );
 
-const myName = ref("Sammo Gabay");
+let myName: string | Ref<String>;
 
-if (!import.meta.env.SSR) {
-  const canceler = useNameUpdater(myName);
+if (import.meta.env.SSR) {
+  myName = useStaticName();
+} else {
+  const { nameRef, canceler } = useNameUpdater();
+  myName = nameRef;
 
   onBeforeUnmount(canceler);
 }
@@ -46,6 +49,7 @@ if (!import.meta.env.SSR) {
 nav {
   display: flex;
   justify-content: space-between;
+  gap: 2em;
 }
 
 span.menu-item + span.menu-item::before {

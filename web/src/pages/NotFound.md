@@ -1,5 +1,8 @@
 <route>
-{ meta: { title: "Not Found!" } }
+{ meta: {
+  title: "Not Found",
+  description: "The page you were looking for was not found."
+} }
 </route>
 
 ## Not Found!

@@ -1,5 +1,9 @@
 <route>
-{ meta: { title: "Projects", menuOrder: 2 } }
+{ meta: {
+  title: "Projects",
+  description: "A selection of Sammo’s current major projects",
+  menuOrder: 2
+} }
 </route>
 
 <script setup lang="ts">

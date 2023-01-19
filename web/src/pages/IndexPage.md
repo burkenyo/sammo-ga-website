@@ -1,5 +1,10 @@
 <route>
-{ meta: { title: "Home", menuOrder: 0 } }
+{ meta: {
+  title: "Home",
+  description: "Samuel Justin Gabay – aka Sammo Gabay – multi-talented software developer and music composer \
+interested in the cross-connections between code, music, art, and life",
+  menuOrder: 0
+} }
 </route>
 
 ## Home

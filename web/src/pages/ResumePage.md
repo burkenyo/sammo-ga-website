@@ -1,5 +1,9 @@
 <route>
-{ meta: { title: "Resume", menuOrder: 1 } }
+{ meta: {
+  title: "Resume",
+  description: "Chronicles Sammo’s skills and work experience",
+  menuOrder: 1
+} }
 </route>
 
 ## Resume

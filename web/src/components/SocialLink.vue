@@ -19,7 +19,7 @@ img {
   top: -0.1em;
 }
 
-a {
+a + a {
   margin-left: 0.8em;
 }
 </style>

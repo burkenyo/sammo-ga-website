@@ -1,5 +1,9 @@
 <route>
-{ meta: { title: "About", menuOrder: 5 } }
+{ meta: {
+  title: "About",
+  description: "Explore the story and process of creating the sammo.ga site.",
+  menuOrder: 5
+} }
 </route>
 
 ## About sammo.ga

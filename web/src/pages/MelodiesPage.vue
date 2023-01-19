@@ -1,5 +1,11 @@
 <route>
-{ meta: { title: "Mathematical Melodies", simpleLayoutHeading: "Mathematical Melodies", menuOrder: 3 } }
+{ meta: {
+  title: "Mathematical Melodies",
+  description: "Use interesting mathematical constants to generate musical melodies. Experiment with \
+    various permutations and watch the results engraved on-screen in real-time.",
+  simpleLayoutHeading: "Mathematical Melodies",
+  menuOrder: 3
+} }
 </route>
 
 <script setup lang="ts">

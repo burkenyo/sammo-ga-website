@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import MainMenu from "@/components/MainMenu.vue";
 import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import NotFound from "@/pages/NotFound.md";
 import { useHead, useServerHead } from "@vueuse/head";
 import EnvInfo from "./components/EnvInfo.vue";
 import type { Meta } from "@unhead/schema";
 
 const route = useRoute();
+const routeFound = computed(() => !!route.matched.length);
+const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading);
+
+const notFound = useRouter().getRoutes().find(r => r.name ==  NotFound.__name)!.meta;
 
 useHead({
-  title: computed(() => "SJG – " + (route.meta.title ?? "Not Found")),
+  title: computed(() => (route.meta.title ?? notFound.title) + " – Sammo Gabay"),
+  meta: [
+    { name: "description", content: computed(() => route.meta.description ?? notFound.description) },
+  ],
 });
 
 // bake git info into the meta tags during build
@@ -22,8 +29,6 @@ const gitInfo = [
 useServerHead({
   meta: gitInfo as Meta[],
 });
-
-const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading as Optional<string>);
 </script>
 
 <template>
@@ -47,7 +52,7 @@ const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading as Opt
         <MainMenu />
       </header>
       <main>
-        <RouterView v-if="route.matched.length" />
+        <RouterView v-if="routeFound" />
         <NotFound v-else />
       </main>
     </div>

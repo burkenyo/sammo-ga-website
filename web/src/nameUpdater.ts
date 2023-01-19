@@ -1,4 +1,4 @@
-import type { Ref } from "vue";
+import { ref, type Ref } from "vue";
 import { CancellablePromise, delay } from "@/utils";
 
 const STORAGE_KEY = "givenName";
@@ -16,8 +16,8 @@ let newGivenName: string;
 
 function setup() {
   // get the name that was last displayed
-  const storedName = localStorage.getItem(STORAGE_KEY) ?? "";
-  const index = GIVEN_NAMES.indexOf(storedName);
+  const storedName = localStorage.getItem(STORAGE_KEY);
+  const index = storedName ? GIVEN_NAMES.indexOf(storedName) : -1;
 
   if (index == -1) {
     oldGivenName = GIVEN_NAMES[0];
@@ -48,10 +48,14 @@ async function prependNewGivenName(nameRef: Ref<string>): Promise<void> {
   }
 }
 
-export function useNameUpdater(nameRef: Ref<string>): () => void {
+export function useStaticName(): string {
+  return GIVEN_NAMES[0] + " " + FAMILY_NAME;
+}
+
+export function useNameUpdater(): Readonly<{ nameRef: Ref<string>, canceler: () => void }> {
   setup();
 
-  nameRef.value = oldGivenName + " " + FAMILY_NAME;
+  const nameRef = ref(oldGivenName + " " + FAMILY_NAME);
 
   const canceler = new CancellablePromise();
 
@@ -77,5 +81,5 @@ export function useNameUpdater(nameRef: Ref<string>): () => void {
     }
   })();
 
-  return () => canceler.cancel();
+  return { nameRef, canceler: () => canceler.cancel() };
 }
