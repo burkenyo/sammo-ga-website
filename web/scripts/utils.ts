@@ -25,3 +25,7 @@ export function invokeCommand(name: string, args: readonly string[]): Optional<s
 
   return output == "" ? null : output;
 }
+
+export function isRunningInGithubActions(): boolean {
+  return process.env.GITHUB_ACTIONS == "true";
+}

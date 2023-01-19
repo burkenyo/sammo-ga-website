@@ -75,7 +75,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
       // clean-up output directory when building
       buildScript({
         name: "build-helper",
-        hook: "writeBundle",
+        hook: "closeBundle",
         func: () => import("./scripts/build-helper"),
         skip: !ssrBuild,
       }),
