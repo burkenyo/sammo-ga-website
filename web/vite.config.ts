@@ -19,7 +19,11 @@ const ASSETS_BASE_URL = "VITE__ASSETS_BASE_URL";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode, ssrBuild }) => {
+  process.env.VITE__COMMAND = command;
   const env = loadEnv(mode, process.cwd());
+
+  // ensure ssrBuild has a boolean value;
+  ssrBuild = !!ssrBuild;
 
   return {
     plugins: [
@@ -69,7 +73,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         name: "scaffold-mocks",
         hook: "buildStart",
         func: () => import("./scripts/scaffold-mocks"),
-        skip: command != "serve",
+        when: command == "serve",
       }),
 
       // clean-up output directory when building
@@ -77,7 +81,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         name: "build-helper",
         hook: "closeBundle",
         func: () => import("./scripts/build-helper"),
-        skip: !ssrBuild,
+        when: ssrBuild,
       }),
 
       // populate git-related environment variables
@@ -85,7 +89,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         name: "get-git-info",
         hook: "config",
         func: () => import("./scripts/get-git-info"),
-        skip: !ssrBuild,
       }),
     ],
 
@@ -102,11 +105,11 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   };
 });
 
-function buildScript(options: { name: string; hook: keyof PluginHooks | "config"; func: () => Promise<any>; skip?: boolean }) {
+function buildScript(options: { name: string; hook: keyof PluginHooks | "config"; func: () => Promise<any>; when?: boolean }) {
   return {
     name: options.name,
 
-    apply: () => !options.skip,
+    apply: () => options.when == undefined || options.when,
 
     [options.hook]: async () => {
       console.log(`Running “${options.name}” build script...`);

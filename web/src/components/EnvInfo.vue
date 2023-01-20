@@ -1,20 +1,20 @@
 <script setup lang="ts">
-function getMetaContent(name: string): Optional<string> {
-  const element = document.querySelector(`meta[name="${name}"]`) as Optional<HTMLMetaElement>;
+import { useBuildInfo } from "@/shared";
+import CheckIcon from "./CheckIcon.vue";
 
-  return element?.content;
-}
-
-const gitBranch = getMetaContent("git-branch");
-const gitCommit = getMetaContent("git-commit");
+const { gitBranch, gitCommit, isDirty, isBuilt } = useBuildInfo();
 
 const isLocal = ["[::]", "127.0.0.1", "localhost"].includes(location.hostname);
 </script>
 
 <template>
   <div v-if="gitBranch != 'prime' || isLocal">
-    <template v-if="isLocal"> LOCAL </template>
-    {{ gitBranch }} {{ gitCommit }}
+    {{ gitBranch }} {{ gitCommit }}<br />
+    <table>
+      <tr><th>clean</th><td><CheckIcon :value="!isDirty" /></td></tr>
+      <tr><th>built</th><td><CheckIcon :value="isBuilt" /></td></tr>
+      <tr><th>hosted</th><td><CheckIcon :value="!isLocal" /></td></tr>
+    </table>
   </div>
 </template>
 
@@ -22,7 +22,20 @@ const isLocal = ["[::]", "127.0.0.1", "localhost"].includes(location.hostname);
 div {
   font-weight: bold;
   position: fixed;
-  top: 0.2em;
-  left: 0.2em;
+  top: 0.3em;
+  left: 0.3em;
+  padding: 0.2em;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 0px 2px 2px rgba(255, 255, 255, 0.5);
+}
+
+th {
+  padding-right: 0.2em;
+  text-align: right;
+}
+
+td {
+  padding-left: 0.2em;
+  text-align: left;
 }
 </style>

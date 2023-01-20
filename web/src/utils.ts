@@ -22,7 +22,8 @@ export function requireTruthy<T>(value: T, message: string, param?: any): NonNul
   return value as NonNullable<T>;
 }
 
-const TRUE_STRING = String(true);
+export const FALSE_STRING = String(false);
+export const TRUE_STRING = String(true);
 
 export function isTrue(value: Optional<boolean | string | number | bigint>): boolean {
   if (typeof value == "string") {
@@ -100,6 +101,6 @@ export class CancellablePromise<T extends {}> implements Promise<Optional<T>> {
 export function validateConstructorKey(providedKey: symbol, constructorKey: symbol, clazz: Function) {
   if (providedKey != constructorKey) {
     throw new TypeError(
-      clazz.name + " constructor is private! It cannot be constructed outside of the class definition.")
+      clazz.name + " constructor is private! It cannot be invoked outside of the class definition.")
   }
 }

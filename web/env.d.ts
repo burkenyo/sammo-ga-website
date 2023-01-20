@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE__USE_MOCK_API: Optional<string>;
   readonly VITE__GIT_BRANCH: Optional<string>;
   readonly VITE__GIT_COMMIT: Optional<string>;
+  readonly VITE__GIT_IS_DIRTY: Optional<string>;
 }
 
 import "vue-router";
