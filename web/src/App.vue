@@ -9,7 +9,12 @@ import type { Meta } from "@unhead/schema";
 
 const route = useRoute();
 const routeFound = computed(() => !!route.matched.length);
+
+const useSimpleLayout = computed(() => !!route.meta.simpleLayoutHeading);
 const simpleLayoutHeading = computed(() => route.meta.simpleLayoutHeading);
+const layoutClass = computed(() =>
+  useSimpleLayout.value ? "layout-simple" : "layout-standard"
+);
 
 const notFound = useRouter().getRoutes().find(r => r.name ==  NotFound.__name)!.meta;
 
@@ -32,31 +37,20 @@ useServerHead({
 </script>
 
 <template>
-  <client-only>
-    <EnvInfo />
-  </client-only>
-  <template v-if="simpleLayoutHeading">
-    <div class="full">
-      <header class="simple">
-        <h2>{{ simpleLayoutHeading }}</h2>
-        <RouterLink to="/">Home</RouterLink>
-      </header>
-      <main>
-        <RouterView />
-      </main>
-    </div>
-  </template>
-  <template v-else>
-    <div class="body">
-      <header>
-        <MainMenu />
-      </header>
-      <main>
-        <RouterView v-if="routeFound" />
-        <NotFound v-else />
-      </main>
-    </div>
-  </template>
+  <client-only><EnvInfo /></client-only>
+  <div :class="layoutClass">
+    <header class="simple" v-if="useSimpleLayout">
+      <h2>{{ simpleLayoutHeading }}</h2>
+      <RouterLink to="/">Home</RouterLink>
+    </header>
+    <header v-else>
+      <MainMenu />
+    </header>
+    <main>
+      <RouterView v-if="routeFound" />
+      <NotFound v-else />
+    </main>
+  </div>
 </template>
 
 <style scoped>
@@ -76,7 +70,7 @@ header.simple > a:hover {
   text-decoration: underline solid transparent 1px;
 }
 
-div.body {
+div.layout-standard {
   max-width: 50em;
   min-height: calc(100vh - 2em);
   margin: auto;
@@ -85,7 +79,7 @@ div.body {
   box-shadow: 0 0 8px var(--grey-darker);
 }
 
-div.full {
+div.layout-simple {
   width: calc(100vw - 2em);
   min-height: calc(100vh - 2em);
   background-color: white;
