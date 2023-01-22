@@ -33,7 +33,7 @@ a {
 }
 
 a:hover {
-  box-shadow: 0 0 4px var(--blue-lighter);
+  box-shadow: 0 1px 5px var(--blue-lighter);
   transition: box-shadow 200ms;
 }
 

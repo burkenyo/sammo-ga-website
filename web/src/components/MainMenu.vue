@@ -39,8 +39,8 @@ if (import.meta.env.SSR) {
       </span>
     </span>
     <span class="align-right"> <!-- right-side menu items -->
-      <SocialLink title="GitHub" href="https://github.com/burkenyo" icon-src="/github-mark.svg"/>
-      <SocialLink title="LinkedIn" href="https://www.linkedin.com/in/sammo-gabay" icon-src="/linkedin-mark.svg"/>
+      <SocialLink title="GitHub" href="https://github.com/burkenyo" icon-src="github-mark.svg"/>
+      <SocialLink title="LinkedIn" href="https://www.linkedin.com/in/sammo-gabay" icon-src="linkedin-mark.svg"/>
     </span>
   </nav>
 </template>
