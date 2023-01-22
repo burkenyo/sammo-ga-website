@@ -18,6 +18,7 @@ import ConstantIcon from "@/components/ConstantIcon.vue";
 import OeisLinks from "@/components/OeisLinks.vue";
 import Info from "@/components/MelodiesInfo.md";
 import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
+import ScriptingDisabledWarning from "@/components/ScriptingDisabledWarning.vue";
 
 const ScoreRenderer = defineAsyncComponent(() => import("../components/ScoreRenderer.vue"));
 
@@ -83,6 +84,7 @@ state.getExpansionById(INITIAL_OEIS_ID);
 </script>
 
 <template>
+  <ScriptingDisabledWarning />
   <Info />
   <h3>Sequence</h3>
   <ConstantsListing />
