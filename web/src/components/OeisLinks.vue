@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { OeisId } from "@/oeis";
 
-const props = defineProps<{
-  textOrId: any;
+const props = defineProps <{
+  textOrId: string | OeisId;
 }>();
 
 function getParts() {

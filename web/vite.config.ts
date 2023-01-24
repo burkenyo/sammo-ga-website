@@ -105,7 +105,9 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   };
 });
 
-function buildScript(options: { name: string; hook: keyof PluginHooks | "config"; func: () => Promise<any>; when?: boolean }) {
+function buildScript(
+  options: { name: string; hook: keyof PluginHooks | "config"; func: () => Promise<unknown>; when?: boolean }
+) {
   return {
     name: options.name,
 

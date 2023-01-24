@@ -1,6 +1,6 @@
 export class AssertError extends Error { }
 
-export function assert<T>(value: T, message: string, param?: any) {
+export function assert<T>(value: T, message: string, param?: unknown) {
   if (!value) {
     if (param) {
       message += param;
@@ -10,7 +10,7 @@ export function assert<T>(value: T, message: string, param?: any) {
   }
 }
 
-export function requireTruthy<T>(value: T, message: string, param?: any): NonNullable<T> {
+export function requireTruthy<T>(value: T, message: string, param?: unknown): NonNullable<T> {
   if (!value) {
     if (param) {
       message += param;
@@ -78,11 +78,11 @@ export class CancellablePromise<T extends {}> implements Promise<Optional<T>> {
      ) as Promise<Optional<T>>
   }
 
-  then<TResult1 = Optional<T>, TResult2 = never>(onfulfilled?: ((value: Optional<T>) => TResult1 | PromiseLike<TResult1>) | null | undefined, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined): Promise<TResult1 | TResult2> {
+  then<TResult1 = Optional<T>, TResult2 = never>(onfulfilled?: ((value: Optional<T>) => TResult1 | PromiseLike<TResult1>) | null | undefined, onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null | undefined): Promise<TResult1 | TResult2> {
     return this.#promise.then(onfulfilled, onrejected);
   }
 
-  catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null | undefined): Promise<Optional<T> | TResult> {
+  catch<TResult = never>(onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null | undefined): Promise<Optional<T> | TResult> {
     return this.#promise.then(onrejected);
   }
 
@@ -96,7 +96,7 @@ export class CancellablePromise<T extends {}> implements Promise<Optional<T>> {
   }
 }
 
-// Here clazz is typed as Function rather than new (...args: any[]) => object
+// Here clazz is typed as Function rather than new (...args: unknown[]) => object
 // because TypeScript won’t allow me to assign a private constructor to the latter definition
 export function validateConstructorKey(providedKey: symbol, constructorKey: symbol, clazz: Function) {
   if (providedKey != constructorKey) {

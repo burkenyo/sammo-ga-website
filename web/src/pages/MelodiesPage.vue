@@ -92,10 +92,10 @@ state.getExpansionById(INITIAL_OEIS_ID);
   <p>
     <template v-if="state.selectedInterestingConstant">
       <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
-      {{ state.selectedInterestingConstant.description }} (<OeisLinks :text-or-id="state.selectedInterestingConstant.id" />),
+      {{ state.selectedInterestingConstant.description }} (<OeisLinks :textOrId="state.selectedInterestingConstant.id" />),
     </template>
     <template v-else-if="state.expansion">
-      <OeisLinks :text-or-id="state.expansion.id" />, <OeisLinks :text-or-id="fixUpName(state.expansion.name)" />
+      <OeisLinks :textOrId="state.expansion.id" />, <OeisLinks :textOrId="fixUpName(state.expansion.name)" />
     </template>
     is
     <span id="digits-bold" class="sans">{{ expansionPreview.text }}</span>
