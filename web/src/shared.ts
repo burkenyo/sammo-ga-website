@@ -143,8 +143,8 @@ interface BuildInfo {
 }
 
 export function useBuildInfo(): BuildInfo {
-  const gitBranch = import.meta.env.VITE__GIT_BRANCH;
-  const gitCommit = import.meta.env.VITE__GIT_COMMIT;
+  const gitBranch = import.meta.env.VITE__GIT_BRANCH!;
+  const gitCommit = import.meta.env.VITE__GIT_COMMIT!;
   const isDirty = isTrue(import.meta.env.VITE__GIT_IS_DIRTY);
   const isBuilt = import.meta.env.VITE__COMMAND == "build";
 

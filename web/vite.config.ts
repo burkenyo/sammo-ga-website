@@ -1,4 +1,5 @@
 /// <reference types="./md-plugins" />
+/// <reference types="./env" />
 
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig, loadEnv } from "vite";
@@ -6,28 +7,31 @@ import vue from "@vitejs/plugin-vue";
 import markdown from "vite-plugin-vue-markdown";
 import pages, { type VueRoute } from "vite-plugin-pages";
 import type { PluginHooks } from "rollup";
+import replace from "@rollup/plugin-replace";
 
 // markdown-it plugins
 import mdEmoji from "markdown-it-emoji";
 import mdSub from "markdown-it-sub";
 import mdSup from "markdown-it-sup";
 import mdLinkAttrs from "markdown-it-link-attributes";
-import mdReplaceLink from "markdown-it-replace-link";
 import mdImageFigures from "markdown-it-image-figures";
-
-const ASSETS_BASE_URL = "VITE__ASSETS_BASE_URL";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode, ssrBuild }) => {
   process.env.VITE__COMMAND = command;
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, process.cwd()) as ImportMetaEnv;
 
   // ensure ssrBuild has a boolean value;
   ssrBuild = !!ssrBuild;
 
   return {
     plugins: [
-      vue({ include: [/\.vue$/, /\.md$/] }),
+      replace({
+        include: ["**.vue", "**.md"],
+        __ASSETS_BASE_URL: env.VITE__ASSETS_BASE_URL?.replace(/\/?$/, ""),
+      }),
+
+      vue({ include: ["**.vue", "**.md"] }),
 
       markdown({
         markdownItSetup(md) {
@@ -45,13 +49,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             attrs: {
               target: "_blank",
             },
-          });
-
-          md.use(mdReplaceLink, {
-            // inject the base URL for externally-stored assets
-            replaceLink: (link: string) => link.startsWith(ASSETS_BASE_URL)
-              ? env[ASSETS_BASE_URL] + link.substring(ASSETS_BASE_URL.length + 1)
-              : link,
           });
 
           // place images inside figures

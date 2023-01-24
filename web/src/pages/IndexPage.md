@@ -11,4 +11,4 @@ interested in the cross-connections between code, music, art, and life",
 
 Hello there! I am a seasoned software developer and composer in the Greater Boston area. There’s not much here yet, but the [Projects page](/projects) is a good place to start!
 
-![The way home](VITE__ASSETS_BASE_URL/the-way-home.png)
+![The way home](__ASSETS_BASE_URL/the-way-home.png)
