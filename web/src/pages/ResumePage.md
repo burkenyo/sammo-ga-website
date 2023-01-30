@@ -8,4 +8,4 @@
 
 ## Resume
 
-:construction: Coming soon! :construction:
+[Download a copy of my resume](__ASSETS_BASE_URL/SGabay_Resume.pdf)
