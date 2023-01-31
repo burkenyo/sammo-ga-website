@@ -1,4 +1,5 @@
 import { OeisFractionalExpansion, OeisId } from "@/oeis";
+import { delay } from "@/utils";
 import { ApiError, ApiErrorCause, type ApiRunner } from "./apiRunner";
 
 export class MockApiRunner implements ApiRunner {
@@ -7,7 +8,7 @@ export class MockApiRunner implements ApiRunner {
       throw new TypeError('id');
     }
 
-    const response = await fetch(`/${id}.txt`);
+    const response = await fetch(`expansions/${id}.txt`);
 
     if (response.ok) {
       return { right: OeisFractionalExpansion.parseRawText(await response.text()) };
@@ -25,8 +26,7 @@ export class MockApiRunner implements ApiRunner {
 
     const id = ids[Math.floor(Math.random() * ids.length)];
 
-    const delay = 2000 + Math.random() * 500;
-    await new Promise<void>(resolve => window.setTimeout(resolve, delay));
+    await delay(2000 + Math.random() * 500);
 
     return (await this.getExpansionById(id)).right!;
   }

@@ -2,23 +2,17 @@
 // handles clean-up of the output directory after after a build
 
 import * as fs from "node:fs";
-import path from "node:path";
-import { getOeisIdFromFile, isRunningInGithubActions } from "./utils";
+import { isRunningInGithubActions } from "./utils";
 
 if (isRunningInGithubActions()) {
   console.log("build-helper: GitHub Actions detected!");
 }
 
-// Delete the expansions files used by the MockApiRunner
-fs.readdirSync("dist")
-  .map(f => path.join("dist", f))
-  .filter(f => getOeisIdFromFile(f))
-  .forEach(f => fs.unlinkSync(f));
+// delete the expansions files used by the MockApiRunner
+fs.rmSync("dist/expansions", { recursive: true, force: true });
 
 // delete the expansionsList file used by the MockApiRunner
-if (fs.existsSync("dist/expansionsList.json.local")) {
-  fs.unlinkSync("dist/expansionsList.json.local");
-}
+fs.rmSync("dist/expansionsList.json.local", { force: true });
 
 // copy the config file used by Azure Static Web Apps
 fs.copyFileSync("staticwebapp.config.json", "dist/staticwebapp.config.json");

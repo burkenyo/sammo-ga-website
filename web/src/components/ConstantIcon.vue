@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <img :src="'/' + tag + '.svg'" />
+  <img :src="`/icons/${tag}.svg`" />
 </template>
 
 <style scoped>

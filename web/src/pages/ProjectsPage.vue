@@ -18,7 +18,7 @@ import ProjectInfo from "@/components/ProjectInfo.vue";
       Using the fractional expansion of numbers such as
       <ConstantIcon tag="pi"/> and <ConstantIcon tag="e"/> to generate musical melodies.
     </ProjectInfo>
-    <ProjectInfo title="Cantera" href="https://cantera.org/" icon-src="/cantera-logo-emblem-only.png">
+    <ProjectInfo title="Cantera" href="https://cantera.org/" icon-src="/icons/cantera-logo-emblem-only.png">
       Developing a .NET interface for an open-source suite of tools targeting problems involving
       chemical kinetics, thermodynamics, and transport processes.
     </ProjectInfo>
