@@ -6,6 +6,7 @@ import NotFound from "@/pages/NotFound.md";
 import { useHead } from "@vueuse/head";
 import EnvInfo from "./components/EnvInfo.vue";
 import { useGitInfoMeta as useGitInfoMeta } from "./shared";
+import HeaderWithContent from "./components/HeaderWithContent.vue";
 
 const route = useRoute();
 const routeFound = computed(() => !!route.matched.length);
@@ -31,10 +32,10 @@ useGitInfoMeta();
 <template>
   <client-only><EnvInfo /></client-only>
   <div :class="layoutClass">
-    <header class="simple" v-if="useSimpleLayout">
-      <h2>{{ simpleLayoutHeading }}</h2>
+    <HeaderWithContent v-if="useSimpleLayout">
+      <template #heading>{{ simpleLayoutHeading }}</template>
       <RouterLink to="/">Home</RouterLink>
-    </header>
+    </HeaderWithContent>
     <header v-else>
       <MainMenu />
     </header>
@@ -46,22 +47,6 @@ useGitInfoMeta();
 </template>
 
 <style scoped>
-header.simple {
-  margin: 1em 0;
-  border-bottom: 2px solid;
-  border-image: linear-gradient(90deg, var(--blue) 0%, var(--blue-lighter) 100%) 1;
-}
-
-header.simple > h2 {
-  margin-right: 1em;
-  display: inline;
-  border: none;
-}
-
-header.simple > a:hover {
-  text-decoration: underline solid transparent 1px;
-}
-
 div.layout-standard {
   max-width: 50em;
   min-height: calc(100vh - 2em);
