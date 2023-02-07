@@ -13,6 +13,7 @@ import replace from "@rollup/plugin-replace";
 import mdEmoji from "markdown-it-emoji";
 import mdSub from "markdown-it-sub";
 import mdSup from "markdown-it-sup";
+import mdAnchor from "markdown-it-anchor";
 import mdLinkAttrs from "markdown-it-link-attributes";
 import mdImageFigures from "markdown-it-image-figures";
 
@@ -42,6 +43,9 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
 
           // enable superscripts using ^X^
           md.use(mdSup);
+
+          // automatically generate IDs for h3’s
+          md.use(mdAnchor, { tabIndex: false, level: [3] });
 
           md.use(mdLinkAttrs, {
             // make external links open in new tabs
