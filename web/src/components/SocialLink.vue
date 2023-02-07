@@ -11,7 +11,7 @@ const Icon = defineAsyncComponent(() => import(`@/assets/${props.iconSrc}.vue`))
 </script>
 
 <template>
-  <a :href="href" target="_blank" :title="title">
+  <a v-href="href" :title="title">
     <Icon />
   </a>
 </template>

@@ -8,13 +8,13 @@ import markdown from "vite-plugin-vue-markdown";
 import pages, { type VueRoute } from "vite-plugin-pages";
 import type { PluginHooks } from "rollup";
 import replace from "@rollup/plugin-replace";
+import type { RootNode, TemplateChildNode, AttributeNode } from "@vue/compiler-core";
 
 // markdown-it plugins
 import mdEmoji from "markdown-it-emoji";
 import mdSub from "markdown-it-sub";
 import mdSup from "markdown-it-sup";
 import mdAnchor from "markdown-it-anchor";
-import mdLinkAttrs from "markdown-it-link-attributes";
 import mdImageFigures from "markdown-it-image-figures";
 
 // https://vitejs.dev/config/
@@ -32,7 +32,12 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         __ASSETS_BASE_URL: env.VITE__ASSETS_BASE_URL?.replace(/\/?$/, ""),
       }),
 
-      vue({ include: ["**.vue", "**.md"] }),
+      vue({
+        include: ["**.vue", "**.md"],
+        template: {
+          compilerOptions: { nodeTransforms: [setLinkTarget] },
+        },
+      }),
 
       markdown({
         markdownItSetup(md) {
@@ -46,14 +51,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
 
           // automatically generate IDs for h3’s
           md.use(mdAnchor, { tabIndex: false, level: [3] });
-
-          md.use(mdLinkAttrs, {
-            // make external links open in new tabs
-            matcher: (href: string) => !href.startsWith("/"),
-            attrs: {
-              target: "_blank",
-            },
-          });
 
           // place images inside figures
           md.use(mdImageFigures);
@@ -119,4 +116,29 @@ function buildScript(
       await options.func();
     },
   } as const;
+}
+
+// NodeTransform function to add target="_blank" attribute for external links
+// This only works for links with a static href attribute.
+// Dynamic URLs are supported via the v-href directive provided in src/main.ts
+function setLinkTarget(node: RootNode | TemplateChildNode) {
+  if (!("tag" in node) || node.tag != "a") {
+    return;
+  }
+  const href = node.props.find(n => n.name == "href") as AttributeNode | undefined;
+
+  if (!href?.value?.content.startsWith("http")) {
+    return;
+  }
+
+  node.props.push({
+    type: href.type,
+    name: "target",
+    value: {
+      type: href.value.type,
+      content: "_blank",
+      loc: href.value.loc,
+    },
+    loc: href.loc,
+  });
 }

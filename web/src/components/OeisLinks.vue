@@ -33,6 +33,6 @@ function getParts() {
 <template>
   <template v-for="part in getParts()" :key="part">
     <template v-if="typeof part == 'string'">{{ part }}</template>
-    <a v-else :href="'https://oeis.org/' + part" target="_blank">{{ part }}</a>
+    <a v-else v-href="'https://oeis.org/' + part">{{ part }}</a>
   </template>
 </template>

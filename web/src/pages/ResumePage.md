@@ -13,8 +13,8 @@ import ExperienceSection from "@/components/ExperienceSection.vue";
 </script>
 
 <HeaderWithContent>
-<template #heading>Resume</template>
-<a href="__ASSETS_BASE_URL/SGabay_Resume.pdf" target="_blank">Download a copy</a>
+<h2> Resume </h2>
+<a href="__ASSETS_BASE_URL/SGabay_Resume.pdf">Download a copy</a>
 </HeaderWithContent>
 
 Years of integration experience and back-end programming in multiple languages have honed my ability to create scalable and flexible systems. I have recently undertaken to massively scale my front-end knowledge as well. I seek opportunities to apply my aptitude and insatiable appetite for learning new technologies to the world where code meets art.
@@ -98,7 +98,7 @@ Dexterity across desktop and server OS’s
 
   #### 2022 – present
 
-  <a href="https://cantera.org/" target="_blank">
+  <a href="https://cantera.org/">
 
   #### Cantera
   </a>
@@ -115,7 +115,7 @@ Dexterity across desktop and server OS’s
 <template #header>
 
   #### 2022
-  <a href="https://www.rockstargames.com/" target="_blank">
+  <a href="https://www.rockstargames.com/">
 
   #### Rockstar Games
   </a>
@@ -137,7 +137,7 @@ reviews daily (including as approver), and submitting code changes only through 
 <template #header>
 
   #### 2017 – 2022
-  <a href="https://www.wgbh.org" target="_blank">
+  <a href="https://www.wgbh.org">
 
   #### WGBH Educational Foundation
   </a>
@@ -157,7 +157,7 @@ reviews daily (including as approver), and submitting code changes only through 
 <template #header>
 
   #### 2010 – 2014
-  <a href="https://web.archive.org/web/20141022145017/http://www.emcore.com/" target="_blank">
+  <a href="https://web.archive.org/web/20141022145017/http://www.emcore.com/">
 
   #### Emcore Corporation
   </a>
@@ -177,7 +177,7 @@ reviews daily (including as approver), and submitting code changes only through 
 <template #header>
 
   #### 2008 – 2010
-  <a href="https://web.archive.org/web/20141006023739/http://www.emcore.com/space-photovoltaics/" target="_blank">
+  <a href="https://web.archive.org/web/20141006023739/http://www.emcore.com/space-photovoltaics/">
 
   #### Emcore Solar Power, Inc.
   </a>
@@ -200,7 +200,7 @@ reviews daily (including as approver), and submitting code changes only through 
 <template #header>
 
   #### 2015 – 2016
-  <a href="https://necmusic.edu/" target="_blank">
+  <a href="https://necmusic.edu/">
 
   #### New England Conservatory
   </a>
@@ -216,7 +216,7 @@ reviews daily (including as approver), and submitting code changes only through 
 <template #header>
 
   #### 2012 – 2015
-  <a href="https://longy.edu/" target="_blank">
+  <a href="https://longy.edu/">
 
   #### Longy School of Music
   </a>
@@ -232,7 +232,7 @@ reviews daily (including as approver), and submitting code changes only through 
 <template #header>
 
   #### 2002 – 2007
-  <a href="https://www.nmt.edu/" target="_blank">
+  <a href="https://www.nmt.edu/">
 
   #### New Mexico Institute of Mining and Technology
   </a>

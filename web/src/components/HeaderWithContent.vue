@@ -1,6 +1,5 @@
 <template>
   <header>
-    <h2><slot name="heading" /></h2>
     <slot />
   </header>
 </template>
@@ -12,7 +11,7 @@ header {
   border-image: linear-gradient(90deg, var(--blue) 0%, var(--blue-lighter) 100%) 1;
 }
 
-header h2 {
+header :deep(h2) {
   margin: 0 1em 0 0;
   display: inline;
   border: none;

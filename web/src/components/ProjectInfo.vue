@@ -13,7 +13,7 @@ const styleForIcon = props.iconSrc
 </script>
 
 <template>
-  <a :href="href" :target="href.startsWith('/') ? undefined : '_blank'">
+  <a v-href="href">
     <h3 :style="styleForIcon">{{ title }}</h3>
     <p><slot /></p>
   </a>

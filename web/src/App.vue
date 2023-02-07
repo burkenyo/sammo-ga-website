@@ -33,7 +33,7 @@ useGitInfoMeta();
   <client-only><EnvInfo /></client-only>
   <div :class="layoutClass">
     <HeaderWithContent v-if="useSimpleLayout">
-      <template #heading>{{ simpleLayoutHeading }}</template>
+      <h2>{{ simpleLayoutHeading }}</h2>
       <RouterLink to="/">Home</RouterLink>
     </HeaderWithContent>
     <header v-else>
