@@ -7,3 +7,6 @@ indent_style = space
 indent_size = tab
 tab_width = 2
 trim_trailing_whitespace = true
+
+[*.cs]
+tab_width = 4

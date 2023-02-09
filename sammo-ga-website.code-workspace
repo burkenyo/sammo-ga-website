@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "path": ".github"
+    },
+    {
+      "path": "api"
+    },
+    {
+      "path": "web"
+    },
+  ],
+  "settings": {
+    "cSpell.words": [
+      "Oeis",
+      "unmanaged"
+    ]
+  }
+}
