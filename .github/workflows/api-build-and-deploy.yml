@@ -1,0 +1,65 @@
+name: API – Build and Deploy
+
+on:
+  push:
+    branches:
+      - prime
+    paths:
+      - api/**
+      - .github/workflows/api-build-and-deploy.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Job
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3
+
+      - name: Test
+        id: test
+        run: dotnet test
+        working-directory: api
+
+      - name: Build
+        id: build
+        run: |
+          dotnet publish Sammo.Oeis.Api --os linux --arch x64 -c Release \
+            -p:PublishProfile=DefaultContainer -p:ContainerImageTags=${{ github.sha }}
+        working-directory: api
+
+      - name: Login to docker.io
+        id: dockerlogin
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.SAMMOGA_REGISTRY_USERNAME }}
+          password: ${{ secrets.SAMMOGA_REGISTRY_PASSWORD }}
+
+      - name: Push to docker.io
+        id: dockerpush
+        run: docker push burkenyo/sammo-oeis-api:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deployment Job
+    needs: build
+    steps:
+      - name: Login to Azure
+        id: azurelogin
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.SAMMOGA_AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Apps
+        id: azuredeploy
+        run: |
+          az extension add -n containerapp
+          az containerapp registry set -n sammo-ga -g rofl.ninja --server registry.hub.docker.com \
+            --username $REGISTRY_USERNAME --password $REGISTRY_PASSWORD
+          az containerapp update -n sammo-ga -g rofl.ninja \
+            --image registry.hub.docker.com/burkenyo/sammo-oeis-api:${{ github.sha }}
+        env:
+          REGISTRY_USERNAME: ${{ secrets.SAMMOGA_REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.SAMMOGA_REGISTRY_PASSWORD }}

@@ -9,6 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UserSecretsId>cf553d37-6875-4e76-b7e1-403c52ee9684</UserSecretsId>
+    <ContainerImageName>burkenyo/sammo-oeis-api</ContainerImageName>
   </PropertyGroup>
 
   <ItemGroup>
