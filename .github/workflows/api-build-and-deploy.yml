@@ -25,21 +25,23 @@ jobs:
       - name: Build
         id: build
         run: |
-          dotnet publish Sammo.Oeis.Api --os linux --arch x64 -c Release \
-            -p:PublishProfile=DefaultContainer -p:ContainerImageTags=${{ github.sha }}
+          dotnet publish Sammo.Oeis.Api -c Release \
+            -p:PublishProfile=DefaultContainer -p:ContainerImageName=tmp -p:ContainerImageTags=$GITHUB_SHA
         working-directory: api
 
-      - name: Login to docker.io
+      - name: Login to GitHub Packages
         id: dockerlogin
         uses: docker/login-action@v2
         with:
-          registry: docker.io
-          username: ${{ secrets.SAMMOGA_REGISTRY_USERNAME }}
-          password: ${{ secrets.SAMMOGA_REGISTRY_PASSWORD }}
+          registry: ghcr.io
+          username: burkenyo
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push to docker.io
+      - name: Push to GitHub Packages
         id: dockerpush
-        run: docker push burkenyo/sammo-oeis-api:${{ github.sha }}
+        run: |
+          docker tag tmp:$GITHUB_SHA ghcr.io/burkenyo/sammo-ga-api:$GITHUB_SHA
+          docker push ghcr.io/burkenyo/sammo-ga-api:$GITHUB_SHA
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,10 +58,4 @@ jobs:
         id: azuredeploy
         run: |
           az extension add -n containerapp
-          az containerapp registry set -n sammo-ga -g rofl.ninja --server registry.hub.docker.com \
-            --username $REGISTRY_USERNAME --password $REGISTRY_PASSWORD
-          az containerapp update -n sammo-ga -g rofl.ninja \
-            --image registry.hub.docker.com/burkenyo/sammo-oeis-api:${{ github.sha }}
-        env:
-          REGISTRY_USERNAME: ${{ secrets.SAMMOGA_REGISTRY_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.SAMMOGA_REGISTRY_PASSWORD }}
+          az containerapp update -n sammo-ga -g rofl.ninja --image ghcr.io/burkenyo/sammo-ga-api:$GITHUB_SHA
