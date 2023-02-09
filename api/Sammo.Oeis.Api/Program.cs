@@ -81,6 +81,7 @@ try
 
     app.MapRootToSwagger();
     app.Map<ExpansionsApi>();
+    app.MapGitInfo();
 
     Startup.CheckDebugAllowed(app.Environment, config);
 

@@ -6,6 +6,7 @@ namespace Sammo.Oeis.Api;
 [JsonSerializable(typeof(OeisClientErrorDto))]
 [JsonSerializable(typeof(StoredOeisExpansionInfoDto))]
 [JsonSerializable(typeof(OeisExpansionDto))]
+[JsonSerializable(typeof(GitInfoDto))]
 partial class DtoSerializerContext : JsonSerializerContext { }
 
 class OeisExpansionInfoDto
@@ -42,7 +43,7 @@ class OeisExpansionDto : OeisExpansionInfoDto
 {
     public string Expansion { get; }
 
-    internal OeisExpansionDto(IOeisFractionalExpansion expansion)
+    public OeisExpansionDto(IOeisFractionalExpansion expansion)
         : base(expansion.Id.ToString(), expansion.Name, expansion.Expansion.Radix)
     {
         Expansion = expansion.Expansion.ToString(maxDigits: null);
@@ -60,7 +61,7 @@ class ErrorDto
         Message = message;
     }
 
-    internal ErrorDto(Exception ex)
+    private protected ErrorDto(Exception ex)
     {
         Message = ex.Message;
     }
@@ -89,9 +90,21 @@ class OeisClientErrorDto : ErrorDto
 
     public new OeisClientErrorDetails Details { get; }
 
-    internal OeisClientErrorDto(OeisClientException ex) : base(ex)
+    public OeisClientErrorDto(OeisClientException ex) : base(ex)
     {
         Details = new OeisClientErrorDetails(ex);
         base.Details = Details;
     }
+}
+
+class GitInfoDto
+{
+    public string Branch =>
+        ThisAssembly.Git.Branch;
+
+    public string Commit =>
+        ThisAssembly.Git.Commit;
+
+    public bool IsDirty =>
+        ThisAssembly.Git.IsDirty;
 }

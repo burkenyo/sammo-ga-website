@@ -117,6 +117,10 @@ static class StartupExtensions
         app.MapGet("/", () => Results.Redirect("/swagger", preserveMethod: true))
             .ExcludeFromDescription(); // prevent showing up in Swagger
 
+    public static void MapGitInfo(this WebApplication app) =>
+        app.MapGet("gitInfo", () => new GitInfoDto())
+            .ExcludeFromDescription();
+
 }
 
 /// <summary>
@@ -126,7 +130,7 @@ static class Startup
 {
     public static TokenCredential GetAzureCredential(Config.AzureConfig azureConfig)
     {
-        if (azureConfig.UseClientSecretCredential is true)
+        if (azureConfig.UseClientSecretCredential)
         {
             ClientSecretCredentialOptions options = new();
             options.AdditionallyAllowedTenants.Add("*");

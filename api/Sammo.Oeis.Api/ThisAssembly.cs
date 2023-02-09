@@ -1,6 +1,6 @@
 using System.Reflection;
 
-static class ThisAssembly
+static partial class ThisAssembly
 {
     public static readonly Assembly Assembly = typeof(ThisAssembly).Assembly;
 
