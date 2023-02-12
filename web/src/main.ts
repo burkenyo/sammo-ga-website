@@ -8,6 +8,7 @@ import "./assets/utils.css";
 import routes from "~pages";
 import { ViteSSG } from "vite-ssg";
 import type { App as VueApp, DirectiveBinding } from "vue";
+import { getLinkProps } from "./vue-utils";
 
 export const createApp = ViteSSG(
   // root component
@@ -25,7 +26,7 @@ export const createApp = ViteSSG(
 
 // mini-plugin to automatically set target="_blank" when needed for dynamic urls, i.e. from props, refs, etc.
 // Provides a v-href directive that will add a target="_blank" attribute for external links.
-// Static URLs can use a plain href attribute; it will be fixed up by the NodeTransform function
+// Static URLs used in templates can use a plain href attribute; it will be fixed up by the NodeTransform function
 // provided in vite.config.ts
 function setLinkTargets(app: VueApp) {
   function setLinkTarget(el: unknown, binding: DirectiveBinding<unknown>) {
@@ -33,12 +34,7 @@ function setLinkTargets(app: VueApp) {
       return;
     }
 
-    const href = String(binding.value);
-    el.href = href;
-
-    if (href.startsWith("http")) {
-      el.target = "_blank";
-    }
+    Object.assign(el, getLinkProps(String(binding.value)));
   }
 
   app.directive("href", {
@@ -50,13 +46,7 @@ function setLinkTargets(app: VueApp) {
         return;
       }
 
-      const href = String(binding.value);
-
-      if (!href.startsWith("http")) {
-        return { href };
-      }
-
-      return { href, target: "_blank" };
+      return getLinkProps(String(binding.value));
     },
   });
 }

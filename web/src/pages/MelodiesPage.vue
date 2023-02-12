@@ -15,7 +15,7 @@ import ConstantsListing from "@/components/ConstantsListing.vue";
 import { BASE, INITIAL_OEIS_ID, MAX_PERMUTATION, useState } from "@/shared";
 import { Fractional } from "@/oeis";
 import ConstantIcon from "@/components/ConstantIcon.vue";
-import OeisLinks from "@/components/OeisLinks.vue";
+import OeisLinks from "@/components/OeisLinks";
 import Info from "@/components/MelodiesInfo.md";
 import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
 import ScriptingDisabledWarning from "@/components/ScriptingDisabledWarning.vue";
@@ -90,13 +90,13 @@ state.getExpansionById(INITIAL_OEIS_ID);
   <ConstantsListing />
   <h4>Digits</h4>
   <p>
-    <template v-if="state.selectedInterestingConstant">
+    <OeisLinks v-if="state.selectedInterestingConstant">
       <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
-      {{ state.selectedInterestingConstant.description }} (<OeisLinks :textOrId="state.selectedInterestingConstant.id" />),
-    </template>
-    <template v-else-if="state.expansion">
-      <OeisLinks :textOrId="state.expansion.id" />, <OeisLinks :textOrId="fixUpName(state.expansion.name)" />
-    </template>
+      {{ state.selectedInterestingConstant.description }} ({{ state.selectedInterestingConstant.id }}),
+    </OeisLinks>
+    <OeisLinks v-else-if="state.expansion">
+      {{ state.expansion.id }}, {{ fixUpName(state.expansion.name) }}
+    </OeisLinks>
     is
     <span id="digits-bold" class="sans">{{ expansionPreview.text }}</span>
     <template v-if="expansionPreview.abbreviated">...</template>
