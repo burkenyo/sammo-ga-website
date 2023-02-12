@@ -26,6 +26,10 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   ssrBuild = !!ssrBuild;
 
   return {
+    define: {
+      __VUE_OPTIONS_API__: false,
+    },
+
     plugins: [
       replace({
         include: ["**.vue", "**.md"],

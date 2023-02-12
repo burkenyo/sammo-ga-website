@@ -1,0 +1,17 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "command": "pnpm vite",
+      "label": "run dev server",
+      "detail": "Runs the Vite development server",
+      "problemMatcher": [
+        "$vite"
+      ],
+      "isBackground": true
+    }
+  ]
+}
