@@ -9,6 +9,11 @@ on:
       - web/**
       - .github/workflows/website-build-and-deploy.yml
 
+  workflow_dispatch:
+    branches:
+      - prime
+
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest

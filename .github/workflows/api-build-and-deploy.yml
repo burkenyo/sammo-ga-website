@@ -8,11 +8,19 @@ on:
       - api/**
       - .github/workflows/api-build-and-deploy.yml
 
+  workflow_dispatch:
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
     name: Build Job
     steps:
+      - name: Validate Branch
+        id: validatebranch
+        run: |
+          [ $GITHUB_REF = refs/heads/prime ] || (echo 'Workflow must be run on branch “prime”!' && exit 1)
+
       - name: Checkout
         id: checkout
         uses: actions/checkout@v3
