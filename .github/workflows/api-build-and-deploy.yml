@@ -58,4 +58,4 @@ jobs:
         id: azuredeploy
         run: |
           az extension add -n containerapp
-          az containerapp update -n sammo-ga -g rofl.ninja --image ghcr.io/burkenyo/sammo-ga-api:$GITHUB_SHA
+          az containerapp update -n sammo-ga -g orangewave.io --image ghcr.io/burkenyo/sammo-ga-api:$GITHUB_SHA
