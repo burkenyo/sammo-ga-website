@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 type Optional<T extends {}> = T | null | undefined;
 
 type TypedArrayMutableProperties = "copyWithin" | "fill" | "reverse" | "set" | "sort" | "buffer";

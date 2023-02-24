@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 import { defineStore } from "pinia";
 import { shallowRef, readonly, computed } from "vue";
 import { OeisFractionalExpansion, OeisId } from "./oeis";

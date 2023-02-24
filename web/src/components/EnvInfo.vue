@@ -1,3 +1,6 @@
+<!-- Copyright © 2023 Samuel Justin Gabay
+     Licensed under the GNU Affero Public License, Version 3 -->
+
 <script setup lang="ts">
 import { useBuildInfo } from "@/shared";
 import CheckIcon from "./CheckIcon.vue";

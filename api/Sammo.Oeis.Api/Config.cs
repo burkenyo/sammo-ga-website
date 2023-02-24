@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;

@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 import { lazy } from "@/utils";
 import { ApiError } from "./apiRunner";
 import { Fractional, OeisFractionalExpansion, type OeisId } from "@/oeis";

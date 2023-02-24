@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using Azure.Identity;

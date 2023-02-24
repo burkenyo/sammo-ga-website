@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 export class AssertError extends Error { }
 
 export function assert<T>(value: T, message: string, param?: unknown) {

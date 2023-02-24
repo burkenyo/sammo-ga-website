@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 // Theory behind converting permutation numbers to sequences:
 //   http://en.wikipedia.org/wiki/Factorial_number_system
 //   https://en.wikipedia.org/wiki/Lehmer_code

@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 import { lazy, requireTruthy, isTrue } from "@/utils";
 import { type ApiRunner, DefaultApiRunner } from "@/services/apiRunner";
 import { ContainerBuilder, serviceKey, ServiceLifetime } from "@/dependencyInjection";

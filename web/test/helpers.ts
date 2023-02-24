@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 import { assert } from "vitest";
 
 export function testIntParamPreconditions(func: (i: number) => void, tooLow: number, tooHigh: number) {

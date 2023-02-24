@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 // this reference enables “import routes from "~pages"” to pass type checking
 /// <reference types="vite-plugin-pages/client" />
 

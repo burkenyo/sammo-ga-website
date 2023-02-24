@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 using static Microsoft.AspNetCore.Http.StatusCodes;

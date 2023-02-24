@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 import { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, Flow, Stem, type RenderContext } from "vexflow";
 
 const CLEF_OFFSET = 40;

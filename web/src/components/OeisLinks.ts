@@ -1,3 +1,6 @@
+// Copyright © 2023 Samuel Justin Gabay
+// Licensed under the GNU Affero Public License, Version 3
+
 import { getLinkProps } from "@/vue-utils";
 import { h, Text, type FunctionalComponent, type VNode } from "vue";
 
