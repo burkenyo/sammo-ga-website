@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using AsyncKeyedLock;
 
 namespace Sammo.Oeis;
 
@@ -1011,7 +1012,11 @@ public interface IOeisDozenalExpansionService
 
 public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 {
-    private static readonly KeyedSemaphores<OeisId> s_locks = new();
+    private static readonly AsyncKeyedLocker<OeisId> s_locks = new(o =>
+    {
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
     readonly IOeisDecimalExpansionDownloader _decimalExpansionDownloader;
 
@@ -1042,35 +1047,35 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             return info;
         }
 
-        using var semaphore = s_locks.Borrow(id);
-        await semaphore.WaitAsync();
-
-        // Try again to find the expansion now that we have the semaphore.
-        // This is predicated on the assumption that it’s cheaper to try to find the expansion again
-        // if another request just downloaded and converted it than doing that here
-        // and overwriting any stored result.
-        if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
+        using (await s_locks.LockAsync(id).ConfigureAwait(false))
         {
-            return info2;
-        };
+            // Try again to find the expansion now that we have the semaphore.
+            // This is predicated on the assumption that it’s cheaper to try to find the expansion again
+            // if another request just downloaded and converted it than doing that here
+            // and overwriting any stored result.
+            if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
+            {
+                return info2;
+            };
 
-        try
-        {
-            _logger?.LogInformation("{id} not found in store, attempting to download.", id);
+            try
+            {
+                _logger?.LogInformation("{id} not found in store, attempting to download.", id);
 
-            var expansion = (await _decimalExpansionDownloader.DownloadAsync(id)).ConvertToDozenal();
+                var expansion = (await _decimalExpansionDownloader.DownloadAsync(id)).ConvertToDozenal();
 
-            info = await _dozenalExpansionStore.StoreAsync(expansion);
+                info = await _dozenalExpansionStore.StoreAsync(expansion);
 
-            return info;
-        }
-        catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
-        {
-            _logger?.LogInformation("Adding {id} to the bad sequence list. Reason: “{message}”", ex.Id, ex.Message);
+                return info;
+            }
+            catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
+            {
+                _logger?.LogInformation("Adding {id} to the bad sequence list. Reason: “{message}”", ex.Id, ex.Message);
 
-            await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId) ex.Id!, ex.Message);
+                await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId)ex.Id!, ex.Message);
 
-            throw;
+                throw;
+            }
         }
     }
 
@@ -1087,35 +1092,35 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             return existingExpansion;
         }
 
-        using var semaphore = s_locks.Borrow(id);
-        await semaphore.WaitAsync();
-
-        // Try again to find the expansion now that we have the semaphore.
-        // This is predicated on the assumption that it’s cheaper to try to find the expansion again
-        // if another request just downloaded and converted it than doing that here
-        // and overwriting any stored result.
-        if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
+        using (await s_locks.LockAsync(id).ConfigureAwait(false))
         {
-            return existingExpansion2;
-        };
+            // Try again to find the expansion now that we have the semaphore.
+            // This is predicated on the assumption that it’s cheaper to try to find the expansion again
+            // if another request just downloaded and converted it than doing that here
+            // and overwriting any stored result.
+            if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
+            {
+                return existingExpansion2;
+            };
 
-        try
-        {
-            _logger?.LogInformation("{id} not found in store, attempting to download.", id);
+            try
+            {
+                _logger?.LogInformation("{id} not found in store, attempting to download.", id);
 
-            var expansion = (await _decimalExpansionDownloader.DownloadAsync(id)).ConvertToDozenal();
+                var expansion = (await _decimalExpansionDownloader.DownloadAsync(id)).ConvertToDozenal();
 
-            await _dozenalExpansionStore.StoreAsync(expansion);
+                await _dozenalExpansionStore.StoreAsync(expansion);
 
-            return expansion;
-        }
-        catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
-        {
-            _logger?.LogInformation("Adding {id} to the bad sequence list. Reason: “{message}”", ex.Id, ex.Message);
+                return expansion;
+            }
+            catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
+            {
+                _logger?.LogInformation("Adding {id} to the bad sequence list. Reason: “{message}”", ex.Id, ex.Message);
 
-            await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId) ex.Id!, ex.Message);
+                await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId)ex.Id!, ex.Message);
 
-            throw;
+                throw;
+            }
         }
     }
 
@@ -1161,33 +1166,33 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
                 return info;
             }
 
-            using var semaphore = s_locks.Borrow(id);
-            await semaphore.WaitAsync();
-
-            // Try again to find the expansion now that we have the semaphore.
-            // This is predicated on the assumption that it’s cheaper to try to find the expansion again
-            // if another request just downloaded and converted it than doing that here
-            // and overwriting any stored result.
-            if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
+            using (await s_locks.LockAsync(id).ConfigureAwait(false))
             {
-                return info2;
-            };
+                // Try again to find the expansion now that we have the semaphore.
+                // This is predicated on the assumption that it’s cheaper to try to find the expansion again
+                // if another request just downloaded and converted it than doing that here
+                // and overwriting any stored result.
+                if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
+                {
+                    return info2;
+                };
 
-            try
-            {
-                _logger?.LogInformation("{id} not found in store, attempting to hydrate.", id);
+                try
+                {
+                    _logger?.LogInformation("{id} not found in store, attempting to hydrate.", id);
 
-                var expansion = (await _decimalExpansionDownloader.HydrateAsync(sequence)).ConvertToDozenal();
+                    var expansion = (await _decimalExpansionDownloader.HydrateAsync(sequence)).ConvertToDozenal();
 
-                info = await _dozenalExpansionStore.StoreAsync(expansion);
+                    info = await _dozenalExpansionStore.StoreAsync(expansion);
 
-                return info;
-            }
-            catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
-            {
-                (failures ??= new()).Add(ex);
+                    return info;
+                }
+                catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
+                {
+                    (failures ??= new()).Add(ex);
 
-                await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId) ex.Id!, ex.Message);
+                    await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId)ex.Id!, ex.Message);
+                }
             }
         }
 
@@ -1238,33 +1243,33 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
                 return existingExpansion;
             };
 
-            using var semaphore = s_locks.Borrow(id);
-            await semaphore.WaitAsync();
-
-            // Try again to find the expansion now that we have the semaphore.
-            // This is predicated on the assumption that it’s cheaper to try to find the expansion again
-            // if another request just downloaded and converted it than doing that here
-            // and overwriting any stored result.
-            if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
+            using (await s_locks.LockAsync(id).ConfigureAwait(false))
             {
-                return existingExpansion2;
-            };
+                // Try again to find the expansion now that we have the semaphore.
+                // This is predicated on the assumption that it’s cheaper to try to find the expansion again
+                // if another request just downloaded and converted it than doing that here
+                // and overwriting any stored result.
+                if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
+                {
+                    return existingExpansion2;
+                };
 
-            try
-            {
-                _logger?.LogInformation("{id} not found in store, attempting to hydrate.", id);
+                try
+                {
+                    _logger?.LogInformation("{id} not found in store, attempting to hydrate.", id);
 
-                var expansion = (await _decimalExpansionDownloader.HydrateAsync(sequence)).ConvertToDozenal();
+                    var expansion = (await _decimalExpansionDownloader.HydrateAsync(sequence)).ConvertToDozenal();
 
-                await _dozenalExpansionStore.StoreAsync(expansion);
+                    await _dozenalExpansionStore.StoreAsync(expansion);
 
-                return expansion;
-            }
-            catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
-            {
-                (failures ??= new()).Add(ex);
+                    return expansion;
+                }
+                catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
+                {
+                    (failures ??= new()).Add(ex);
 
-                await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId) ex.Id!, ex.Message);
+                    await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId)ex.Id!, ex.Message);
+                }
             }
         }
 
