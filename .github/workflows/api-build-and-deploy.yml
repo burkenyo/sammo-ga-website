@@ -60,7 +60,7 @@ jobs:
         id: azurelogin
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.SAMMOGA_AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_AD_APP_IDENTITY_CREDENTIALS }}
 
       - name: Deploy to Azure Container Apps
         id: azuredeploy
