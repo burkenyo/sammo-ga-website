@@ -3,5 +3,6 @@
     "vue.volar",
     "editorconfig.editorconfig",
     "zixuanchen.vitest-explorer",
+    "dbaeumer.vscode-eslint"
   ]
 }

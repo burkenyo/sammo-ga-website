@@ -26,6 +26,7 @@ import ScriptingDisabledWarning from "@/components/ScriptingDisabledWarning.vue"
 const ScoreRenderer = defineAsyncComponent(() => import("../components/ScoreRenderer.vue"));
 
 const state = useState();
+state.startApiWarmUp();
 
 const inputs = reactive({
   number: 1,
