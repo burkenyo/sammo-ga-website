@@ -198,3 +198,20 @@ test("CancellablePromise_cancel_hasNoValueWhenCanceled", async () => {
   assert.isTrue(cancellable.isCanceled);
   assert.include([null, undefined], result);
 });
+
+test("utils_timeDiff_correctDifferenceCalculated", () => {
+  const millis = Date.parse("1984-06-03T08:20:13.047-06:00");
+
+  const first = new Date(millis);
+
+  // 6 hours, 22.5 minutes (6.375 hours)
+  // this is a number that when divided by the number of milliseconds in a day
+  // produces no floating-point rounding error
+  const later = new Date(millis + 382.5 * 60 * 1000);
+
+  assert.strictEqual(utils.timeDiff(later, first, utils.TimeUnit.Millisecond), 382.5 * 60 * 1000);
+  assert.strictEqual(utils.timeDiff(first, later, utils.TimeUnit.Second), -382.5 * 60);
+  assert.strictEqual(utils.timeDiff(later, first, utils.TimeUnit.Minute), 382.5);
+  assert.strictEqual(utils.timeDiff(first, later, utils.TimeUnit.Hour), -6.375);
+  assert.strictEqual(utils.timeDiff(later, first, utils.TimeUnit.Day), 0.265625);
+});

@@ -89,6 +89,14 @@ export const useState = defineStore("state", () => {
   const reflectPermutation = () => updatePermutation(permutation.value.reflect());
   const invertPermutation = () => updatePermutation(permutation.value.invert());
 
+  function warmUpApi() {
+    if (!apiRunner) {
+      return;
+    }
+
+    apiRunner.warmUp();
+  }
+
   async function getExpansionById(id: OeisId) {
     if (id.equals(expansion.value?.id)) {
       console.debug("state getExpansionById canceled because of OeisId equality");
@@ -133,6 +141,7 @@ export const useState = defineStore("state", () => {
     reversePermutation,
     reflectPermutation,
     invertPermutation,
+    warmUpApi,
     getExpansionById,
     getRandomExpansion,
   };
