@@ -10,8 +10,6 @@ on:
       - .github/workflows/website-build-and-deploy.yml
 
   workflow_dispatch:
-    branches:
-      - prime
 
 
 jobs:

@@ -107,3 +107,32 @@ export function validateConstructorKey(providedKey: symbol, constructorKey: symb
       clazz.name + " constructor is private! It cannot be invoked outside of the class definition.")
   }
 }
+
+export enum TimeUnit {
+  Millisecond,
+  Second,
+  Minute,
+  Hour,
+  Day,
+}
+
+export function timeDiff(first: Date, second: Date, unit: TimeUnit): number {
+  const millis = first.getTime() - second.getTime();
+
+  switch (unit) {
+    case TimeUnit.Millisecond:
+      return millis;
+
+    case TimeUnit.Second:
+      return millis / 1000;
+
+    case TimeUnit.Minute:
+      return millis / 60_000;
+
+    case TimeUnit.Hour:
+      return millis / 3_600_000;
+
+    case TimeUnit.Day:
+      return millis / 86_400_000;
+  }
+}

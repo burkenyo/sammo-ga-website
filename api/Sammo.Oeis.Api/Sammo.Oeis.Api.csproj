@@ -9,13 +9,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UserSecretsId>cf553d37-6875-4e76-b7e1-403c52ee9684</UserSecretsId>
+
+    <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="GitInfo" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
-    <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.3.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 
     <ProjectReference Include="../Sammo.Oeis.Azure/Sammo.Oeis.Azure.csproj" />
