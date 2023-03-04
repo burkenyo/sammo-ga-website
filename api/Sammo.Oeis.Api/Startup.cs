@@ -7,7 +7,6 @@ using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Net.Http.Headers;
 using Sammo.Oeis;
 using Sammo.Oeis.Api;
 
@@ -73,27 +72,6 @@ static class StartupExtensions
             });
         });
 
-    public static void AddCors(this IServiceCollection services, Config.CorsConfig corsConfig) =>
-        services.AddCors(options => options.AddDefaultPolicy(policy =>
-        {
-            // the ExpansionsApi uses the location header to indicate where to request the full expansion
-            policy.WithExposedHeaders(HeaderNames.ContentLocation);
-
-            if (corsConfig.AllowAnyOrigin)
-            {
-                policy.AllowAnyOrigin();
-            }
-            else
-            {
-                var allowedOrigins = corsConfig.AllowedOrigins
-                    // GetLeftPart(UriPartial.Authority) returns the scheme and authority with no trailing slash
-                    .Select(o => o.GetLeftPart(UriPartial.Authority))
-                    .ToArray();
-
-                policy.WithOrigins(allowedOrigins);
-            }
-        }));
-
     public static void ConfigureJsonOptions(this IServiceCollection services) =>
         services.ConfigureHttpJsonOptions(static options =>
         {
@@ -115,15 +93,6 @@ static class StartupExtensions
             FileProvider = new PhysicalFileProvider(dataDir.FullName),
             RequestPath = LocalTestingOeisDozenalExpansionService.UriPath
         });
-
-    public static void MapRootToSwagger(this WebApplication app) =>
-        app.MapGet("/", () => Results.Redirect("/swagger", preserveMethod: true))
-            .ExcludeFromDescription(); // prevent showing up in Swagger
-
-    public static void MapGitInfo(this WebApplication app) =>
-        app.MapGet("gitInfo", () => new GitInfoDto())
-            .ExcludeFromDescription();
-
 }
 
 /// <summary>

@@ -43,7 +43,7 @@ export class DefaultApiRunner implements ApiRunner {
     // This request is not awaited, and its response is ignored.
     // Its purpose is to ensure the back-end is up and running
     // and mitigate cold-start delays when interacting with the page.
-    fetch(new URL("gitInfo", this.#baseUrl));
+    fetch(new URL("ping", this.#baseUrl), { method: "POST" });
   }
 
   async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {

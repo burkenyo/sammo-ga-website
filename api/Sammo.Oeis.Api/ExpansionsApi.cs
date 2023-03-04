@@ -3,6 +3,7 @@
 
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Net.Http.Headers;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace Sammo.Oeis.Api;
@@ -38,7 +39,7 @@ class ExpansionsApi : IWebApi
             Value;
     }
 
-    public static void MapRoutes(IEndpointRouteBuilder builder)
+    public static void MapRoutes(IEndpointRouteBuilder builder, Config.CorsConfig corsConfig)
     {
         var group = builder.MapGroup("dozenalExpansions")
             .WithTags("Dozenal Expansions");
@@ -60,6 +61,8 @@ class ExpansionsApi : IWebApi
             .Produces<StoredOeisExpansionInfoDto>(Status200OK,
                 "Info about a random dozenal expansion. "
                 + "The Content-Location header indicates where the full expansion can be found.");
+
+        group.AddCors(corsConfig, static policy => policy.WithExposedHeaders(HeaderNames.ContentLocation));
     }
 
     readonly IOeisDozenalExpansionService _expansionService;

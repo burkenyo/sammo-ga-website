@@ -2,6 +2,7 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sammo.Oeis.Api;
@@ -24,10 +25,10 @@ static class EndpointConventionBuilderExtensions
 {
     public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder, int statusCode, string description, IEnumerable<string> contentTypes) =>
         builder.Produces(statusCode, description, typeof(TResponse), null, contentTypes as string[] ?? contentTypes.ToArray());
-    
+
     public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder, int statusCode, string description, string? contentType = null, params string[] additionalContentTypes) =>
         builder.Produces(statusCode, description, typeof(TResponse), contentType, additionalContentTypes);
-    
+
 
     public static RouteHandlerBuilder Produces(this RouteHandlerBuilder builder, int statusCode, string description, Type? responseType = null, string? contentType = null, params string[] additionalContentTypes) =>
         builder.Produces(statusCode, responseType, contentType, additionalContentTypes)
@@ -53,10 +54,10 @@ static class EndpointConventionBuilderExtensions
 
             return operation;
         });
-    
+
     public static TBuilder WithParameterDescriptions<TBuilder>(this TBuilder builder, params string[] descriptions) where TBuilder : IEndpointConventionBuilder =>
         builder.WithParameterDescriptions((IEnumerable<string>) descriptions);
-    
+
     public static TBuilder WithParameterDescriptions<TBuilder>(this TBuilder builder, IEnumerable<string> descriptions) where TBuilder : IEndpointConventionBuilder =>
         builder.WithOpenApi(operation =>
         {
@@ -71,7 +72,7 @@ static class EndpointConventionBuilderExtensions
 
 interface IWebApi
 {
-    static abstract void MapRoutes(IEndpointRouteBuilder builder);
+    static abstract void MapRoutes(IEndpointRouteBuilder builder, Config.CorsConfig corsConfig);
 }
 
 static class ServiceCollectionExtensions
@@ -86,8 +87,39 @@ static class ServiceCollectionExtensions
 
 static class EndpointRouteBuilderExtensions
 {
-    public static void Map<TApi>(this IEndpointRouteBuilder builder) where TApi : class, IWebApi =>
-        TApi.MapRoutes(builder);
+    public static void Map<TApi>(this IEndpointRouteBuilder builder, Config.CorsConfig corsConfig)
+        where TApi : class, IWebApi
+    {
+        TApi.MapRoutes(builder, corsConfig);
+    }
+
+    /// <summary>
+    /// Add a CORS policy to the <see cref="IEndpointConventionBuilder" /> with defaults provided by the
+    /// <see cref="Config.CorsConfig" />. The provided <see cref="Action{T}" /> is used to further configure the policy.
+    /// </summary>
+    public static void AddCors(this IEndpointConventionBuilder builder,
+        Config.CorsConfig config, Action<CorsPolicyBuilder>? configurePolicy = null)
+    {
+        if (config.UseCors)
+        {
+            builder.RequireCors(policy =>
+            {
+                if (config.AllowAnyOrigin)
+                {
+                    policy.AllowAnyOrigin();
+                }
+                else
+                {
+                    policy.WithOrigins(config.GetAllowedOrigins());
+                }
+
+                if (configurePolicy is not null)
+                {
+                    configurePolicy(policy);
+                }
+            });
+        }
+    }
 }
 
 static class WebHostEnvironmentExtensions
@@ -95,3 +127,4 @@ static class WebHostEnvironmentExtensions
     public static bool IsRunningInContainer(this IWebHostEnvironment env) =>
         Convert.ToBoolean(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"));
 }
+
