@@ -49,7 +49,7 @@ class Config : IConfig
             public string? AccountName { get; init; }
             public string? ContainerName { get; init; }
         }
-        
+
         public string? TenantName { get; init; }
         public string? ClientId { get; init; }
         public string? ClientSecret { get; init; }
@@ -65,16 +65,22 @@ class Config : IConfig
     {
         public bool AllowAnyOrigin { get; init; }
         public IReadOnlyList<Uri> AllowedOrigins { get; init; } = Array.Empty<Uri>();
+
+        public bool UseCors =>
+            AllowAnyOrigin || AllowedOrigins.Any();
+
+        public string[] GetAllowedOrigins() =>
+            AllowedOrigins
+                // GetLeftPart(UriPartial.Authority) returns the scheme and authority with no trailing slash
+                .Select(o => o.GetLeftPart(UriPartial.Authority))
+                .ToArray();
     }
-    
+
     public bool NoAzure { get; init; }
     public bool AllowDebugBuildInContainer { get; init; }
     public FileStoreConfig FileStore { get; init; } = new();
     public AzureConfig Azure { get; init; } = new();
     public CorsConfig Cors { get; init; } = new();
-
-    public bool UseCors =>
-        Cors.AllowAnyOrigin || Cors.AllowedOrigins.Any();
 }
 
 static class ConfigExtensions
@@ -107,7 +113,7 @@ static class ConfigExtensions
     static void ThrowOnMissingConfigurationValue<TConfig, TProp>(string expression) where TConfig : IConfig
     {
         StringBuilder configNodeNameBuilder = new(capacity: 40);
-        
+
         // If we’re in one of the nested config types, its name is part of the configuration node name.
         if (typeof(TConfig).IsNested)
         {
@@ -126,13 +132,13 @@ static class ConfigExtensions
             .Replace('.', ':');
 
         string? collectionTypeName = null;
-        
+
         if (typeof(TProp) != typeof(String)
             && typeof(TProp).GetInterface(typeof(IEnumerable<>).Name) is { } iEnumOfTType)
         {
             collectionTypeName = iEnumOfTType.GetGenericArguments()[0].Name;
         }
-        
+
         var message = collectionTypeName is not null
             ? $"Required collection of {collectionTypeName} configuration values “{configNodeNameBuilder}” not set!"
             : $"Required {typeof(TProp).Name} configuration value “{configNodeNameBuilder}” not set!";

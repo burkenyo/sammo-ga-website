@@ -45,9 +45,10 @@ try
     services.AddEndpointsApiExplorer();
     services.AddThisAssemblySwaggerGen();
 
-    if (config.UseCors)
+    if (config.Cors.UseCors)
     {
-        services.AddCors(config.Cors);
+        // Do not add a default policy! Each exposed API group will configure its own, if needed.
+        services.AddCors();
     }
 
     services.ConfigureJsonOptions();
@@ -71,7 +72,7 @@ try
     app.UseSwagger();
     app.UseThisAssemblySwaggerUi();
 
-    if (config.UseCors)
+    if (config.Cors.UseCors)
     {
         app.UseCors();
     }
@@ -82,10 +83,8 @@ try
         app.UseDataDirStaticFiles(dataDir!);
     }
 
-    app.MapRootToSwagger();
-    app.Map<ExpansionsApi>();
-    app.MapGitInfo();
-
+    app.Map<ExpansionsApi>(config.Cors);
+    app.Map<UtilityEndpoints>(config.Cors);
     Startup.CheckDebugAllowed(app.Environment, config);
 
     app.Run();

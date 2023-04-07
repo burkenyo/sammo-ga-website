@@ -89,12 +89,12 @@ export const useState = defineStore("state", () => {
   const reflectPermutation = () => updatePermutation(permutation.value.reflect());
   const invertPermutation = () => updatePermutation(permutation.value.invert());
 
-  function warmUpApi() {
+  function startApiWarmUp() {
     if (!apiRunner) {
       return;
     }
 
-    apiRunner.warmUp();
+    apiRunner.startWarmUp();
   }
 
   async function getExpansionById(id: OeisId) {
@@ -141,7 +141,7 @@ export const useState = defineStore("state", () => {
     reversePermutation,
     reflectPermutation,
     invertPermutation,
-    warmUpApi,
+    startApiWarmUp,
     getExpansionById,
     getRandomExpansion,
   };

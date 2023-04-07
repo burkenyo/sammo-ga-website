@@ -28,7 +28,7 @@ export class ApiError extends Error {
 export interface ApiRunner {
   getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>>;
   getRandomExpansion(): Promise<OeisFractionalExpansion>;
-  warmUp(): void;
+  startWarmUp(): void;
 }
 
 export class DefaultApiRunner implements ApiRunner {
@@ -41,19 +41,11 @@ export class DefaultApiRunner implements ApiRunner {
     this.#db = db;
   }
 
-  warmUp(): void {
-    const now = new Date();
-    if (!DefaultApiRunner.#lastFullWarm || timeDiff(now, DefaultApiRunner.#lastFullWarm, TimeUnit.Hour) > 1) {
-      DefaultApiRunner.#lastFullWarm = now;
-
-      // run a query which should wake upstream services
-      fetch(new URL("dozenalExpansions/random", this.#baseUrl));
-
-      return;
-    }
-
-    // simply ensure the API is responding
-    fetch(new URL("gitInfo", this.#baseUrl));
+  startWarmUp(): void {
+    // This request is not awaited, and its response is ignored.
+    // Its purpose is to ensure the back-end is up and running
+    // and mitigate cold-start delays when interacting with the page.
+    fetch(new URL("ping", this.#baseUrl), { method: "POST" });
   }
 
   async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {

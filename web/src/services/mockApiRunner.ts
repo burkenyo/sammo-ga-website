@@ -6,7 +6,7 @@ import { delay } from "@/utils";
 import { ApiError, ApiErrorCause, type ApiRunner } from "./apiRunner";
 
 export class MockApiRunner implements ApiRunner {
-  warmUp() { };
+  startWarmUp() { };
 
   async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {
     if (!(id instanceof OeisId)) {
