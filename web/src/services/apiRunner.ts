@@ -3,6 +3,7 @@
 
 import { OeisFractionalExpansion, OeisId } from "@/oeis";
 import type { ExpansionsDb } from "./expansionsDb";
+import { timeDiff, TimeUnit } from "@/utils";
 
 export enum ApiErrorCause {
   NotFound = "NotFound",
@@ -33,6 +34,7 @@ export interface ApiRunner {
 export class DefaultApiRunner implements ApiRunner {
   #baseUrl: URL;
   #db: ExpansionsDb;
+  static #lastFullWarm: Optional<Date> = null;
 
   constructor(baseURL: URL, db: ExpansionsDb) {
     this.#baseUrl = baseURL;
