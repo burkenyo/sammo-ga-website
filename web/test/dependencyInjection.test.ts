@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 import { test, assert } from "vitest";
-import { ServiceLifetime, serviceKey, dependencies, ContainerBuilder } from "@/dependencyInjection";
+import { ServiceLifetime, serviceKey, dependencies, ContainerBuilder } from "@shared/dependencyInjection";
 
 class A {
 

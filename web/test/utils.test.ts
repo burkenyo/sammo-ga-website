@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 import { test, assert } from "vitest";
-import * as utils from "@/utils";
+import * as utils from "@shared/utils";
 
 test("utils_assertWithFalsy_throws", () => {
   try {

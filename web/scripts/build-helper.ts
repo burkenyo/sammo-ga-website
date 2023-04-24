@@ -5,7 +5,7 @@
 // handles clean-up of the output directory after after a build
 
 import * as fs from "node:fs";
-import { isRunningInGithubActions } from "./utils";
+import { hasErrorCode, isRunningInGithubActions } from "./utils";
 
 if (isRunningInGithubActions()) {
   console.log("build-helper: GitHub Actions detected!");
@@ -28,5 +28,11 @@ if (!isRunningInGithubActions()) {
   // Note, I cannot seem to find a plugin hook that will be called after vite-ssg has rendered the pages.
   // Therefore, use a symlink instead of a copy to prevent a file-not-found error.
 
-  fs.symlinkSync("notfound.html", "dist/404.html");
+  try {
+    fs.symlinkSync("notfound.html", "dist/404.html");
+  } catch (ex: unknown) {
+    if (!hasErrorCode(ex, "EEXIST")) {
+      throw ex;
+    }
+  }
 }

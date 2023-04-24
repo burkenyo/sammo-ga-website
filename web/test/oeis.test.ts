@@ -3,7 +3,7 @@
 
 import { test, assert } from "vitest";
 import { testEquals, testIntParamPreconditions } from "./helpers";
-import { OeisId } from "@/oeis";
+import { OeisId } from "@melodies/oeis";
 
 const A000796 = new OeisId(796);
 

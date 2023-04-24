@@ -3,7 +3,7 @@
 
 import { test, assert } from "vitest";
 import { testEquals, testIntParamPreconditions } from "./helpers";
-import { Permutation } from "@/permutation";
+import { Permutation } from "@melodies/permutation";
 
 const BASE = 12;
 

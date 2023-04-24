@@ -1,10 +1,10 @@
 // Copyright © 2023 Samuel Justin Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
+/// <reference types="vitest" />
 /// <reference types="./md-plugins" />
 /// <reference types="./env" />
 
-import { fileURLToPath, URL } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import markdown from "vite-plugin-vue-markdown";
@@ -12,6 +12,7 @@ import pages, { type VueRoute } from "vite-plugin-pages";
 import type { PluginHooks } from "rollup";
 import replace from "@rollup/plugin-replace";
 import type { RootNode, TemplateChildNode, AttributeNode } from "@vue/compiler-core";
+import path from "node:path";
 
 // markdown-it plugins
 import mdEmoji from "markdown-it-emoji";
@@ -29,6 +30,12 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   ssrBuild = !!ssrBuild;
 
   return {
+    root: resolve("src"),
+    publicDir: resolve("public"),
+    envDir: __dirname,
+
+    // appType: "mpa",
+
     define: {
       __VUE_OPTIONS_API__: false,
     },
@@ -71,6 +78,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             ...r,
             path: r.path.replace(/(index)?page$/, ""),
           })),
+        dirs: resolve("src/main/pages"),
       }),
 
       // setup mock services when testing locally
@@ -99,7 +107,9 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
 
     resolve: {
       alias: {
-        "@": fileURLToPath(new URL("./src", import.meta.url)),
+        "@main": resolve("src/main"),
+        "@shared": resolve("src/shared"),
+        "@melodies": resolve("src/melodies"),
       },
     },
 
@@ -107,12 +117,32 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
       drop: ["debugger"],
       pure: ["console.debug", "console.trace"],
     },
+
+    build: {
+      outDir: resolve("dist"),
+
+      rollupOptions: {
+        input: {
+          main: resolve("src/index.html"),
+          melodies: resolve("src/melodies/index.html"),
+        },
+      },
+    },
+
+    test: {
+      root: resolve("test"),
+    },
   };
 });
 
-function buildScript(
-  options: { name: string; hook: keyof PluginHooks | "config"; func: () => Promise<unknown>; when?: boolean }
-) {
+interface BuildScriptOptions {
+  readonly name: string;
+  readonly hook: keyof PluginHooks | "config";
+  readonly func: () => Promise<unknown>;
+  readonly when?: boolean;
+}
+
+function buildScript(options: BuildScriptOptions) {
   return {
     name: options.name,
 
@@ -148,4 +178,8 @@ function setLinkTarget(node: RootNode | TemplateChildNode) {
     },
     loc: href.loc,
   });
+}
+
+function resolve(relativePath: string): string {
+  return path.resolve(__dirname, relativePath);
 }

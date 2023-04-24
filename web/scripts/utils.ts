@@ -4,6 +4,7 @@
 /// <reference types="../utility-types" />
 
 import { spawnSync } from "node:child_process";
+import { type } from "node:os";
 
 export function invokeCommand(name: string, args: readonly string[]): Optional<string> {
   const result = spawnSync(name, args);
@@ -19,4 +20,16 @@ export function invokeCommand(name: string, args: readonly string[]): Optional<s
 
 export function isRunningInGithubActions(): boolean {
   return process.env.GITHUB_ACTIONS == "true";
+}
+
+export function hasErrorCode(ex: unknown, code: string): boolean {
+  if (!(ex && typeof ex == "object")) {
+    return false;
+  }
+
+  if (!("code" in ex && typeof ex.code == "string")) {
+    return false;
+  }
+
+  return ex.code == code;
 }
