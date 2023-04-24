@@ -29,9 +29,15 @@ const menuRoutes = readonly(
 const menuLinks = [
   {
     title: "Mathematical Melodies",
-    url: "/melodies/",
+    url: localUrlForSubApp("melodies"),
   },
 ] as const;
+
+function localUrlForSubApp(url: string) {
+  return import.meta.env.MODE == "production"
+    ? url // Web host handles bare URL fine.
+    : url + "/"; // Local dev needs terminal slash.
+}
 
 let myName: string | Ref<String>;
 
