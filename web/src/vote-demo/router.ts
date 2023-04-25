@@ -12,7 +12,7 @@ const router = createRouter({
   routes: [
     {
       path: "/vote-demo",
-      redirect: "/vote-demo/vote",
+      redirect: { name: "vote" },
     },
     {
       path: "/vote-demo/vote",
@@ -32,7 +32,7 @@ const router = createRouter({
         const shouldNavigate = state.value.showSuccess;
         state.value.showSuccess = false;
 
-        return shouldNavigate ? true : "/vote";
+        return shouldNavigate ? true : { name: "vote" };
       },
     },
   ],

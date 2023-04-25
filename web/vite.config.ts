@@ -20,6 +20,7 @@ import mdSub from "markdown-it-sub";
 import mdSup from "markdown-it-sup";
 import mdAnchor from "markdown-it-anchor";
 import mdImageFigures from "markdown-it-image-figures";
+import type { Plugin } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode, ssrBuild }) => {
@@ -33,8 +34,6 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
     root: resolve("src"),
     publicDir: resolve("public"),
     envDir: __dirname,
-
-    // appType: "mpa",
 
     define: {
       __VUE_OPTIONS_API__: false,
@@ -80,6 +79,9 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
           })),
         dirs: resolve("src/main/pages"),
       }),
+
+      // Rewrites for the vote-demo app, must be synced with src/vote-demo/router.ts
+      rewriteSubAppPages("vote-demo", ["vote", "results", "success"]),
 
       // setup mock services when testing locally
       buildScript({
@@ -144,7 +146,8 @@ interface BuildScriptOptions {
   readonly when?: boolean;
 }
 
-function buildScript(options: BuildScriptOptions) {
+// execute an arbitrary script during the build process
+function buildScript(options: BuildScriptOptions): Plugin {
   return {
     name: options.name,
 
@@ -157,10 +160,28 @@ function buildScript(options: BuildScriptOptions) {
   } as const;
 }
 
+// Rewrite a sub-app’s known pages to the default route for that app.
+// The app’s router should kick in client-side and render the correct content.
+function rewriteSubAppPages(subApp: string, pages: string[]): Plugin {
+  return {
+    name: subApp + "-rewrite",
+
+    configureServer(serve) {
+      serve.middlewares.use((req, _, next) => {
+        if (pages.some(p => req.url?.startsWith("/" + subApp + "/" + p))) {
+          req.url = "/" + subApp + "/";
+        }
+
+        next();
+      });
+    },
+  };
+}
+
 // NodeTransform function to add target="_blank" attribute for external links
 // This only works for links with a static href attribute.
 // Dynamic URLs are supported via the v-href directive provided in src/main.ts
-function setLinkTarget(node: RootNode | TemplateChildNode) {
+function setLinkTarget(node: RootNode | TemplateChildNode): void {
   if (!("tag" in node) || node.tag != "a") {
     return;
   }
