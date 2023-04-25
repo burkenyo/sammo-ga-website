@@ -1,5 +1,5 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
   "include": ["src/**/*", "src/**/*.vue", "test/", "utility-types.d.ts", "env.d.ts", "route-meta.d.ts", "vue-augments.d.ts"],
   "compilerOptions": {
     "baseUrl": ".",
@@ -7,10 +7,7 @@
       "@main/*": ["./src/main/*"],
       "@shared/*": ["./src/shared/*"],
       "@melodies/*": ["./src/melodies/*"]
-    },
-    "types": ["vite/client"],
-    "target": "ES6",
-    "lib": ["ES2019", "DOM"]
+    }
   },
 
   "references": [
