@@ -1,4 +1,10 @@
 {
+  "routes": [
+    {
+      "route": "/vote-demo/*",
+      "rewrite": "/vote-demo"
+    }
+  ],
   "responseOverrides": {
     "404": {
       "statusCode": 404,

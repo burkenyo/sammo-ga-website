@@ -20,4 +20,15 @@ type Either<E extends Error, T extends {}> =
 } | {
   left?: never,
   right: T
+  }
+
+type JsonScalar = null | string | number | boolean;
+// note that Json, JsonArray, and JsonObject has a recursive relationship in eachother
+type Json = JsonScalar | JsonArray | JsonObject;
+type JsonArray = Json[]
+type JsonObject = { [key: string]: Json };
+
+// override the provided declaration of JSON.parse to return a known type
+interface JSON {
+  parse(text: string, reviver?: ((this: any, key: string, value: any) => any) | undefined) : Json
 }

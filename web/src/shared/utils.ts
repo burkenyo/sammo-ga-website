@@ -144,3 +144,51 @@ export function timeDiff(first: Date, second: Date, unit: TimeUnit): number {
 export function dynamicImport<T extends {}>(url: string): Lazy<Promise<T>> {
   return lazy(async () => import(/* @vite-ignore */ url)) as Lazy<Promise<T>>;
 }
+
+export function immutable<K, V>(map: Map<K, V>) {
+  return map as ReadonlyMap<K, Readonly<V>>;
+}
+
+export function ordinalize(value: number) {
+  if (value < 0) {
+    throw new RangeError("Value must be non-negative!");
+  }
+
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+
+  if (mod10 == 1 && mod100 != 11) {
+    return "1st";
+  }
+  if (mod10 == 2 && mod100 != 12) {
+    return "2nd";
+  }
+  if (mod10 == 3 && mod100 != 13) {
+    return "3rd";
+  }
+
+  return `${value}th`;
+}
+
+export function range(collection: { readonly length: number }): readonly number[];
+export function range(length: number): readonly number[];
+export function range(collectionOrLength: { length: number } | number): number[] {
+  let length;
+  if (typeof collectionOrLength == "number") {
+    if (collectionOrLength < 0) {
+      throw new RangeError("Length must be non-negative!");
+    }
+
+    length = collectionOrLength
+  } else {
+    length = collectionOrLength.length;
+  }
+
+  const array = new Array(length);
+
+  for (let i = 0; i < length; i++) {
+    array[i] = i;
+  }
+
+  return array;
+}

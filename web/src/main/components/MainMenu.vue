@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import { useStaticName, useNameUpdater } from '@main/nameUpdater';
 import { readonly, onBeforeUnmount, type Ref } from 'vue';
 import SocialLink from './SocialLink.vue';
+import { localUrlForSubApp } from '@main/helpers';
 
 const routes = useRouter().getRoutes();
 
@@ -29,15 +30,13 @@ const menuRoutes = readonly(
 const menuLinks = [
   {
     title: "Mathematical Melodies",
-    url: localUrlForSubApp("melodies"),
+    url: localUrlForSubApp("/melodies"),
+  },
+  {
+    title: "Ranked Choice Voting Demo",
+    url: localUrlForSubApp("/vote-demo"),
   },
 ] as const;
-
-function localUrlForSubApp(url: string) {
-  return import.meta.env.MODE == "production"
-    ? url // Web host handles bare URL fine.
-    : url + "/"; // Local dev needs terminal slash.
-}
 
 let myName: string | Ref<String>;
 

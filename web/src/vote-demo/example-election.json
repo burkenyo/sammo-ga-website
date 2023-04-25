@@ -1,0 +1,192 @@
+{
+  "nominations": [
+    "Milton the Dog",
+    "Sierra the Cat",
+    "Brenna the Giraffe",
+    "Tenaka the Spider",
+    "Kwame the Eagle",
+    "Luis the Inchworm",
+    "Dexter the Llama",
+    "Bailey the Seahorse"
+  ],
+  "ballots": {
+    "A@example.com": [
+      "Tenaka the Spider",
+      "Dexter the Llama",
+      "Milton the Dog"
+    ],
+    "B@example.com": [
+      "Milton the Dog",
+      "Dexter the Llama",
+      "Bailey the Seahorse",
+      "Tenaka the Spider",
+      "Luis the Inchworm",
+      "Kwame the Eagle"
+    ],
+    "C@example.com": [
+      "Dexter the Llama",
+      "Brenna the Giraffe"
+    ],
+    "D@example.com": [
+      "Luis the Inchworm",
+      "Dexter the Llama",
+      "Tenaka the Spider",
+      "Kwame the Eagle"
+    ],
+    "E@example.com": [
+      "Brenna the Giraffe",
+      "Milton the Dog",
+      "Sierra the Cat",
+      "Bailey the Seahorse",
+      "Luis the Inchworm",
+      "Kwame the Eagle",
+      "Tenaka the Spider"
+    ],
+    "F@example.com": [
+      "Dexter the Llama",
+      "Luis the Inchworm",
+      "Tenaka the Spider",
+      "Bailey the Seahorse",
+      "Brenna the Giraffe",
+      "Sierra the Cat"
+    ],
+    "G@example.com": [
+      "Dexter the Llama",
+      "Sierra the Cat",
+      "Luis the Inchworm",
+      "Bailey the Seahorse",
+      "Milton the Dog",
+      "Tenaka the Spider",
+      "Brenna the Giraffe",
+      "Kwame the Eagle"
+    ],
+    "H@example.com": [
+      "Tenaka the Spider",
+      "Milton the Dog",
+      "Dexter the Llama",
+      "Luis the Inchworm",
+      "Sierra the Cat",
+      "Bailey the Seahorse"
+    ],
+    "I@example.com": [
+      "Dexter the Llama",
+      "Milton the Dog",
+      "Kwame the Eagle",
+      "Bailey the Seahorse",
+      "Brenna the Giraffe",
+      "Luis the Inchworm",
+      "Tenaka the Spider"
+    ],
+    "J@example.com": [
+      "Dexter the Llama",
+      "Tenaka the Spider"
+    ],
+    "K@example.com": [
+      "Bailey the Seahorse",
+      "Tenaka the Spider",
+      "Milton the Dog",
+      "Dexter the Llama",
+      "Sierra the Cat",
+      "Brenna the Giraffe",
+      "Kwame the Eagle",
+      "Luis the Inchworm"
+    ],
+    "L@example.com": [
+      "Bailey the Seahorse",
+      "Luis the Inchworm",
+      "Sierra the Cat",
+      "Tenaka the Spider"
+    ],
+    "M@example.com": [
+      "Luis the Inchworm",
+      "Kwame the Eagle",
+      "Milton the Dog",
+      "Tenaka the Spider",
+      "Brenna the Giraffe",
+      "Bailey the Seahorse",
+      "Sierra the Cat"
+    ],
+    "N@example.com": [
+      "Tenaka the Spider"
+    ],
+    "O@example.com": [
+      "Milton the Dog",
+      "Tenaka the Spider",
+      "Brenna the Giraffe",
+      "Luis the Inchworm",
+      "Sierra the Cat",
+      "Kwame the Eagle",
+      "Bailey the Seahorse",
+      "Dexter the Llama"
+    ],
+    "P@example.com": [
+      "Luis the Inchworm",
+      "Brenna the Giraffe",
+      "Bailey the Seahorse",
+      "Milton the Dog",
+      "Kwame the Eagle",
+      "Dexter the Llama"
+    ],
+    "Q@example.com": [
+      "Tenaka the Spider",
+      "Sierra the Cat",
+      "Kwame the Eagle",
+      "Luis the Inchworm",
+      "Brenna the Giraffe",
+      "Bailey the Seahorse"
+    ],
+    "R@example.com": [
+      "Kwame the Eagle"
+    ],
+    "S@example.com": [
+      "Dexter the Llama",
+      "Bailey the Seahorse",
+      "Milton the Dog",
+      "Brenna the Giraffe",
+      "Sierra the Cat"
+    ],
+    "T@example.com": [
+      "Bailey the Seahorse",
+      "Luis the Inchworm",
+      "Brenna the Giraffe",
+      "Tenaka the Spider",
+      "Sierra the Cat"
+    ],
+    "U@example.com": [
+      "Milton the Dog",
+      "Sierra the Cat"
+    ],
+    "V@example.com": [
+      "Sierra the Cat",
+      "Kwame the Eagle",
+      "Brenna the Giraffe"
+    ],
+    "W@example.com": [
+      "Milton the Dog",
+      "Dexter the Llama",
+      "Luis the Inchworm",
+      "Sierra the Cat",
+      "Tenaka the Spider",
+      "Bailey the Seahorse",
+      "Kwame the Eagle"
+    ],
+    "X@example.com": [
+      "Sierra the Cat",
+      "Milton the Dog",
+      "Brenna the Giraffe",
+      "Dexter the Llama",
+      "Luis the Inchworm",
+      "Bailey the Seahorse",
+      "Tenaka the Spider"
+    ],
+    "Y@example.com": [
+      "Sierra the Cat"
+    ],
+    "Z@example.com": [
+      "Luis the Inchworm",
+      "Tenaka the Spider",
+      "Kwame the Eagle",
+      "Milton the Dog"
+    ]
+  }
+}

@@ -17,6 +17,7 @@
     "host-only": "http-server dist -c-1 -a localhost -o"
   },
   "dependencies": {
+    "@types/plotly.js": "^2.12.18",
     "pinia": "^2.0.35",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6",

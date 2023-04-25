@@ -110,6 +110,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         "@main": resolve("src/main"),
         "@shared": resolve("src/shared"),
         "@melodies": resolve("src/melodies"),
+        "@vote-demo": resolve("src/vote-demo"),
       },
     },
 
@@ -125,6 +126,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         input: {
           main: resolve("src/index.html"),
           melodies: resolve("src/melodies/index.html"),
+          "vote-demo": resolve("src/vote-demo/index.html"),
         },
       },
     },

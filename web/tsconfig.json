@@ -6,7 +6,8 @@
     "paths": {
       "@main/*": ["./src/main/*"],
       "@shared/*": ["./src/shared/*"],
-      "@melodies/*": ["./src/melodies/*"]
+      "@melodies/*": ["./src/melodies/*"],
+      "@vote-demo/*": ["./src/vote-demo/*"]
     }
   },
 
