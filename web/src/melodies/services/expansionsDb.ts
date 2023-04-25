@@ -13,7 +13,7 @@ const CLASS_NAMES: ReadonlyMap<string, string> = new Map([
 ]);
 
 export class ExpansionsDb {
-  #getDb = lazy(() => {
+  #db = lazy(() => {
     const request = indexedDB.open("DozenalExpansionsDB");
 
     return new Promise<IDBDatabase>((resolve, reject) => {
@@ -35,7 +35,7 @@ export class ExpansionsDb {
   });
 
   async getFromDb(id: OeisId): Promise<Optional<Either<ApiError, OeisFractionalExpansion>>> {
-    const db = await this.#getDb();
+    const db = await this.#db.value;
     const xact = db.transaction("DozenalExpansions", "readwrite");
     const store = xact.objectStore("DozenalExpansions");
     let request = store.get(String(id));
@@ -103,7 +103,7 @@ export class ExpansionsDb {
   }
 
   async addToDb(expansionOrError: OeisFractionalExpansion | ApiError): Promise<void> {
-    const db = await this.#getDb();
+    const db = await this.#db.value;
     const xact = db.transaction("DozenalExpansions", "readwrite");
     const store = xact.objectStore("DozenalExpansions");
 

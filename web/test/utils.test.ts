@@ -92,11 +92,11 @@ test("utils_lazy_evaluatesLazily", () => {
 
   assert.strictEqual(buildCount, 0);
 
-  assert.strictEqual(lazy(), expected);
+  assert.strictEqual(lazy.value, expected);
 
   assert.strictEqual(buildCount, 1);
 
-  assert.strictEqual(lazy(), expected);
+  assert.strictEqual(lazy.value, expected);
 
   assert.strictEqual(buildCount, 1);
 });

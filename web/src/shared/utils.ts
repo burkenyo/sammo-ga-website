@@ -36,20 +36,24 @@ export function isTrue(value: Optional<boolean | string | number | bigint>): boo
   return !!value;
 }
 
-export function lazy<T extends {}>(factory: () => T): () => T {
+export interface Lazy<T extends object> {
+  readonly value: T;
+}
+
+export function lazy<T extends {}>(factory: () => T): Lazy<T> {
   let value: T;
 
-  function get(): T {
-    if (value) {
+  return {
+    get value() {
+      if (value) {
+        return value;
+      }
+
+      value = factory();
+
       return value;
-    }
-
-    value = factory();
-
-    return value;
-  }
-
-  return get;
+    },
+  };
 }
 
 export function delay(millis: number): Promise<void> {
@@ -135,4 +139,8 @@ export function timeDiff(first: Date, second: Date, unit: TimeUnit): number {
     case TimeUnit.Day:
       return millis / 86_400_000;
   }
+}
+
+export function dynamicImport<T extends {}>(url: string): Lazy<Promise<T>> {
+  return lazy(async () => import(/* @vite-ignore */ url)) as Lazy<Promise<T>>;
 }

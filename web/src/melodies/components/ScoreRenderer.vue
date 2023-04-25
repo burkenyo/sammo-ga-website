@@ -2,16 +2,20 @@
      Licensed under the GNU Affero Public License, Version 3 -->
 
 <script setup lang="ts">
-import { Engraver } from "@melodies/engraver";
+import { useEngraverFactory, type Engraver } from "@melodies/engraver";
 import { useState } from "@melodies/state";
 import { onMounted, ref, watch } from "vue";
 
 const engraveArea = ref<HTMLDivElement>();
 
+// use await here so this component will become an async component
+// and be suspensible
+const createEngraver = await useEngraverFactory();
+
 let engraver: Engraver;
 
-onMounted(() => {
-  engraver = new Engraver(engraveArea.value!);
+onMounted(async () => {
+  engraver = createEngraver(engraveArea.value!.id);
 
   engrave();
 });

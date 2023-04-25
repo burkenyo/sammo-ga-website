@@ -3,17 +3,17 @@
 
 import { lazy, requireTruthy, isTrue } from "@shared/utils";
 import { type ApiRunner, DefaultApiRunner } from "./services/apiRunner";
-import { ContainerBuilder, serviceKey, ServiceLifetime } from "@shared/dependencyInjection";
+import { ContainerBuilder, serviceKey, ServiceLifetime, type Container } from "@shared/dependencyInjection";
 import * as serviceNames from "./serviceNames";
 import { ExpansionsDb } from "./services/expansionsDb";
 import { MockApiRunner } from "./services/mockApiRunner";
 
 export const serviceKeys = {
   expansionsDb: serviceKey<ExpansionsDb>(serviceNames.expansionsDb),
-  apiRunner: serviceKey<ApiRunner>(serviceNames.apiRunner)
+  apiRunner: serviceKey<ApiRunner>(serviceNames.apiRunner),
 } as const;
 
-export const useServices = lazy(() => {
+const services = lazy(() => {
   const builder = new ContainerBuilder();
 
   if (isTrue(import.meta.env.VITE__USE_MOCK_API)) {
@@ -30,3 +30,7 @@ export const useServices = lazy(() => {
 
   return builder.build();
 });
+
+export function useServices(): Container {
+  return services.value;
+}

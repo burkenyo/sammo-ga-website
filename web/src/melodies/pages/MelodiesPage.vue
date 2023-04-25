@@ -2,7 +2,7 @@
      Licensed under the GNU Affero Public License, Version 3 -->
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, reactive, watch } from "vue";
+import { computed, reactive, watch } from "vue";
 import { Permutation } from "@melodies/permutation";
 import ConstantsListing from "@melodies/components/ConstantsListing.vue";
 import { BASE, INITIAL_OEIS_ID, MAX_PERMUTATION, useState } from "@melodies/state";
@@ -12,8 +12,7 @@ import OeisLinks from "@melodies/components/OeisLinks";
 import Info from "@melodies/components/MelodiesInfo.md";
 import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
 import ScriptingDisabledWarning from "@shared/components/ScriptingDisabledWarning.vue";
-
-const ScoreRenderer = defineAsyncComponent(() => import("../components/ScoreRenderer.vue"));
+import ScoreRenderer from "@melodies/components/ScoreRenderer.vue";
 
 const state = useState();
 state.startApiWarmUp();
@@ -129,9 +128,7 @@ state.getExpansionById(INITIAL_OEIS_ID);
   <Suspense>
     <ScoreRenderer />
     <template #fallback>
-      <div class="control-group">
-        <PacmanLoader color="#0066FF" />
-      </div>
+      Loading Score Renderer...
     </template>
   </Suspense>
 </template>
