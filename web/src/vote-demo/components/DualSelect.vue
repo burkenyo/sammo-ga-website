@@ -114,8 +114,8 @@ defineExpose({ clear, selections });
     "options       remove selections       selections       selections       selections"
     "options       .      selections       selections       selections       selections"
     ".             .      .                up               down             .";
-  grid-template-columns: 16em 48px calc(9em - 48px) 48px 48px calc(9em - 48px);
-  grid-template-rows: auto calc(10em - 48px) 48px 48px calc(10em - 48px) 48px;
+  grid-template-columns: 12em 48px calc(7em - 48px) 48px 48px calc(7em - 48px);
+  grid-template-rows: auto calc(7.5em - 48px) 48px 48px calc(7.5em - 48px) 48px;
 }
 
 .selection-area div.button {
@@ -127,7 +127,7 @@ defineExpose({ clear, selections });
   appearance: none;
   padding: 4px;
   border: none;
-  background-color: rgba(0, 0, 0, 0);
+  background-color: transparent;
 }
 
 .selection-area button:active img {

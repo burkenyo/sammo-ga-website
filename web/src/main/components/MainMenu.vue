@@ -30,11 +30,11 @@ const menuRoutes = readonly(
 const menuLinks = [
   {
     title: "Mathematical Melodies",
-    url: localUrlForSubApp("/melodies"),
+    url: "/melodies",
   },
   {
     title: "Ranked Choice Voting Demo",
-    url: localUrlForSubApp("/vote-demo"),
+    url: "/vote-demo",
   },
 ] as const;
 
@@ -59,7 +59,7 @@ if (import.meta.env.SSR) {
         <RouterLink v-else :to="{ name: route.name }">{{ route.title }}</RouterLink>
       </span>
       <span class="menu-item" v-for="link in menuLinks" :key="link.url">
-        <a :href="link.url">{{ link.title }}</a>
+        <a :href="localUrlForSubApp(link.url)">{{ link.title.replace(/ /g, "\xA0") }}</a>
       </span>
     </span>
     <span class="align-right"> <!-- right-side menu items -->

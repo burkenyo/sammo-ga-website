@@ -12,6 +12,10 @@ const election = useElection();
 const nominations = [...election.nominations].sort();
 const ballots = election.ballots;
 
+function reload() {
+  location.reload();
+}
+
 onMounted(async () => {
   if (!ballots.length) {
     return;
@@ -188,6 +192,10 @@ const [irvRunningCounts, irvTotalRounds, irvWinningRound] = (() => {
 </script>
 
 <template>
+  <h4>Results</h4>
+  <button class="btn btn-outline-primary mx-2" @click="election.clear(); reload();" :disabled="!ballots.length">Clear</button>
+  <button class="btn btn-outline-primary mx-2" @click="election.reset(); reload();">Reset</button>
+  <hr />
   <template v-if="ballots.length">
     <h5 class="plot-title">First Round Tallies</h5>
     <div id="first-round-tallies" class="plot"></div>
@@ -199,7 +207,7 @@ const [irvRunningCounts, irvTotalRounds, irvWinningRound] = (() => {
     <div id="borda-count-scores" class="plot"></div>
   </template>
   <template v-else>
-    <h4>No Results Yet!</h4>
+    <h5>No Results Yet!</h5>
     <p>No ballots have been cast. Cast a ballot to see results, or click Reset to see the example data.</p>
   </template>
 </template>

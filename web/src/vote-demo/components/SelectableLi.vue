@@ -8,7 +8,7 @@ defineEmits<{ (e: "select"): void }>();
 </script>
 
 <template>
-  <li tabindex="0" :data-selected="selected ? '' : undefined"
+  <li class="px-2" tabindex="0" :data-selected="selected ? '' : undefined"
       @click="$emit('select')"
       @keydown="($event.code == 'Enter' || $event.code == 'Space') && $emit('select')">
     {{ value }}
@@ -17,10 +17,16 @@ defineEmits<{ (e: "select"): void }>();
 
 <style scoped>
 li:hover:not([data-selected]) {
-  background-color: cornsilk;
+  background-color: var(--bs-highlight-bg);
 }
 
 li[data-selected] {
-  background-color: lightsteelblue;
+  color: white;
+  /* Selected highlight color comes from the arrow button images */
+  background-color: #008de3;
+}
+
+li[data-selected]::marker {
+  color: var(--bs-body-color);
 }
 </style>

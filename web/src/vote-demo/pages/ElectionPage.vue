@@ -18,13 +18,13 @@ const selectionsArea = ref<InstanceType<typeof DualSelect>>();
 const noSelections = ref(false);
 
 function submit(): void {
-  noSelections.value = !selectionsArea.value?.selections.length
+  noSelections.value = !selectionsArea.value?.selections.length;
 
   if (noSelections.value) {
     return;
   }
 
-  election.logBallot(crypto.randomUUID(), selectionsArea.value?.selections!, false)
+  election.logBallot(crypto.randomUUID(), selectionsArea.value?.selections!, false);
 
   state.showSuccess = true;
   router.push({ name: "success" });
