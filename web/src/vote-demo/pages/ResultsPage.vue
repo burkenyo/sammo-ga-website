@@ -6,11 +6,39 @@ import { useElection } from "@vote-demo/election";
 import { usePlotly } from "@vote-demo/plotly";
 import { immutable, ordinalize, range } from "@shared/utils";
 import { onMounted } from "vue";
+import { stringify } from 'csv-stringify/browser/esm';
 
 const election = useElection();
 
 const nominations = [...election.nominations].sort();
 const ballots = election.ballots;
+
+async function download(): Promise<void> {
+  const data: JsonScalar[][] = ballots.map(b => nominations.map(n => {
+    var index = b.indexOf(n);
+
+    return index == -1 ? null : index + 1;
+  }));
+
+  // add nominations as header row
+  data.splice(0, 0, nominations);
+
+  var output = await new Promise<string>((resolve, reject) => {
+    stringify(data, (error, output) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(output);
+      }
+    });
+  });
+
+  const dummy = document.createElement("a");
+  dummy.href = URL.createObjectURL(new Blob([output]));
+  dummy.download = "results.csv";
+  dummy.click();
+  dummy.remove();
+}
 
 function reload() {
   location.reload();
@@ -193,6 +221,7 @@ const [irvRunningCounts, irvTotalRounds, irvWinningRound] = (() => {
 
 <template>
   <h4>Results</h4>
+  <button class="btn btn-primary mx-2" :disabled="!ballots.length" @click="download">Download</button>
   <button class="btn btn-outline-primary mx-2" @click="election.clear(); reload();" :disabled="!ballots.length">Clear</button>
   <button class="btn btn-outline-primary mx-2" @click="election.reset(); reload();">Reset</button>
   <hr />
