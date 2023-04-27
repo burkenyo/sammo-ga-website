@@ -4,7 +4,7 @@
 <script setup lang="ts">
 import { useElection } from "@vote-demo/election";
 import { usePlotly } from "@vote-demo/plotly";
-import { immutable, ordinalize, range } from "@shared/utils";
+import { immutable, ordinalize, range, shuffle } from "@shared/utils";
 import { onMounted } from "vue";
 import { CsvWriter } from "@vote-demo/csvWriter";
 import { downloadFile } from "@shared/dom-utils";
@@ -12,17 +12,16 @@ import { downloadFile } from "@shared/dom-utils";
 const election = useElection();
 
 const nominations = [...election.nominations].sort();
-const ballots = election.ballots;
+const ballots = [...election.ballots];
 
 async function downloadResults(): Promise<void> {
+  shuffle(ballots);
   const data = ballots.map(b => Object.fromEntries(b.map((n, i) => [n, i + 1])));
 
   const csvWriter = new CsvWriter(nominations);
-
   for (const row of data) {
     csvWriter.writeRow(row);
   }
-
 
   downloadFile(csvWriter.getBlob(), "results.csv");
 }

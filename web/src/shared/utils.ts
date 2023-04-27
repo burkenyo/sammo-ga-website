@@ -192,3 +192,14 @@ export function range(collectionOrLength: { length: number } | number): number[]
 
   return array;
 }
+
+export function shuffle(array: unknown[]): void {
+  {
+    let m = array.length;
+    while (m) {
+      const i = Math.floor(Math.random() * m--);
+
+      [array[m], array[i]] = [array[i], array[m]];
+    }
+  }
+}
