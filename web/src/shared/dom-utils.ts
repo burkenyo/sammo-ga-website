@@ -9,3 +9,12 @@ export function getLinkProps(href: string): { href: string; target?: string } {
 
   return { href };
 }
+
+export function downloadFile(blob: Blob, filename: string) {
+  const dummy = document.createElement("a");
+  dummy.href = URL.createObjectURL(blob);
+  console.log(dummy.href);
+  dummy.download = filename;
+  dummy.click();
+  dummy.remove();
+}

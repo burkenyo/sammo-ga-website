@@ -6,38 +6,25 @@ import { useElection } from "@vote-demo/election";
 import { usePlotly } from "@vote-demo/plotly";
 import { immutable, ordinalize, range } from "@shared/utils";
 import { onMounted } from "vue";
-import { stringify } from 'csv-stringify/browser/esm';
+import { CsvWriter } from "@vote-demo/csvWriter";
+import { downloadFile } from "@shared/dom-utils";
 
 const election = useElection();
 
 const nominations = [...election.nominations].sort();
 const ballots = election.ballots;
 
-async function download(): Promise<void> {
-  const data: JsonScalar[][] = ballots.map(b => nominations.map(n => {
-    var index = b.indexOf(n);
+async function downloadResults(): Promise<void> {
+  const data = ballots.map(b => Object.fromEntries(b.map((n, i) => [n, i + 1])));
 
-    return index == -1 ? null : index + 1;
-  }));
+  const csvWriter = new CsvWriter(nominations);
 
-  // add nominations as header row
-  data.splice(0, 0, nominations);
+  for (const row of data) {
+    csvWriter.writeRow(row);
+  }
 
-  var output = await new Promise<string>((resolve, reject) => {
-    stringify(data, (error, output) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(output);
-      }
-    });
-  });
 
-  const dummy = document.createElement("a");
-  dummy.href = URL.createObjectURL(new Blob([output]));
-  dummy.download = "results.csv";
-  dummy.click();
-  dummy.remove();
+  downloadFile(csvWriter.getBlob(), "results.csv");
 }
 
 function reload() {
@@ -221,7 +208,7 @@ const [irvRunningCounts, irvTotalRounds, irvWinningRound] = (() => {
 
 <template>
   <h4>Results</h4>
-  <button class="btn btn-primary mx-2" :disabled="!ballots.length" @click="download">Download</button>
+  <button class="btn btn-primary mx-2" :disabled="!ballots.length" @click="downloadResults">Download</button>
   <button class="btn btn-outline-primary mx-2" @click="election.clear(); reload();" :disabled="!ballots.length">Clear</button>
   <button class="btn btn-outline-primary mx-2" @click="election.reset(); reload();">Reset</button>
   <hr />

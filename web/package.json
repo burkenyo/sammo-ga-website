@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@types/plotly.js": "^2.12.18",
-    "csv-stringify": "^6.3.2",
     "pinia": "^2.0.35",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6",
