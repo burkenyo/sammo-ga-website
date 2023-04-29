@@ -2,20 +2,28 @@
      Licensed under the GNU Affero Public License, Version 3 -->
 
 <script setup lang="ts">
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, ref, onMounted } from "vue";
 
-const props = defineProps<{
+// only show the icon AFTER it’s size has been calculated
+const show = ref(false);
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+const { iconSrc } = defineProps<{
   title: string;
   href: string;
   iconSrc: string;
 }>();
 
-const Icon = defineAsyncComponent(() => import(`@main/assets/${props.iconSrc}.vue`));
+const Icon = defineAsyncComponent(() => import(`@main/assets/${iconSrc}.vue`));
+
+onMounted(() => {
+  show.value = true;
+});
 </script>
 
 <template>
   <a v-href="href" :title="title">
-    <Icon />
+    <Icon v-show="show" />
   </a>
 </template>
 

@@ -11,7 +11,11 @@ const plot = ref<HTMLDivElement>();
 const plotReady = ref(false);
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-const { plotter } = defineProps<{ id: string; title: string, plotter: Plotter }>();
+const { plotter } = defineProps<{
+  id: string;
+  title: string;
+  plotter: Plotter;
+}>();
 
 watch(() => election.ballots,
   () => election.hasBallots && nextTick(async () => {
