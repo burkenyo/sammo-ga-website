@@ -23,9 +23,9 @@ type Either<E extends Error, T extends {}> =
   }
 
 type JsonScalar = null | string | number | boolean;
-// note that Json, JsonArray, and JsonObject has a recursive relationship in eachother
+// note that Json, JsonArray, and JsonObject have a recursive relationship to each other
 type Json = JsonScalar | JsonArray | JsonObject;
-type JsonArray = Json[]
+type JsonArray = Json[];
 type JsonObject = { [key: string]: Json };
 
 // override the provided declaration of JSON.parse to return a known type

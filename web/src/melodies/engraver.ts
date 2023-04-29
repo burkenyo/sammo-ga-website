@@ -1,12 +1,12 @@
 // Copyright © 2023 Samuel Justin Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
-// only types can be “imported” directly
 import { dynamicImport } from "@shared/utils";
+// only types can be “imported” directly
 import type { RenderContext, StaveNote as StaveNoteType } from "vexflow";
 
 // import vexflow code dynamically
-const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.1.0/+esm");
+const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.1.0/+esm").value;
 
 const CLEF_OFFSET = 40;
 const NOTE_WIDTH = 24;
@@ -21,7 +21,7 @@ export interface Engraver {
 
 export async function useEngraverFactory(): Promise<(elementId: string) => Engraver> {
   const { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, Flow, Stem }
-    = await vexflowImport.value;
+    = await vexflowImport;
 
   class Engraver {
     readonly #context: RenderContext;

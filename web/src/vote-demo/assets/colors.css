@@ -1,0 +1,6 @@
+:root {
+  /* Purple background color is the darkest hue of the Viridis color scale. */
+  --color-main: #440154;
+  /* Selected highlight color comes from the arrow button images. */
+  --color-highlight: #008de3;
+}

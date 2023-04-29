@@ -2,13 +2,18 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 import exampleElection from "@vote-demo/example-election.json";
-import { lazy } from "@shared/utils";
+import { defineStore } from "pinia";
+import { computed, ref, shallowRef } from "vue";
 
-export interface Election {
+export interface ElectionData {
   readonly nominations: readonly string[];
   readonly ballots: readonly (readonly string[])[];
+  readonly isExampleData: boolean;
+}
+
+interface Election extends ElectionData {
   logBallot(key: string, preferences: readonly string[], force: boolean): boolean;
-  reset(): void
+  reset(): void;
   clear(): void;
 }
 
@@ -51,7 +56,7 @@ namespace LocalStorageHelper {
       return;
     }
 
-    const parsed = JSON.parse(stored)
+    const parsed = JSON.parse(stored);
     if (!isObjectOfBallots(parsed)) {
       reset();
       return;
@@ -68,6 +73,7 @@ namespace LocalStorageHelper {
 class LocalStorageElection implements Election {
   readonly nominations: readonly string[];
   readonly #ballots: Map<string, readonly string[]> = new Map();
+  isExampleData: boolean;
 
   #loadBallots(data: BallotsAsObject): void {
     this.#ballots.clear();
@@ -85,9 +91,10 @@ class LocalStorageElection implements Election {
     this.nominations = [...exampleElection.nominations].sort();
 
     const stored = LocalStorageHelper.load();
+    this.isExampleData = !stored;
     if (stored) {
       this.#loadBallots(stored);
-      return
+      return;
     }
 
     this.#loadBallots(exampleElection.ballots);
@@ -100,6 +107,7 @@ class LocalStorageElection implements Election {
 
     this.#ballots.set(key, [...preferences]);
     LocalStorageHelper.write(Object.fromEntries(this.#ballots.entries()));
+    this.isExampleData = false;
 
     return true;
   }
@@ -107,16 +115,45 @@ class LocalStorageElection implements Election {
   reset(): void {
     this.#loadBallots(exampleElection.ballots);
     LocalStorageHelper.reset();
+    this.isExampleData = true;
   }
 
   clear(): void {
     this.#ballots.clear();
     LocalStorageHelper.write({});
+    this.isExampleData = false;
   }
 }
 
-const election = lazy(() => new LocalStorageElection());
+// use a wrapper of the election that makes the ballots observable
+export const useElection = defineStore("election", () => {
+  const election = new LocalStorageElection();
+  const nominations = [...election.nominations].sort();
+  const ballots = shallowRef(election.ballots);
+  const hasBallots = computed(() => !!ballots.value.length);
+  const isExampleData = ref(election.isExampleData);
 
-export function useElection(): Election {
-  return election.value;
-}
+  function logBallot(key: string, preferences: readonly string[], force: boolean) {
+    if (election.logBallot(key, preferences, force)) {
+      ballots.value = election.ballots;
+      isExampleData.value = election.isExampleData;
+      return true;
+    }
+
+    return false;
+  }
+
+  function clear() {
+    election.clear();
+    ballots.value = election.ballots;
+    isExampleData.value = election.isExampleData;
+  }
+
+  function reset() {
+    election.reset();
+    ballots.value = election.ballots;
+    isExampleData.value = election.isExampleData;
+  }
+
+  return { nominations, hasBallots, ballots, isExampleData, logBallot, clear, reset };
+});

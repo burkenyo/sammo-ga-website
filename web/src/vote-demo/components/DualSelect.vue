@@ -5,7 +5,7 @@
 import SelectableLi from "@vote-demo/components/SelectableLi.vue";
 import { computed, ref } from "vue";
 
-const props = defineProps<{options: readonly string[], optionsTitle: string, selectionsTitle: string }>();
+const props = defineProps<{ options: readonly string[], optionsTitle: string, selectionsTitle: string }>();
 
 const selections = ref<string[]>([]);
 const options = computed(() => props.options.filter(n => !selections.value.includes(n)));

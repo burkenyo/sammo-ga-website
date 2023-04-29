@@ -1,13 +1,8 @@
 <!-- Copyright © 2023 Samuel Justin Gabay
      Licensed under the GNU Affero Public License, Version 3 -->
 
-<script setup lang="ts">
-import { RouterLink, RouterView } from "vue-router";
-</script>
-
 <template>
-  <!-- The purple background color is the darkest hue of the Viridis color scale. -->
-  <header class="py-2 mb-4" style="background-color: #440154">
+  <header class="py-2 mb-4">
     <nav class="mt-0 navbar navbar-expand-sm navbar-dark justify-content-center">
       <span class="navbar-brand">Ranked Choice Voting Demo</span>
       <ul class="navbar-nav">
@@ -31,16 +26,20 @@ import { RouterLink, RouterView } from "vue-router";
 </template>
 
 <style scoped>
+header {
+  background-color: var(--color-main);
+}
+
 nav a.router-link-active {
   color: white;
 }
 
-a:link {
+nav a:link {
   text-decoration: underline solid transparent;
   transition: text-decoration 100ms;
 }
 
-a:hover {
+nav a:hover {
   text-decoration: underline;
   transition: text-decoration 100ms;
 }

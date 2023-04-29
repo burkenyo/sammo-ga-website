@@ -22,8 +22,8 @@ li:hover:not([data-selected]) {
 
 li[data-selected] {
   color: white;
-  /* Selected highlight color comes from the arrow button images */
-  background-color: #008de3;
+
+  background-color: var(--color-highlight);
 }
 
 li[data-selected]::marker {

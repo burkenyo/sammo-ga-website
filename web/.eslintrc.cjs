@@ -16,9 +16,9 @@ module.exports = {
   // defined in global.d.ts and referenced in .vue files
   overrides: [
     {
-      files: ['*.ts', '*.vue'],
+      files: ["*.ts", "*.vue"],
       rules: {
-        'no-undef': 'off',
+        "no-undef": "off",
       },
     },
   ],

@@ -4,11 +4,8 @@
 <script setup lang="ts">
 import DualSelect from "@vote-demo/components/DualSelect.vue";
 import { ref } from "vue";
-import router from "@vote-demo/router";
-import { useState } from "@vote-demo/state";
 import { useElection } from "@vote-demo/election";
 
-const state = useState();
 const election = useElection();
 
 const nominations = election.nominations;
@@ -16,6 +13,8 @@ const nominations = election.nominations;
 const selectionsArea = ref<InstanceType<typeof DualSelect>>();
 
 const noSelections = ref(false);
+
+const showSuccess = ref(false);
 
 function submit(): void {
   noSelections.value = !selectionsArea.value?.selections.length;
@@ -26,8 +25,7 @@ function submit(): void {
 
   election.logBallot(crypto.randomUUID(), selectionsArea.value?.selections!, false);
 
-  state.showSuccess = true;
-  router.push({ name: "success" });
+  showSuccess.value = true;
 }
 </script>
 
@@ -53,9 +51,15 @@ function submit(): void {
         options-title="Nominations" selections-title="Your Preferences" />
     </div>
     <hr />
-
-    <button id="clear" type="button" class="btn btn-secondary" @click="selectionsArea?.clear()">Clear</button>
-    <button id="submit" type="submit" class="btn btn-primary" style="margin-left: 3em">Submit Vote</button>
+    <div class="alert alert-success alert-dismissible" role="alert" v-if="showSuccess">
+      <strong>Success!</strong> You’ve cast your vote. Now, try viewing the
+      <RouterLink :to="{ name: 'results' }" class="alert-link-subtle">results</RouterLink>, or vote again.
+      <button type="button" class="btn-close" @click="selectionsArea!.clear(); showSuccess = false"></button>
+    </div>
+    <template v-else>
+      <button id="clear" type="button" class="btn btn-secondary mx-2" @click="selectionsArea!.clear()">Clear</button>
+      <button id="submit" type="submit" class="btn btn-primary mx-2">Cast Ballot</button>
+    </template>
   </form>
 </template>
 
@@ -64,5 +68,11 @@ div.instructions {
   margin: auto;
   max-width: 30em;
   text-align: left;
+}
+
+div.alert {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>
