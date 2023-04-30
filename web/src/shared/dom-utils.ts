@@ -18,3 +18,9 @@ export function downloadFile(blob: Blob, filename: string) {
   dummy.click();
   dummy.remove();
 }
+
+export function clearChildren(element: Element) {
+  while (element.hasChildNodes()) {
+    element.removeChild(element.firstChild!);
+  }
+}

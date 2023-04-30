@@ -5,7 +5,7 @@ import { dynamicImport, immutable, ordinalize, range } from "@shared/utils";
 import type { ElectionData } from "./election";
 
 const plotlyImport = dynamicImport<{ default: typeof import("plotly.js") }>(
-  "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.21.0/+esm").value;
+  "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.21.0/+esm");
 
 namespace shared {
   let plotTitleHeight: number;
@@ -40,7 +40,7 @@ export async function plotFirstRoundTallies(election: ElectionData, element: HTM
   const { nominations, ballots } = election;
   const { plotTitleHeight, textWidths } = shared.init(election);
 
-  const { default: Plotly } = await plotlyImport;
+  const { default: Plotly } = await plotlyImport.value;
 
   const reversedNominations = [...nominations].reverse();
   const tallies = new Map(reversedNominations.map(n => [n, Array<number>(nominations.length).fill(0)]));
@@ -119,7 +119,7 @@ export async function plotInstantRunoffRounds(election: ElectionData, element: H
     return [immutable(runningCounts!), round, winningRound];
   })();
 
-  const { default: Plotly } = await plotlyImport;
+  const { default: Plotly } = await plotlyImport.value;
 
   const traces = [...irvRunningCounts].map(([nomination, counts]) => ({
     x: range(counts).map(i => i + 1),
@@ -160,7 +160,7 @@ export async function plotBordaCountScores(election: ElectionData, element: HTML
   const { nominations, ballots } = election;
   const { plotTitleHeight, textWidths } = shared.init(election);
 
-  const { default: Plotly } = await plotlyImport;
+  const { default: Plotly } = await plotlyImport.value;
 
   let scores = new Map<string, number>();
 

@@ -6,7 +6,7 @@ import { dynamicImport } from "@shared/utils";
 import type { RenderContext, StaveNote as StaveNoteType } from "vexflow";
 
 // import vexflow code dynamically
-const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.1.0/+esm").value;
+const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.1.0/+esm");
 
 const CLEF_OFFSET = 40;
 const NOTE_WIDTH = 24;
@@ -19,15 +19,15 @@ export interface Engraver {
   drawNotes(notes: string[], offset: number, workableWidth: number): void;
 }
 
-export async function useEngraverFactory(): Promise<(elementId: string) => Engraver> {
+export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
   const { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, Flow, Stem }
-    = await vexflowImport;
+    = await vexflowImport.value;
 
   class Engraver {
     readonly #context: RenderContext;
 
-    constructor(elementId: string) {
-      this.#context = new Renderer(elementId, Renderer.Backends.SVG).getContext();
+    constructor(element: HTMLDivElement) {
+      this.#context = new Renderer(element, Renderer.Backends.SVG).getContext();
     }
 
     drawNotes(notes: string[], offset: number, workableWidth: number): void {
@@ -102,5 +102,5 @@ export async function useEngraverFactory(): Promise<(elementId: string) => Engra
     }
   }
 
-  return (elementId: string) => new Engraver(elementId);
+  return new Engraver(element);
 }

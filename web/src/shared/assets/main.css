@@ -212,3 +212,7 @@ div.layout-simple {
   background-color: white;
   padding: 1em;
 }
+
+.translucent {
+  opacity: 30%;
+}

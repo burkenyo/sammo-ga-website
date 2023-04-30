@@ -3,10 +3,13 @@
 
 <script setup lang="ts">
 import { INITIAL_OEIS_ID, interestingConstantsInfo, useState } from "@melodies/state";
-import { reactive, ref, watch } from "vue";
+import { reactive, ref, watch, type Ref } from "vue";
 import { OeisId } from "@melodies/oeis";
-import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
 import ConstantIcon from "./ConstantIcon.vue";
+
+const emit = defineEmits<{
+  (e: 'readystatechange', ready: boolean): void
+}>();
 
 const state = useState();
 
@@ -14,9 +17,7 @@ const inputs = reactive({
   selected: ref(String(INITIAL_OEIS_ID)),
   entered: ref(String(INITIAL_OEIS_ID)),
 });
-
-const loading = ref(false);
-
+const ready = ref(true);
 let timeoutId = 0;
 watch(inputs, () => {
   console.debug("ConstantsListing.vue inputs watch triggered");
@@ -45,11 +46,10 @@ watch(inputs, () => {
   // use a timeout to avoid updating the state with every keystroke
   timeoutId = window.setTimeout(async () => {
     try {
-      fixupHider();
-      loading.value = true;
+      ready.value = false;
       state.getExpansionById(parsedOeisId);
     } finally {
-      loading.value = false;
+      ready.value = true;
     }
   }, 200);
 });
@@ -66,11 +66,10 @@ function getRandom() {
 
   timeoutId = window.setTimeout(async () => {
     try {
-      fixupHider();
-      loading.value = true;
+      ready.value = false;
       await state.getRandomExpansion();
     } finally {
-      loading.value = false;
+      ready.value = true;
     }
   }, 50);
 }
@@ -95,37 +94,25 @@ function focusCustomInput() {
   }
 }
 
-const controls = ref<HTMLDivElement>();
-const hider = ref<HTMLDivElement>();
-
-// HACK: Should use proper CSS!
-function fixupHider() {
-  hider.value!.style.width = controls.value!.clientWidth + "px";
-  hider.value!.style.height = controls.value!.clientHeight + "px";
-}
+watch(ready, () => emit("readystatechange", ready.value), { immediate: true });
 </script>
 
 <template>
   <div style="position: relative">
-    <div ref="hider" :hidden="!loading" style="position: absolute; background-color: rgba(255, 255, 255, 0.7)">
-      <div style="margin: auto; display: flex; align-items: center">
-        <PacmanLoader :loading="loading" color="#0066FF" style="margin: auto" />
-      </div>
-    </div>
-    <div ref="controls" style="width: fit-content">
+    <div style="width: fit-content">
       <span class="control-group">
         <template v-for="item in interestingConstantsInfo" :key="item.tag">
           <label class="form-check-label" :for="item.tag">
-            <ConstantIcon :tag="item.tag"/>
+            <ConstantIcon :tag="item.tag" />
           </label>
-          <input type="radio" :value="String(item.id)" :id="item.tag" v-model="inputs.selected" name="constant" :disabled="loading" />
+          <input type="radio" :value="String(item.id)" :id="item.tag" v-model="inputs.selected" name="constant" :disabled="!ready" />
         </template>
       </span>
       <span class="control-group">
         <label for="custom-radio">custom</label>
-        <input type="radio" id="custom-radio" ref="customRadio" name="constant" @change="focusCustomInput" :disabled="loading"/>
-        <input class="wide" required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio" :disabled="loading"/>
-        <button @click="getRandom" :disabled="loading">random</button>
+        <input type="radio" id="custom-radio" ref="customRadio" name="constant" @change="focusCustomInput" :disabled="!ready"/>
+        <input class="wide" required v-model="inputs.entered" ref="customInput" pattern="[Aa]?0*[1-9]\d{0,8}" @focus="checkCustomRadio" :disabled="!ready"/>
+        <button @click="getRandom" :disabled="!ready">random</button>
       </span>
     </div>
   </div>

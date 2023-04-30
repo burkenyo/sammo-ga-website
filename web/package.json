@@ -20,8 +20,7 @@
     "@types/plotly.js": "^2.12.18",
     "pinia": "^2.0.35",
     "vue": "^3.2.47",
-    "vue-router": "^4.1.6",
-    "vue-spinner": "^1.0.4"
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^5.0.2",

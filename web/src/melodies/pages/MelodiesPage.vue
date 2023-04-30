@@ -2,7 +2,7 @@
      Licensed under the GNU Affero Public License, Version 3 -->
 
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { Permutation } from "@melodies/permutation";
 import ConstantsListing from "@melodies/components/ConstantsListing.vue";
 import { BASE, INITIAL_OEIS_ID, MAX_PERMUTATION, useState } from "@melodies/state";
@@ -10,9 +10,11 @@ import { Fractional } from "@melodies/oeis";
 import ConstantIcon from "@melodies/components/ConstantIcon.vue";
 import OeisLinks from "@melodies/components/OeisLinks";
 import Info from "@melodies/components/MelodiesInfo.md";
-import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
 import ScriptingDisabledWarning from "@shared/components/ScriptingDisabledWarning.vue";
 import ScoreRenderer from "@melodies/components/ScoreRenderer.vue";
+import WaitSpinner from "@shared/components/WaitSpinner.vue";
+
+var constantReady = ref(false);
 
 const state = useState();
 state.startApiWarmUp();
@@ -80,20 +82,27 @@ state.getExpansionById(INITIAL_OEIS_ID);
   <ScriptingDisabledWarning />
   <Info />
   <h3>Sequence</h3>
-  <ConstantsListing />
-  <h4>Digits</h4>
-  <p>
-    <OeisLinks v-if="state.selectedInterestingConstant">
-      <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
-      {{ state.selectedInterestingConstant.description }} ({{ state.selectedInterestingConstant.id }}),
-    </OeisLinks>
-    <OeisLinks v-else-if="state.expansion">
-      {{ state.expansion.id }}, {{ fixUpName(state.expansion.name) }}
-    </OeisLinks>
-    is
-    <span id="digits-bold" class="sans">{{ expansionPreview.text }}</span>
-    <template v-if="expansionPreview.abbreviated">...</template>
-  </p>
+  <div>
+    <div class="spinner">
+      <WaitSpinner v-if="!constantReady" />
+    </div>
+    <div :class="constantReady ? undefined : 'translucent'">
+      <ConstantsListing @readystatechange="ready => constantReady = ready" />
+      <h4>Digits</h4>
+      <p>
+        <OeisLinks v-if="state.selectedInterestingConstant">
+          <ConstantIcon :tag="state.selectedInterestingConstant.tag" />,
+          {{ state.selectedInterestingConstant.description }} ({{ state.selectedInterestingConstant.id }}),
+        </OeisLinks>
+        <OeisLinks v-else-if="state.expansion">
+          {{ state.expansion.id }}, {{ fixUpName(state.expansion.name) }}
+        </OeisLinks>
+        is
+        <span id="digits-bold" class="sans">{{ expansionPreview.text }}</span>
+        <template v-if="expansionPreview.abbreviated">...</template>
+      </p>
+    </div>
+  </div>
   <h3>Permutation</h3>
   <span class="control-group">
     <label for="permutation-number">number</label>
@@ -125,10 +134,13 @@ state.getExpansionById(INITIAL_OEIS_ID);
     </tr>
   </table>
   <h3>Generated Melody</h3>
-  <Suspense>
-    <ScoreRenderer />
-    <template #fallback>
-      Loading Score Renderer...
-    </template>
-  </Suspense>
+  <ScoreRenderer />
 </template>
+
+<style scoped>
+div.spinner {
+  position: absolute;
+  left: 10em;
+  margin: .5em;
+}
+</style>
