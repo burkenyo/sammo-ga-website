@@ -6,6 +6,8 @@ import DualSelect from "@vote-demo/components/DualSelect.vue";
 import { ref } from "vue";
 import { useElection } from "@vote-demo/election";
 
+const selections = ref(Array<string>());
+
 const election = useElection();
 
 const nominations = election.nominations;
@@ -15,17 +17,23 @@ const selectionsArea = ref<InstanceType<typeof DualSelect>>();
 const noSelections = ref(false);
 
 const showSuccess = ref(false);
+const shouldClearOnNavigate = showSuccess;
 
 function submit(): void {
-  noSelections.value = !selectionsArea.value?.selections.length;
+  noSelections.value = !selections.value.length;
 
   if (noSelections.value) {
     return;
   }
 
-  election.logBallot(crypto.randomUUID(), selectionsArea.value?.selections!, false);
+  election.logBallot(crypto.randomUUID(), selections.value, false);
 
   showSuccess.value = true;
+}
+
+function updateSelections(newSelections: readonly string[]) {
+  showSuccess.value = false;
+  selections.value = [...newSelections];
 }
 </script>
 
@@ -47,14 +55,15 @@ function submit(): void {
       <div v-if="noSelections" class="alert alert-danger" role="alert">
         Make at least one selection!
       </div>
-      <DualSelect :options="nominations" ref="selectionsArea"
-        options-title="Nominations" selections-title="Your Preferences" />
+      <DualSelect :options="nominations" :initialy-selected="selections" ref="selectionsArea"
+        options-title="Nominations" selections-title="Your Preferences"
+        @selectionsupdated="selections => updateSelections(selections)" />
     </div>
     <hr />
     <div class="alert alert-success alert-dismissible" role="alert" v-if="showSuccess">
       <strong>Success!</strong> You’ve cast your vote. Now, try viewing the
       <RouterLink :to="{ name: 'results' }" class="alert-link-subtle">results</RouterLink>, or vote again.
-      <button type="button" class="btn-close" @click="selectionsArea!.clear(); showSuccess = false"></button>
+      <button type="button" class="btn-close" @click="selectionsArea!.clear()"></button>
     </div>
     <template v-else>
       <button id="clear" type="button" class="btn btn-secondary mx-2" @click="selectionsArea!.clear()">Clear</button>

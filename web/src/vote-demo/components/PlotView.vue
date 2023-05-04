@@ -7,28 +7,27 @@ import type { plotter as Plotter } from "@vote-demo/plotResults";
 import { nextTick, ref, watch } from "vue";
 
 const election = useElection();
+const plotHeader = ref<HTMLDivElement>();
 const plot = ref<HTMLDivElement>();
 const plotReady = ref(false);
 
-// eslint-disable-next-line vue/no-setup-props-destructure
-const { plotter } = defineProps<{
-  id: string;
-  title: string;
+const props = defineProps<{
   plotter: Plotter;
+  toggleParam?: boolean;
 }>();
 
-watch(() => election.ballots,
+watch(() => [election.ballots, props.toggleParam],
   () => election.hasBallots && nextTick(async () => {
-    await plotter(election, plot.value!);
+    await props.plotter(election, plotHeader.value!, plot.value!, props.toggleParam);
     plotReady.value = true;
   }),
   { immediate: true });
 </script>
 
 <template>
-  <h5 class="plot-title">{{ title }}</h5>
+  <header class="plot-title" ref="plotHeader"><slot /></header>
   <div v-if="!plotReady" class="spinner-border" role="status"></div>
-  <div :id="id" ref="plot" class="plot"></div>
+  <div ref="plot" class="plot"></div>
 </template>
 
 <style scoped>

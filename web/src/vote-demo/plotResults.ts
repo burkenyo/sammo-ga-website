@@ -8,37 +8,30 @@ const plotlyImport = dynamicImport<{ default: typeof import("plotly.js") }>(
   "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.21.0/+esm");
 
 namespace shared {
-  let plotTitleHeight: number;
-  let textWidths: ReadonlyMap<string, number>;
+  const context = document.createElement("canvas").getContext("2d")!;
+  // default font for Plotly
+  context.font = "12px \"Open Sans\", verdana, arial, sans-serif";
 
-  export function init(election: ElectionData): { plotTitleHeight: number, textWidths: ReadonlyMap<string, number>; } {
-    if (plotTitleHeight) {
-      return { plotTitleHeight, textWidths };
-    }
+  export function calculateOffsets(
+    plotHeaderElement: HTMLElement, relevantNominations: readonly string[]
+  ): { plotTitleHeight: number; labelWidth: number } {
+    const plotTitleHeight = plotHeaderElement.clientHeight;
+    const labelWidth = Math.max(...relevantNominations.map(n => context.measureText(n).width));
 
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d")!;
-    // default font for Plotly
-    context.font = "12px \"Open Sans\", verdana, arial, sans-serif";
-    textWidths = new Map(election.nominations.map(n => [n, context.measureText(n).width]));
-    canvas.remove();
-
-    const plotTitleStyles = window.getComputedStyle(document.querySelector(".plot-title")!);
-    plotTitleHeight = Number.parseFloat(plotTitleStyles.marginTop)
-      + Number.parseFloat(plotTitleStyles.lineHeight)
-      + Number.parseFloat(plotTitleStyles.marginBottom);
-
-    return { plotTitleHeight, textWidths };
+    return { plotTitleHeight, labelWidth };
   }
 }
 
 export interface plotter {
-  (election: ElectionData, element: HTMLDivElement): Promise<void>;
+  (election: ElectionData, plotHeaderElement: HTMLElement, plotElement: HTMLDivElement, toggleParam?: boolean):
+    Promise<void>;
 }
 
-export async function plotFirstRoundTallies(election: ElectionData, element: HTMLDivElement): Promise<void> {
+export async function plotFirstRoundTallies(
+  election: ElectionData, plotHeaderElement: HTMLElement, plotElement: HTMLDivElement
+): Promise<void> {
   const { nominations, ballots } = election;
-  const { plotTitleHeight, textWidths } = shared.init(election);
+  const { plotTitleHeight, labelWidth } = shared.calculateOffsets(plotHeaderElement, nominations);
 
   const { default: Plotly } = await plotlyImport.value;
 
@@ -51,10 +44,9 @@ export async function plotFirstRoundTallies(election: ElectionData, element: HTM
   }
 
   // This plot will have all the nominations
-  const labelWidth = Math.max(...textWidths.values());
-  const gridSize = 32 * Math.min(Math.max(nominations.length, 8), 15)
+  const gridSize = 32 * Math.min(Math.max(nominations.length, 8), 15);
 
-  Plotly.react(element, [{
+  Plotly.react(plotElement, [{
     x: range(nominations).map(i => ordinalize(i + 1)),
     y: reversedNominations,
     z: [...tallies.values()],
@@ -70,9 +62,10 @@ export async function plotFirstRoundTallies(election: ElectionData, element: HTM
   });
 }
 
-export async function plotInstantRunoffRounds(election: ElectionData, element: HTMLDivElement): Promise<void> {
+export async function plotInstantRunoffRounds(
+  election: ElectionData, plotHeaderElement: HTMLElement, plotElement: HTMLDivElement
+): Promise<void> {
   const { nominations, ballots } = election;
-  const { plotTitleHeight, textWidths } = shared.init(election);
 
   const [irvRunningCounts, irvTotalRounds, irvWinningRound] = (() => {
     let winningRound: number | undefined = undefined;
@@ -119,6 +112,9 @@ export async function plotInstantRunoffRounds(election: ElectionData, element: H
     return [immutable(runningCounts!), round, winningRound];
   })();
 
+  const keys = [...irvRunningCounts.keys()]
+  const { plotTitleHeight, labelWidth } = shared.calculateOffsets(plotHeaderElement, keys);
+
   const { default: Plotly } = await plotlyImport.value;
 
   const traces = [...irvRunningCounts].map(([nomination, counts]) => ({
@@ -128,8 +124,6 @@ export async function plotInstantRunoffRounds(election: ElectionData, element: H
     type: "bar"
   } as const));
 
-  const keys = [...irvRunningCounts.keys()];
-  const labelWidth = Math.max(...[...textWidths].filter(([n]) => keys.includes(n)).map(([,w]) => w));
   const gridWidth = 15 * Math.min(Math.max((1 + keys.length) * Math.max(...traces.map(t => t.y.length)), 5), 40)
 
   const dividers = range(irvTotalRounds - 1).map(i => ({
@@ -140,7 +134,7 @@ export async function plotInstantRunoffRounds(election: ElectionData, element: H
     line: { width: 1, color: "lightgrey" }
   } as const));
 
-  Plotly.react(element, traces, {
+  Plotly.react(plotElement, traces, {
     height: 334 + plotTitleHeight,
     width: 160 + gridWidth + labelWidth,
     margin: { t: plotTitleHeight + 8, b: 40 },
@@ -156,39 +150,44 @@ export async function plotInstantRunoffRounds(election: ElectionData, element: H
   });
 }
 
-export async function plotBordaCountScores(election: ElectionData, element: HTMLDivElement): Promise<void> {
+export async function plotBordaCountScores(
+  election: ElectionData, plotHeaderElement: HTMLElement, plotElement: HTMLDivElement, useDowdallCounting?: boolean
+): Promise<void> {
   const { nominations, ballots } = election;
-  const { plotTitleHeight, textWidths } = shared.init(election);
 
-  const { default: Plotly } = await plotlyImport.value;
-
-  let scores = new Map<string, number>();
+  const scores = new Map<string, number>();
 
   for (const ballot of ballots)
   for (const [index, nomination] of ballot.entries())
   {
     const rank = index + 1;
-    // scores.set(nomination, (scores.get(nomination) ?? 0) + (nominations.length - rank));
-    scores.set(nomination, (scores.get(nomination) ?? 0) + 1 / rank);
+
+    if (useDowdallCounting) {
+      scores.set(nomination, (scores.get(nomination) ?? 0) + 1 / rank);
+    } else {
+      scores.set(nomination, (scores.get(nomination) ?? 0) + (nominations.length - rank));
+    }
   }
 
-  // const max = Math.max(...scores.values())
-  // scores = new Map([...scores].sort(([n1], [n2]) => n1.localeCompare(n2)).map(([n, s]) => [n, s / max]));
-  scores = new Map([...scores].sort(([n1], [n2]) => n1.localeCompare(n2)));
-
-  const traces = [...scores].map(([nomination, score]) => ({
-    y: [score] as number[],
-    name: nomination,
-    type: "bar",
-    hovertemplate: "%{y}"
-    // hovertemplate: "%{y:.0%}"
-  } as const));
-
   const keys = [...scores.keys()];
-  const labelWidth = Math.max(...[...textWidths].filter(([n]) => keys.includes(n)).map(([,w]) => w));
-  const gridWidth = 20 * Math.min(Math.max(keys.length, 8), 20)
+  const { plotTitleHeight, labelWidth } = shared.calculateOffsets(plotHeaderElement, keys);
 
-  Plotly.react(element, traces, {
+  const { default: Plotly } = await plotlyImport.value;
+
+  // const max = Math.max(...scores.values())
+  const traces = [...scores]
+    .sort(([n1], [n2]) => nominations.indexOf(n1) - nominations.indexOf(n2))
+    .map(([nomination, score]) => ({
+      y: [score] as number[],
+      name: nomination,
+      type: "bar",
+      hovertemplate: "%{y}"
+      // hovertemplate: "%{y:.0%}"
+    } as const));
+
+  const gridWidth = 20 * Math.min(Math.max(keys.length, 8), 20);
+
+  Plotly.react(plotElement, traces, {
     height: 302 + plotTitleHeight,
     width: 200 + gridWidth + labelWidth,
     margin: { t: plotTitleHeight + 8, b: 8 },

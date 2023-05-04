@@ -8,12 +8,9 @@ import { CsvWriter } from "@vote-demo/csvWriter";
 import { downloadFile } from "@shared/dom-utils";
 import { plotFirstRoundTallies, plotInstantRunoffRounds, plotBordaCountScores } from "@vote-demo/plotResults";
 import PlotView from "@vote-demo/components/PlotView.vue";
+import { ref } from "vue";
 
-const PLOT_IDS = {
-  firstRoundTallies: "firstRoundTallies",
-  instantRunoffRounds: "instantRunoffRounds",
-  bordaCountScores: "bordaCountScores",
-} as const;
+const useDowdallCount = ref(false);
 
 const election = useElection();
 
@@ -38,11 +35,21 @@ async function downloadResults(): Promise<void> {
   <button class="btn btn-outline-primary mx-2" @click="election.reset()" :disabled="election.isExampleData">Reset</button>
   <hr />
   <template v-if="election.hasBallots">
-    <PlotView :id="PLOT_IDS.firstRoundTallies" title="First Round Tallies" :plotter="plotFirstRoundTallies" />
+    <PlotView :plotter="plotFirstRoundTallies">
+      <h5>First Round Tallies</h5>
+    </PlotView>
     <hr />
-    <PlotView :id="PLOT_IDS.instantRunoffRounds" title="Instant Runoff Rounds" :plotter="plotInstantRunoffRounds" />
+    <PlotView :plotter="plotInstantRunoffRounds">
+      <h5>Instant Runoff Rounds</h5>
+    </PlotView>
     <hr />
-    <PlotView :id="PLOT_IDS.bordaCountScores" title="Borda Count Scores" :plotter="plotBordaCountScores" />
+    <PlotView :plotter="plotBordaCountScores" :toggle-param="useDowdallCount">
+      <h5>Borda Count Scores</h5>
+      <label for="standardCount" class="me-2">Standard Count</label>
+      <input type="radio" class="form-check-input me-4" name="bordaCountType" id="standardCount" :checked="!useDowdallCount" @change="useDowdallCount = false"/>
+      <label for="dowdallCount" class="me-2">Dowdall Count</label>
+      <input type="radio" class="form-check-input" name="bordaCountType" id="dowdallCount" :checked="useDowdallCount" @change="useDowdallCount = true"/>
+    </PlotView>
   </template>
   <template v-else>
     <h5>No Results Yet!</h5>

@@ -3,11 +3,20 @@
 
 <script setup lang="ts">
 import SelectableLi from "@vote-demo/components/SelectableLi.vue";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
-const props = defineProps<{ options: readonly string[], optionsTitle: string, selectionsTitle: string }>();
+const emit = defineEmits<{
+  (e: "selectionsupdated", selections: readonly string[]): void;
+}>();
 
-const selections = ref<string[]>([]);
+const props = defineProps<{
+  options: readonly string[];
+  initialySelected: readonly string[];
+  optionsTitle: string;
+  selectionsTitle: string;
+}>();
+
+const selections = ref<string[]>(props.initialySelected.filter(o => props.options.includes(o)));
 const options = computed(() => props.options.filter(n => !selections.value.includes(n)));
 
 const selectedOption = ref<string>();
@@ -21,6 +30,7 @@ function pick() {
   const index = options.value.indexOf(selectedOption.value);
   selections.value.push(selectedOption.value);
   selectedOption.value = options.value[Math.min(index, options.value.length - 1)];
+  emit("selectionsupdated", selections.value);
 }
 
 function remove() {
@@ -31,6 +41,7 @@ function remove() {
   const index = selections.value.indexOf(selectedSelection.value);
   selections.value.splice(index, 1);
   selectedSelection.value = selections.value[Math.min(index, selections.value.length - 1)];
+  emit("selectionsupdated", selections.value);
 }
 
 function up() {
@@ -44,6 +55,7 @@ function up() {
   }
 
   selections.value.splice(index - 1, 2, selectedSelection.value, selections.value[index - 1]);
+  emit("selectionsupdated", selections.value);
 }
 
 function down() {
@@ -57,15 +69,17 @@ function down() {
   }
 
   selections.value.splice(index, 2, selections.value[index + 1], selectedSelection.value);
+  emit("selectionsupdated", selections.value);
 }
 
 function clear() {
   selectedOption.value = undefined;
   selectedSelection.value = undefined;
   selections.value = [];
+  emit("selectionsupdated", selections.value);
 }
 
-defineExpose({ clear, selections });
+defineExpose({ clear });
 </script>
 
 <template>
@@ -87,7 +101,7 @@ defineExpose({ clear, selections });
 
     <label style="grid-area: selections-label"><h5>{{ props.selectionsTitle }}</h5></label>
     <div class="list-holder" style="grid-area: selections">
-      <ol class="selection-list" >
+      <ol class="selection-list">
         <SelectableLi v-for="item of selections" :key="item" :value="item" :selected="item == selectedSelection"
           @select="selectedSelection = item" />
       </ol>
