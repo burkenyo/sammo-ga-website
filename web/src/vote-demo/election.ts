@@ -22,7 +22,7 @@ interface BallotsAsObject {
 }
 
 namespace LocalStorageHelper {
-  const STORAGE_KEY = "Ballots";
+  const STORAGE_KEY = "vote-demo_ballots";
 
   // eslint-disable-next-line no-inner-declarations
   function isObjectOfBallots(value: Json): value is { [key: string]: string[] } {

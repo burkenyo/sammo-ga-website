@@ -5,8 +5,7 @@
 import DualSelect from "@vote-demo/components/DualSelect.vue";
 import { ref } from "vue";
 import { useElection } from "@vote-demo/election";
-
-const selections = ref(Array<string>());
+import { onBeforeRouteLeave } from "vue-router";
 
 const election = useElection();
 
@@ -20,21 +19,26 @@ const showSuccess = ref(false);
 const shouldClearOnNavigate = showSuccess;
 
 function submit(): void {
-  noSelections.value = !selections.value.length;
+  noSelections.value = !selectionsArea.value?.selections.length;
 
   if (noSelections.value) {
     return;
   }
 
-  election.logBallot(crypto.randomUUID(), selections.value, false);
+  election.logBallot(crypto.randomUUID(), selectionsArea.value!.selections, false);
 
   showSuccess.value = true;
 }
 
-function updateSelections(newSelections: readonly string[]) {
-  showSuccess.value = false;
-  selections.value = [...newSelections];
+// used to clear the selections area if we just submitted a vote and are leaving
+function clearSelectionsOnNavigate(): void {
+  if (shouldClearOnNavigate.value) {
+    selectionsArea.value?.clear();
+  }
 }
+
+onBeforeRouteLeave(clearSelectionsOnNavigate);
+window.addEventListener("pagehide", clearSelectionsOnNavigate);
 </script>
 
 <template>
@@ -55,9 +59,8 @@ function updateSelections(newSelections: readonly string[]) {
       <div v-if="noSelections" class="alert alert-danger" role="alert">
         Make at least one selection!
       </div>
-      <DualSelect :options="nominations" :initialy-selected="selections" ref="selectionsArea"
-        options-title="Nominations" selections-title="Your Preferences"
-        @selectionsupdated="selections => updateSelections(selections)" />
+      <DualSelect storage-key="ElectionsPage_selections" :options="nominations" ref="selectionsArea" options-title="Nominations"
+        selections-title="Your Preferences" @selectionsupdated="shouldClearOnNavigate = false" />
     </div>
     <hr />
     <div class="alert alert-success alert-dismissible" role="alert" v-if="showSuccess">

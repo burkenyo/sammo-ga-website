@@ -8,9 +8,9 @@ import { CsvWriter } from "@vote-demo/csvWriter";
 import { downloadFile } from "@shared/dom-utils";
 import { plotFirstRoundTallies, plotInstantRunoffRounds, plotBordaCountScores } from "@vote-demo/plotResults";
 import PlotView from "@vote-demo/components/PlotView.vue";
-import { ref } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 
-const useDowdallCount = ref(false);
+const useDowdallCount = useLocalStorage("ResultsPage_useDowdallCount", false);
 
 const election = useElection();
 

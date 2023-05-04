@@ -3,83 +3,93 @@
 
 <script setup lang="ts">
 import SelectableLi from "@vote-demo/components/SelectableLi.vue";
-import { computed, ref, watch } from "vue";
+import { computed, ref, type Ref } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 
 const emit = defineEmits<{
   (e: "selectionsupdated", selections: readonly string[]): void;
 }>();
 
 const props = defineProps<{
+  storageKey?: string;
   options: readonly string[];
-  initialySelected: readonly string[];
   optionsTitle: string;
   selectionsTitle: string;
 }>();
 
-const selections = ref<string[]>(props.initialySelected.filter(o => props.options.includes(o)));
-const options = computed(() => props.options.filter(n => !selections.value.includes(n)));
+let state: Ref<{
+  selections: string[];
+  selectedOption?: string;
+  selectedSelection?: string;
+}>;
 
-const selectedOption = ref<string>();
-const selectedSelection = ref<string>();
+if (props.storageKey) {
+  state = useLocalStorage(props.storageKey, { selections: [] });
+} else {
+  state = ref({ selections: [] });
+}
+
+const options = computed(() => props.options.filter(n => !state.value.selections.includes(n)));
 
 function pick() {
-  if (!selectedOption.value) {
+  if (!state.value.selectedOption) {
     return;
   }
 
-  const index = options.value.indexOf(selectedOption.value);
-  selections.value.push(selectedOption.value);
-  selectedOption.value = options.value[Math.min(index, options.value.length - 1)];
-  emit("selectionsupdated", selections.value);
+  const index = options.value.indexOf(state.value.selectedOption);
+  state.value.selections.push(state.value.selectedOption);
+  state.value.selectedOption = options.value[Math.min(index, options.value.length - 1)];
+  emit("selectionsupdated", state.value.selections);
 }
 
 function remove() {
-  if (!selectedSelection.value) {
+  if (!state.value.selectedSelection) {
     return;
   }
 
-  const index = selections.value.indexOf(selectedSelection.value);
-  selections.value.splice(index, 1);
-  selectedSelection.value = selections.value[Math.min(index, selections.value.length - 1)];
-  emit("selectionsupdated", selections.value);
+  const index = state.value.selections.indexOf(state.value.selectedSelection);
+  state.value.selections.splice(index, 1);
+  state.value.selectedSelection = state.value.selections[Math.min(index, state.value.selections.length - 1)];
+  emit("selectionsupdated", state.value.selections);
 }
 
 function up() {
-  if (!selectedSelection.value) {
+  if (!state.value.selectedSelection) {
     return;
   }
 
-  const index = selections.value.indexOf(selectedSelection.value);
+  const index = state.value.selections.indexOf(state.value.selectedSelection);
   if (index == 0) {
     return;
   }
 
-  selections.value.splice(index - 1, 2, selectedSelection.value, selections.value[index - 1]);
-  emit("selectionsupdated", selections.value);
+  state.value.selections.splice(index - 1, 2, state.value.selectedSelection, state.value.selections[index - 1]);
+  emit("selectionsupdated", state.value.selections);
 }
 
 function down() {
-  if (!selectedSelection.value) {
+  if (!state.value.selectedSelection) {
     return;
   }
 
-  const index = selections.value.indexOf(selectedSelection.value);
-  if (index == selections.value.length - 1) {
+  const index = state.value.selections.indexOf(state.value.selectedSelection);
+  if (index == state.value.selections.length - 1) {
     return;
   }
 
-  selections.value.splice(index, 2, selections.value[index + 1], selectedSelection.value);
-  emit("selectionsupdated", selections.value);
+  state.value.selections.splice(index, 2, state.value.selections[index + 1], state.value.selectedSelection);
+  emit("selectionsupdated", state.value.selections);
 }
 
-function clear() {
-  selectedOption.value = undefined;
-  selectedSelection.value = undefined;
-  selections.value = [];
-  emit("selectionsupdated", selections.value);
-}
-
-defineExpose({ clear });
+defineExpose({
+  clear() {
+    state.value = { selections: [] };
+    emit("selectionsupdated", state.value.selections);
+  },
+  get selections(): readonly string[] {
+    return state.value.selections;
+  },
+});
 </script>
 
 <template>
@@ -87,8 +97,8 @@ defineExpose({ clear });
     <label style="grid-area: options-label;"><h5>{{ props.optionsTitle }}</h5></label>
     <div class="list-holder" style="grid-area: options">
       <ul class="selection-list list-unstyled">
-        <SelectableLi v-for="item of options" :key="item" :value="item" :selected="item == selectedOption"
-          @select="selectedOption = item" />
+        <SelectableLi v-for="item of options" :key="item" :value="item" :selected="item == state.selectedOption"
+          @select="state.selectedOption = item" />
       </ul>
     </div>
 
@@ -102,8 +112,8 @@ defineExpose({ clear });
     <label style="grid-area: selections-label"><h5>{{ props.selectionsTitle }}</h5></label>
     <div class="list-holder" style="grid-area: selections">
       <ol class="selection-list">
-        <SelectableLi v-for="item of selections" :key="item" :value="item" :selected="item == selectedSelection"
-          @select="selectedSelection = item" />
+        <SelectableLi v-for="item of state.selections" :key="item" :value="item" :selected="item == state.selectedSelection"
+          @select="state.selectedSelection = item" />
       </ol>
     </div>
 
