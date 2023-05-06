@@ -2,16 +2,14 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 import { OeisFractionalExpansion, OeisId } from "@melodies/oeis";
-import { delay } from "@shared/utils";
+import { assert, delay } from "@shared/utils";
 import { ApiError, ApiErrorCause, type ApiRunner } from "./apiRunner";
 
 export class MockApiRunner implements ApiRunner {
-  startWarmUp() { };
+  startWarmUp() { }
 
   async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {
-    if (!(id instanceof OeisId)) {
-      throw new TypeError('id');
-    }
+    assert(id instanceof OeisId, "Unexpected type: ", typeof id);
 
     const response = await fetch(`/expansions/${id}.txt`);
 

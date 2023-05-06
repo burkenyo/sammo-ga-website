@@ -3,6 +3,7 @@
 
 import { OeisFractionalExpansion, OeisId } from "@melodies/oeis";
 import type { ExpansionsDb } from "./expansionsDb";
+import { assert } from "@shared/utils";
 
 export enum ApiErrorCause {
   NotFound = "NotFound",
@@ -47,9 +48,7 @@ export class DefaultApiRunner implements ApiRunner {
   }
 
   async getExpansionById(id: OeisId): Promise<Either<ApiError, OeisFractionalExpansion>> {
-    if (!(id instanceof OeisId)) {
-      throw new TypeError("id");
-    }
+    assert(id instanceof OeisId, "Unexpected type: ", typeof id);
 
     // attempt to see if the expansion is already in the db
     const expansionOrError = await this.#db.getFromDb(id);

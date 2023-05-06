@@ -1,15 +1,15 @@
 // Copyright © 2023 Samuel Justin Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
-import { lazy } from "@shared/utils";
-import { ApiError } from "./apiRunner";
-import { Fractional, OeisFractionalExpansion, type OeisId } from "@melodies/oeis";
+import { assert, lazy } from "@shared/utils";
+import { ApiError, ApiErrorCause } from "./apiRunner";
+import { Fractional, OeisFractionalExpansion, OeisId } from "@melodies/oeis";
 
 type Stored<T extends { id: OeisId }> = { className: string } & Omit<T, "id">;
 
 const CLASS_NAMES: ReadonlyMap<string, string> = new Map([
-  [ApiError.name, 'ApiError'],
-  [OeisFractionalExpansion.name, 'OeisFractionExpansion']
+  [ApiError.name, "ApiError"],
+  [OeisFractionalExpansion.name, "OeisFractionExpansion"],
 ]);
 
 export class ExpansionsDb {
@@ -35,6 +35,8 @@ export class ExpansionsDb {
   });
 
   async getFromDb(id: OeisId): Promise<Optional<Either<ApiError, OeisFractionalExpansion>>> {
+    assert(id instanceof OeisId, "Unexpected type: ", typeof id);
+
     const db = await this.#db.value;
     const xact = db.transaction("DozenalExpansions", "readwrite");
     const store = xact.objectStore("DozenalExpansions");
@@ -59,23 +61,39 @@ export class ExpansionsDb {
         // hydrate into one of our classes
         switch (result.className) {
           case CLASS_NAMES.get(ApiError.name): {
-            xact.commit();
-
             const stored = result as Stored<ApiError>;
+
+            if (typeof stored.message != "string" || typeof stored.name != "string"
+              || !Object.values(ApiErrorCause).includes(stored.cause)
+            ) {
+              break;
+            }
+
+            xact.commit();
             const error = new ApiError(stored.message, stored.cause, id);
 
             resolve({ left: error });
             return;
           }
           case CLASS_NAMES.get(OeisFractionalExpansion.name): {
-            xact.commit();
-
             const stored = result as Stored<OeisFractionalExpansion>;
-            const expansion = new OeisFractionalExpansion(
-              id,
-              result.name,
-              Fractional.create(stored.expansion.radix, stored.expansion.offset, stored.expansion.digits)
-            );
+
+            if (typeof stored.name != "string" || typeof stored.expansion?.radix != "number"
+              || typeof stored.expansion?.offset != "number" || !(stored.expansion?.digits instanceof Uint8Array)
+            ) {
+              break;
+            }
+
+            let fractional: Fractional;
+
+            try {
+              fractional = Fractional.create(stored.expansion.radix, stored.expansion.offset, stored.expansion.digits);
+            } catch {
+              break;
+            }
+
+            xact.commit();
+            const expansion = new OeisFractionalExpansion(id, result.name, fractional);
 
             resolve({ right: expansion });
             return;

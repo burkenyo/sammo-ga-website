@@ -38,6 +38,21 @@ export class OeisId implements Equatable {
   equals(other: unknown): boolean {
     return other instanceof OeisId && this.value == other.value;
   }
+
+  static create(id: string | number | OeisId): OeisId {
+    switch (typeof id) {
+      case "string":
+        return OeisId.parse(id);
+      case "number":
+        return new OeisId(id);
+      default:
+        if (!(id instanceof OeisId)) {
+          throw new TypeError("id");
+        }
+
+        return id;
+    }
+  }
 }
 
 // currently, this class only supports dozenal (base-12)
