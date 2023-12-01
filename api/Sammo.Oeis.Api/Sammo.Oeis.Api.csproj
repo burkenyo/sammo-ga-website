@@ -3,8 +3,8 @@
   <PropertyGroup>
     <AssemblyTitle>sammo.ga API</AssemblyTitle>
     <Description>This web API powers the sammo.ga site.</Description>
-    <Version>0.9.6</Version>
-    <TargetFramework>net7.0</TargetFramework>
+    <Version>0.9.7</Version>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -12,12 +12,18 @@
 
     <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
+
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <GitVersion>false</GitVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitInfo" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="GitInfo" Version="3.3.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.14" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 
     <ProjectReference Include="../Sammo.Oeis.Azure/Sammo.Oeis.Azure.csproj" />
   </ItemGroup>

@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build-api",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Sammo.Oeis.Api/bin/Debug/net7.0/Sammo.Oeis.Api.dll",
+            "program": "${workspaceFolder}/Sammo.Oeis.Api/bin/Debug/net8.0/Sammo.Oeis.Api.dll",
             "args": [ ],
             "cwd": "${workspaceFolder}/Sammo.Oeis.Api",
             "stopAtEntry": false,
@@ -39,7 +39,7 @@
             "request": "launch",
             "preLaunchTask": "build-playground",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Sammo.Oeis.Playground/bin/Debug/net7.0/Sammo.Oeis.Playground.dll",
+            "program": "${workspaceFolder}/Sammo.Oeis.Playground/bin/Debug/net8.0/Sammo.Oeis.Playground.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Sammo.Oeis.Playground",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
