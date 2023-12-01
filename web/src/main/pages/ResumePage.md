@@ -8,7 +8,8 @@
 } }
 </route>
 
-<script setup lang="ts">
+<!-- lang="ts" removed for to fix builds breaking with unplugin-vue-markdown -->
+<script setup>
 import SkillsSection from "@main/components/SkillsSection.vue";
 import HeaderWithContent from "@shared/components/HeaderWithContent.vue";
 import ExperienceSection from "@main/components/ExperienceSection.vue";

@@ -7,7 +7,7 @@
 
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
-import markdown from "vite-plugin-vue-markdown";
+import markdown from "unplugin-vue-markdown/vite";
 import pages, { type VueRoute } from "vite-plugin-pages";
 import type { PluginHooks } from "rollup";
 import replace from "@rollup/plugin-replace";
@@ -23,12 +23,12 @@ import mdImageFigures from "markdown-it-image-figures";
 import type { Plugin } from "vite";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode, ssrBuild }) => {
+export default defineConfig(({ command, mode, isSsrBuild }) => {
   process.env.VITE__COMMAND = command;
   const env = loadEnv(mode, process.cwd()) as ImportMetaEnv;
 
   // ensure ssrBuild has a boolean value;
-  ssrBuild = !!ssrBuild;
+  isSsrBuild = !!isSsrBuild;
 
   return {
     root: resolve("src"),
@@ -96,7 +96,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
         name: "build-helper",
         hook: "closeBundle",
         func: () => import("./scripts/build-helper"),
-        when: ssrBuild,
+        when: isSsrBuild,
       }),
 
       // populate git-related environment variables

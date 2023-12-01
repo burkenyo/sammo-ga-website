@@ -1,7 +1,8 @@
 <!-- Copyright © 2023 Samuel Justin Gabay
      Licensed under the GNU Affero Public License, Version 3 -->
 
-<script setup lang="ts">
+<!-- lang="ts" removed for to fix builds breaking with unplugin-vue-markdown -->
+<script setup>
 import { MAX_PERMUTATION } from "@melodies/state";
 import ConstantIcon from "@melodies/components/ConstantIcon.vue"
 

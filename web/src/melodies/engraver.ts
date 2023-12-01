@@ -6,7 +6,7 @@ import { dynamicImport } from "@shared/utils";
 import type { RenderContext, StaveNote as StaveNoteType } from "vexflow";
 
 // import vexflow code dynamically
-const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.1.0/+esm");
+const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.2.3/+esm");
 
 const CLEF_OFFSET = 40;
 const NOTE_WIDTH = 24;
