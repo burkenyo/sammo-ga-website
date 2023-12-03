@@ -6,11 +6,13 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Unicode;
 
 namespace Sammo.Oeis;
 
 [DebuggerStepThrough]
-public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId>, ISpanFormattable
+public readonly record struct OeisId : IComparable<OeisId>,
+    ISpanParsable<OeisId>, ISpanFormattable, IUtf8SpanParsable<OeisId>, IUtf8SpanFormattable
 {
     public enum ParseOption
     {
@@ -27,10 +29,8 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
 
     public OeisId(int value)
     {
-        if (value is < MinValue or > MaxValue)
-        {
-            throw new ArgumentOutOfRangeException(nameof(value));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, MinValue);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxValue);
 
         Value = value;
     }
@@ -52,26 +52,20 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
         return new String(buffer[..charsWritten]);
     }
 
+    public bool TryFormat(Span<char> destination, out int charsWritten) =>
+        MemoryExtensions.TryWrite(destination, $"A{Value:D6}", out charsWritten);
 
-    public bool TryFormat(Span<char> destination, out int charsWritten)
-    {
-        // The canonical representation must always include ‘A’ with the value padded to 6 chars
-        if (destination.Length < 7)
-        {
-            charsWritten = 0;
-            return false;
-        }
-
-        destination[0] = 'A';
-
-        var result = Value.TryFormat(destination[1..], out charsWritten, "D6");
-
-        charsWritten++;
-        return result;
-    }
+    public bool TryFormat(Span<byte> destination, out int bytesWritten) =>
+        Utf8.TryWrite(destination, $"A{Value:D6}", out bytesWritten);
 
     internal string GetPaddedValue() =>
         Value.ToString("D6");
+
+    internal bool TryGetPaddedValue(Span<char> destination, out int bytesWritten) =>
+        Value.TryFormat(destination, out bytesWritten, "D6");
+
+    internal bool TryGetPaddedValue(Span<byte> destination, out int bytesWritten) =>
+        Value.TryFormat(destination, out bytesWritten, "D6");
 
     public static OeisId Parse(ReadOnlySpan<char> value, ParseOption option = ParseOption.Strict) =>
         TryParse(value, out var oeisId, option)
@@ -79,6 +73,33 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
             : throw new FormatException("Input string was not in the correct format!");
 
     public static bool TryParse(ReadOnlySpan<char> value, out OeisId id, ParseOption option = ParseOption.Strict)
+    {
+        if (value.Length >= 2 && (value[0] == 'A' || (option == ParseOption.Lax && value[0] == 'a')))
+        {
+            value = value[1..];
+        }
+        else if (value.Length == 0 || option == ParseOption.Strict)
+        {
+            id = default;
+            return false;
+        }
+
+        if (Int32.TryParse(value, out var intVal) && intVal is >= MinValue and <= MaxValue)
+        {
+            id = new OeisId(intVal);
+            return true;
+        }
+
+        id = default;
+        return false;
+    }
+
+    public static OeisId Parse(ReadOnlySpan<byte> value, ParseOption option = ParseOption.Strict) =>
+        TryParse(value, out var oeisId, option)
+            ? oeisId
+            : throw new FormatException("Input string was not in the correct format!");
+
+    public static bool TryParse(ReadOnlySpan<byte> value, out OeisId id, ParseOption option = ParseOption.Strict)
     {
         if (value.Length >= 2 && (value[0] == 'A' || (option == ParseOption.Lax && value[0] == 'a')))
         {
@@ -113,8 +134,13 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
     static OeisId ISpanParsable<OeisId>.Parse(ReadOnlySpan<char> value, IFormatProvider? provider) =>
         Parse(value);
 
-    static bool ISpanParsable<OeisId>.TryParse(
-        ReadOnlySpan<char> value, IFormatProvider? provider, out OeisId result) =>
+    static bool ISpanParsable<OeisId>.TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, out OeisId result) =>
+        TryParse(value, out result);
+
+    static OeisId IUtf8SpanParsable<OeisId>.Parse(ReadOnlySpan<byte> value, IFormatProvider? provider) =>
+        Parse(value);
+
+    static bool IUtf8SpanParsable<OeisId>.TryParse(ReadOnlySpan<byte> value, IFormatProvider? provider, out OeisId result) =>
         TryParse(value, out result);
 
     string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
@@ -123,6 +149,10 @@ public readonly record struct OeisId : IComparable<OeisId>, ISpanParsable<OeisId
     bool ISpanFormattable.TryFormat(
         Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) =>
         TryFormat(destination, out charsWritten);
+
+    bool IUtf8SpanFormattable.TryFormat(
+        Span<byte> destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider) =>
+        TryFormat(destination, out bytesWritten);
 
     public static explicit operator int(OeisId id) =>
         id.Value;
@@ -311,7 +341,7 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
     {
         int _index = 0;
 
-        readonly Dictionary<string, object> _filters = new();
+        readonly Dictionary<string, object> _filters = [];
 
         public QueryBuilder WithId(OeisId id)
         {
@@ -562,9 +592,9 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
     {
         var id = sequence.Id;
 
-        if (maxDigits < 1)
+        if (maxDigits is not null)
         {
-            throw new ArgumentOutOfRangeException(nameof(maxDigits));
+            ArgumentOutOfRangeException.ThrowIfLessThan((int) maxDigits, 1);
         }
 
         try
@@ -604,20 +634,18 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
 
     static void CheckBFileTerm(OeisId id, ReadOnlySpan<char> parsedTerm)
     {
-        switch (parsedTerm.Length)
+        switch (parsedTerm)
         {
-            case 0:
+            case { Length: 0 }:
                 // indicates the format of the b-file has changed
                 throw OeisClientException.ParseError($"Could not to parse the b-file for {id}!", id);
 
-            case > 1:
-                if (parsedTerm[0] == '-')
-                {
-                    throw OeisClientException.InvalidSequence(
-                        $"Could not interpret OEIS sequence {id} as a decimal expansion! "
-                            + "The sequence contains one or more terms that are negative.", id);
-                }
+            case ['-', ..]:
+                throw OeisClientException.InvalidSequence(
+                    $"Could not interpret OEIS sequence {id} as a decimal expansion! "
+                        + "The sequence contains one or more terms that are negative.", id);
 
+            case { Length: > 1 }:
                 throw OeisClientException.InvalidSequence(
                     $"Could not interpret OEIS sequence {id} as a decimal expansion! "
                         + "The sequence contains one or more terms that are more than a single decimal digit.", id);
@@ -1121,10 +1149,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
     public async Task<StoredOeisExpansionInfo> GetInfoForRandomAsync(int maxTries = 3)
     {
-        if (maxTries < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxTries));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxTries, 1);
 
         List<OeisClientException>? failures = null;
 
@@ -1137,7 +1162,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             }
             catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
             {
-                (failures ??= new()).Add(ex);
+                (failures ??= []).Add(ex);
 
                 _logger?.LogInformation("Adding {id} to the bad sequence list. Reason: “{message}”", ex.Id, ex.Message);
 
@@ -1150,7 +1175,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
             if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, { } message))
             {
-                (failures ??= new()).Add(OeisClientException.InvalidSequence(message, id));
+                (failures ??= []).Add(OeisClientException.InvalidSequence(message, id));
 
                 continue;
             }
@@ -1185,7 +1210,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             }
             catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
             {
-                (failures ??= new()).Add(ex);
+                (failures ??= []).Add(ex);
 
                 await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId) ex.Id!, ex.Message);
             }
@@ -1197,10 +1222,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
     public async Task<OeisDozenalExpansion> RetrieveRandomAsync(int maxTries = 3)
     {
-        if (maxTries < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxTries));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxTries, 1);
 
         List<OeisClientException>? failures = null;
 
@@ -1214,7 +1236,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             }
             catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
             {
-                (failures ??= new()).Add(ex);
+                (failures ??= []).Add(ex);
 
                 _logger?.LogInformation("Adding {id} to the bad sequence list. Reason: “{message}”", ex.Id, ex.Message);
 
@@ -1227,7 +1249,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
 
             if (await _dozenalExpansionStore.BadSequenceListContainsAsync(id) is (true, { } message))
             {
-                (failures ??= new()).Add(OeisClientException.InvalidSequence(message, id));
+                (failures ??= []).Add(OeisClientException.InvalidSequence(message, id));
 
                 continue;
             }
@@ -1262,7 +1284,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             }
             catch (OeisClientException ex) when (ex.Cause == OeisClientExceptionCause.InvalidSequence)
             {
-                (failures ??= new()).Add(ex);
+                (failures ??= []).Add(ex);
 
                 await _dozenalExpansionStore.AddToBadSequenceListAsync((OeisId) ex.Id!, ex.Message);
             }

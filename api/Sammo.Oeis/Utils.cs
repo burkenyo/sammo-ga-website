@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Numerics;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sammo.Oeis;
 
@@ -21,7 +22,7 @@ struct RentedArray<T> : IDisposable where T : unmanaged
     {
         get
         {
-            CheckDisposed();
+            ObjectDisposedException.ThrowIf(_disposed, typeof(RentedArray<T>));
 
             return _array;
         }
@@ -32,20 +33,11 @@ struct RentedArray<T> : IDisposable where T : unmanaged
         _array = s_pool.Rent(size);
     }
 
-    [DebuggerStepThrough]
-    readonly void CheckDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(null, "Array has already been returned to the pool!");
-        }
-    }
-
     public void Dispose()
     {
         if (_disposed)
         {
-            s_pool.Return(_array ?? System.Array.Empty<T>());
+            s_pool.Return(_array ?? []);
         }
 
         _disposed = true;
@@ -140,14 +132,40 @@ static class BufferUtils
     }
 }
 
-unsafe ref struct StackStringBuilder
+[InlineArray(BufferUtils.MaxStackAllocBytes)]
+struct ByteBuffer
 {
-    fixed char _array[BufferUtils.MaxStackAllocChars];
+    byte _;
+
+    public int Length =>
+        AsSpan().Length;
+
+    [UnscopedRef]
+    public Span<byte> AsSpan() =>
+        this;
+}
+
+[InlineArray(BufferUtils.MaxStackAllocChars)]
+struct CharBuffer
+{
+    char _;
+
+    public int Length =>
+        AsSpan().Length;
+
+    [UnscopedRef]
+    public Span<char> AsSpan() =>
+        this;
+}
+
+ref struct StackStringBuilder
+{
+    CharBuffer _buffer;
 
     public int Position { get; private set; }
 
     public int Capacity =>
-        BufferUtils.MaxStackAllocChars;
+         _buffer.Length;
 
     public int RemainingCapacity =>
         Capacity - Position;
@@ -159,10 +177,8 @@ unsafe ref struct StackStringBuilder
             throw BufferExhausted();
         }
 
-        fixed(char* ptr = &_array[Position])
-        {
-            value.CopyTo(new Span<char>(ptr, RemainingCapacity));
-        }
+        value.CopyTo(_buffer[Position..]);
+
 
         Position += value.Length;
     }
@@ -174,7 +190,7 @@ unsafe ref struct StackStringBuilder
             throw BufferExhausted();
         }
 
-        _array[Position] = value;
+        _buffer[Position] = value;
 
         Position++;
     }
@@ -185,24 +201,16 @@ unsafe ref struct StackStringBuilder
     public void Append<T>(T value, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
         where T : ISpanFormattable
     {
-        fixed (char* ptr = &_array[Position])
+        if (!value.TryFormat(_buffer[Position..], out var charsWritten, format, provider))
         {
-            if (!value.TryFormat(new Span<char>(ptr, RemainingCapacity), out var charsWritten, format, provider))
-            {
-                throw BufferExhausted();
-            }
-
-            Position += charsWritten;
+            throw BufferExhausted();
         }
+
+        Position += charsWritten;
     }
 
-    public override string ToString()
-    {
-        fixed (char* ptr = _array)
-        {
-            return new ReadOnlySpan<char>(ptr, Position).ToString();
-        }
-    }
+    public override string ToString() =>
+        _buffer[..Position].ToString();
 
     static InvalidOperationException BufferExhausted() =>
         new InvalidOperationException("Buffer is exhausted!");
@@ -340,7 +348,7 @@ class KeyedSemaphores<T> where T : IEquatable<T>
         }
     }
 
-    readonly Dictionary<T, RefCountedSemaphore> _locks = new();
+    readonly Dictionary<T, RefCountedSemaphore> _locks = [];
 
     public IBorrowedSemaphore Borrow(T item)
     {

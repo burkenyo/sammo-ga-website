@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
+
+    <!-- Suppress "Use AsSpan instead of Range-based indexers for string when appropriate" -->
+    <NoWarn>CA1831</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

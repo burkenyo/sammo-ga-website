@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -44,22 +45,17 @@ public partial class Fractional : IEquatable<Fractional>
 
         public DigitArray(int count, int radix)
         {
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-            if (radix < MinRadix || radix > MaxRadix)
-            {
-                throw new ArgumentOutOfRangeException(nameof(radix));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(radix, MinRadix);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(radix, MaxRadix);
 
             // Must set radix at least before bailing
             Radix = radix;
 
             if (count == 0)
             {
-                _blocks = Array.Empty<ulong>();
+                _blocks = [];
 
                 return;
             }
@@ -356,7 +352,6 @@ public partial class Fractional : IEquatable<Fractional>
                 }
 
                 break;
-
         }
 
         switch (offset)
@@ -463,6 +458,8 @@ public partial class Fractional : IEquatable<Fractional>
 
     static Fractional FromRatioInternal(BigInteger num, BigInteger den, int radix, int numFracDigits)
     {
+        Reduce(ref num, ref den);
+
         var intPart = BigInteger.DivRem(num, den, out var fracPart);
 
         var numIntDigits = intPart == 0
@@ -476,155 +473,42 @@ public partial class Fractional : IEquatable<Fractional>
         return CreateInternal(digits, digits.Count - numFracDigits);
     }
 
-    public static Fractional FromRatio(long num, long den, int radix, int numFracDigits)
+    public static Fractional FromRatio<T>(T num, T den, int radix, int numFracDigits) where T : IBinaryInteger<T>
     {
-        if (den == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(den));
-        }
-        // reject opposite signs, allowing for num = 0
-        if (Math.Sign(num) + Math.Sign(den) == 0)
-        {
-            throw new ArgumentException($"{nameof(num)} and {nameof(den)} must have the same sign!)");
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(den);
+        ArgumentOutOfRangeException.ThrowIfNegative(num);
+        ArgumentOutOfRangeException.ThrowIfNegative(numFracDigits);
 
-        switch (numFracDigits)
+        if (numFracDigits == 0)
         {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(numFracDigits));
-            case 0:
-                if (num == 0)
-                {
-                    return Zero(radix);
-                }
-                if (num == den)
-                {
-                    return One(radix);
-                }
-
-                break;
+            if (num == T.Zero)
+            {
+                return Zero(radix);
+            }
+            if (num == den)
+            {
+                return One(radix);
+            }
         }
 
-        if (den < 0)
-        {
-            num = -num;
-            den = -den;
-        }
-
-        return FromRatioInternal(num, den, radix, numFracDigits);
+        return FromRatioInternal(ToBigInteger(num), ToBigInteger(den), radix, numFracDigits);
     }
 
-    public static Fractional FromRatio(ulong num, ulong den, int radix, int numFracDigits)
+    public static Fractional FromInteger<T>(T value, int radix) where T : IBinaryInteger<T>
     {
-        if (den == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(den));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(value);
 
-        switch (numFracDigits)
-        {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(numFracDigits));
-            case 0:
-                if (num == 0)
-                {
-                    return Zero(radix);
-                }
-                if (num == den)
-                {
-                    return One(radix);
-                }
-
-                break;
-        }
-
-        return FromRatioInternal(num, den, radix, numFracDigits);
-    }
-
-    public static Fractional FromRatio(BigInteger num, BigInteger den, int radix, int numFracDigits)
-    {
-        // BigIntegers can’t be compile-time constants, so no gains from pattern matching
-        if (den == BigInteger.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(den));
-        }
-        // reject opposite signs, allowing for num = 0
-        if (num.Sign + den.Sign == 0)
-        {
-            throw new ArgumentException($"{nameof(num)} and {nameof(den)} must have the same sign!)");
-        }
-
-        switch (numFracDigits)
-        {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(numFracDigits));
-            case 0:
-                if (num == BigInteger.Zero)
-                {
-                    return Zero(radix);
-                }
-                if (num == den)
-                {
-                    return One(radix);
-                }
-
-                break;
-        }
-
-        if (den < BigInteger.Zero)
-        {
-            num = -num;
-            den = -den;
-        }
-
-
-        Reduce(ref num, ref den);
-
-        return FromRatioInternal(num, den, radix, numFracDigits);
-    }
-
-    public static Fractional FromInteger(long value, int radix) =>
-        value switch
-        {
-            < 0 =>
-                throw new ArgumentOutOfRangeException(nameof(value)),
-            0 =>
-                Zero(radix),
-            1 =>
-                One(radix),
-            _ =>
-                FromRatioInternal(value, BigInteger.One, radix, 0)
-        };
-
-    public static Fractional FromInteger(ulong value, int radix) =>
-        value switch
-        {
-            0 =>
-                Zero(radix),
-            1 =>
-                One(radix),
-            _ =>
-                FromRatioInternal(value, BigInteger.One, radix, 0)
-        };
-
-    public static Fractional FromInteger(BigInteger value, int radix)
-    {
-        if(value < BigInteger.One)
-        {
-            throw new ArgumentOutOfRangeException(nameof(value));
-        }
-
-
-        if(value == BigInteger.Zero)
+        if (value == T.Zero)
         {
             return Zero(radix);
         }
-        if(value == BigInteger.One)
+
+        if (value == T.One)
         {
             return One(radix);
         }
 
-        return FromRatioInternal(value, BigInteger.One, radix, 0);
+        return FromRatioInternal(ToBigInteger(value), BigInteger.One, radix, 0);
     }
 
     static Fractional FromScaled(BigInteger value, int fromRadix, int toRadix, int numFromRadixFracDigits)
@@ -667,10 +551,10 @@ public partial class Fractional : IEquatable<Fractional>
             throw new ArgumentOutOfRangeException(nameof(value));
         }
 
+        ArgumentOutOfRangeException.ThrowIfNegative(value);
+
         switch (value)
         {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(value));
             case 0:
                 return Zero(radix);
             case 1:
@@ -723,10 +607,10 @@ public partial class Fractional : IEquatable<Fractional>
 
     public static Fractional FromDecimal(decimal value, int radix)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(value);
+
         switch (value)
         {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(value));
             case 0:
                 return Zero(radix);
             case 1:
@@ -741,7 +625,7 @@ public partial class Fractional : IEquatable<Fractional>
         // blank out the scale but keep the sign (lowest bit)
         flags &= 0x1;
 
-        return FromScaled(new BigInteger(value), 10, radix, scale);
+        return FromScaled((BigInteger) value, 10, radix, scale);
     }
 
     public static Fractional FromFractional(Fractional value, int radix)
@@ -815,6 +699,40 @@ public partial class Fractional : IEquatable<Fractional>
         return CreateInternal(digits, offset);
     }
 
+    static readonly Dictionary<Type, Delegate> s_converterCache = [];
+
+    static BigInteger ToBigInteger<T>(T value) where T : IBinaryInteger<T>
+    {
+        if (value is BigInteger bi)
+        {
+            return bi;
+        }
+
+        if (s_converterCache.TryGetValue(typeof(T), out var @delegate))
+        {
+            return Unsafe.As<Func<T, BigInteger>>(@delegate).Invoke(value);
+        }
+
+        // try to find a convert op method on BigInteger
+        var method = typeof(BigInteger).GetMethod("op_Implicit", BindingFlags.Public | BindingFlags.Static, [typeof(T)]);
+        if (method is null)
+        {
+            // try to find a convert op method on T
+            method = typeof(T).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .SingleOrDefault(m => m.Name == "op_Implicit" && m.ReturnType == typeof(BigInteger));
+
+            if (method is null)
+            {
+                throw new ArgumentException($"Cannot convert value of {typeof(T)} to {typeof(BigInteger)}!", nameof(value));
+            }
+        }
+
+        var typedDelegate = method.CreateDelegate<Func<T, BigInteger>>();
+        s_converterCache[typeof(T)] = typedDelegate;
+
+        return typedDelegate.Invoke(value);
+    }
+
     public override string ToString() =>
         ToStringInternal(null, s_defaultFractionalSeparator, DefaultMaxDigits);
 
@@ -824,7 +742,7 @@ public partial class Fractional : IEquatable<Fractional>
     public string ToString(
         string? digitMap, char fractionalSeparator = s_defaultFractionalSeparator, int? maxDigits = DefaultMaxDigits)
     {
-        if (!char.IsPunctuation(fractionalSeparator))
+        if (!Char.IsPunctuation(fractionalSeparator))
         {
             throw new ArgumentException(
                 "Fractional separator must be a punctuation symbol!", nameof(fractionalSeparator));
@@ -832,10 +750,7 @@ public partial class Fractional : IEquatable<Fractional>
 
         if (digitMap is not null)
         {
-            if (digitMap.Length != Radix)
-            {
-                throw new ArgumentException("Length of digit map must match radix!", nameof(digitMap));
-            }
+            ArgumentOutOfRangeException.ThrowIfNotEqual(digitMap.Length, Radix);
 
             // profiling revealed creating a HashSet is much faster than searching with a regex;
             var set = new HashSet<char>(digitMap.Length);
@@ -853,9 +768,9 @@ public partial class Fractional : IEquatable<Fractional>
 
     private protected string ToStringInternal(string? digitMap, char fractionalSeparator, int? maxDigits)
     {
-        if (maxDigits < 1)
+        if (maxDigits is not null)
         {
-            throw new ArgumentOutOfRangeException(nameof(maxDigits));
+            ArgumentOutOfRangeException.ThrowIfLessThan((int) maxDigits, 1);
         }
 
         Func<byte, char> getDigit = digitMap is null
@@ -966,6 +881,8 @@ public partial class Fractional : IEquatable<Fractional>
 
     public override int GetHashCode() =>
         HashCode.Combine(_digits, Offset);
+
+
 }
 
 public partial class BigDecimal : Fractional

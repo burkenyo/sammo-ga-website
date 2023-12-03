@@ -22,7 +22,7 @@ public static class NumericsTests
     [Fact]
     public static void BigDecimalFactories_ValidInput_Works()
     {
-        AssertFractional<BigDecimal>(BigDecimal.Create(new byte[] { 3, 7, 8 }, 2),
+        AssertFractional<BigDecimal>(BigDecimal.Create([3, 7, 8], 2),
             radix: 10, digits: "37:8");
         AssertFractional<BigDecimal>(BigDecimal.FromDecimal(89.6000m),
             radix: 10, digits: "89:600_0");
@@ -38,16 +38,12 @@ public static class NumericsTests
             radix: 10, digits: "1:");
         AssertFractional<BigDecimal>(BigDecimal.FromRatio(400, 8_361_293, 20),
             radix: 10, digits: ":000_047_839_490_853_866_74");
-        AssertFractional<BigDecimal>(BigDecimal.FromRatio(-400, -8_361_293, 20),
-            radix: 10, digits: ":000_047_839_490_853_866_74");
-        AssertFractional<BigDecimal>(BigDecimal.FromRatio(0, -8_361_293, 6),
-            radix: 10, digits: ":000_000");
     }
 
     [Fact]
     public static void DozenalFactories_ValidInput_Works()
     {
-        AssertFractional<Dozenal>(Dozenal.Create(new byte[] { 3, 7, 8 }, 2),
+        AssertFractional<Dozenal>(Dozenal.Create([3, 7, 8], 2),
             radix: 12, digits: "37:8");
         AssertFractional<Dozenal>(Dozenal.FromDecimal(89.6000m),
             radix: 12, digits: "75:724");
@@ -63,17 +59,13 @@ public static class NumericsTests
             radix: 12, "1:");
         AssertFractional<Dozenal>(Dozenal.FromRatio(400, 8_361_293, 20),
             radix: 12, digits: ":000_0BA_A21_321_A1A_903_76");
-        AssertFractional<Dozenal>(Dozenal.FromRatio(-400, -8_361_293, 20),
-            radix: 12, digits: ":000_0BA_A21_321_A1A_903_76");
-        AssertFractional<Dozenal>(Dozenal.FromRatio(0, -8_361_293, 6),
-            radix: 12, digits: ":000_000");
     }
 
     [Fact]
     public static void BigDecimalFactories_Garbage_Throws()
     {
         // digit out-of-range
-        Assert.Throws<InvalidOperationException>(() => BigDecimal.Create(new byte[] { 3, 7, 18 }, 2));
+        Assert.Throws<InvalidOperationException>(() => BigDecimal.Create([3, 7, 18], 2));
 
         //negative numbers disallowed
         Assert.Throws<ArgumentOutOfRangeException>(() => BigDecimal.FromDecimal(-89.6m));
@@ -82,7 +74,7 @@ public static class NumericsTests
         Assert.Throws<ArgumentOutOfRangeException>(() => BigDecimal.FromInteger(BigInteger.MinusOne));
 
         // mismatched sign
-        Assert.Throws<ArgumentException>(() => BigDecimal.FromRatio(-400, 8_361_293, 20));
+        Assert.Throws<ArgumentOutOfRangeException>(() => BigDecimal.FromRatio(-400, 8_361_293, 20));
 
         // 0 denominator
         Assert.Throws<ArgumentOutOfRangeException>(() => BigDecimal.FromRatio(718, 0, 20));
@@ -92,7 +84,7 @@ public static class NumericsTests
     public static void DozenalFactories_Garbage_Throws()
     {
         // digit out-of-range
-        Assert.Throws<InvalidOperationException>(() => Dozenal.Create(new byte[] { 3, 7, 18 }, 2));
+        Assert.Throws<InvalidOperationException>(() => Dozenal.Create([3, 7, 18], 2));
 
         //negative numbers disallowed
         Assert.Throws<ArgumentOutOfRangeException>(() => Dozenal.FromDecimal(-89.6m));
@@ -101,7 +93,7 @@ public static class NumericsTests
         Assert.Throws<ArgumentOutOfRangeException>(() => Dozenal.FromInteger(BigInteger.MinusOne));
 
         // mismatched sign
-        Assert.Throws<ArgumentException>(() => Dozenal.FromRatio(-400, 8_361_293, 20));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Dozenal.FromRatio(-400, 8_361_293, 20));
 
         // 0 denominator
         Assert.Throws<ArgumentOutOfRangeException>(() => Dozenal.FromRatio(718, 0, 20));
@@ -178,43 +170,43 @@ public static class NumericsTests
     public static void DigitArray_Fill_FillCountMatches()
     {
         var digits0 = new Fractional.DigitArray(3, 5);
-        var filled0 = digits0.Fill(Array.Empty<byte>());
+        var filled0 = digits0.Fill([]);
 
         Assert.Equal(0, filled0);
 
 
         var digits1 = new Fractional.DigitArray(3, 5);
-        var filled1 = digits1.Fill(new byte[] { 4 });
+        var filled1 = digits1.Fill([4]);
 
         Assert.Equal(1, filled1);
 
         var digits2 = new Fractional.DigitArray(3, 7);
-        var filled2 = digits2.Fill(new byte[] { 6, 4 });
+        var filled2 = digits2.Fill([6, 4]);
 
         Assert.Equal(2, filled2);
 
         var digits3 = new Fractional.DigitArray(3, 8);
-        var filled3 = digits3.Fill(new byte[] { 6, 4, 7 });
+        var filled3 = digits3.Fill([6, 4, 7]);
 
         Assert.Equal(3, filled3);
 
         var digits4 = new Fractional.DigitArray(3, 10);
-        var filled4 = digits4.Fill(new byte[] { 6, 4, 9, 7 });
+        var filled4 = digits4.Fill([6, 4, 9, 7]);
 
         Assert.Equal(3, filled4);
 
         var digits5 = new Fractional.DigitArray(30, Fractional.MaxRadix);
-        var filled5 = digits5.Fill(new byte[] { 6, 4, 9, 7, 6, 4, 9, 7, 6, 4, 9, 7 });
+        var filled5 = digits5.Fill([6, 4, 9, 7, 6, 4, 9, 7, 6, 4, 9, 7]);
 
         Assert.Equal(12, filled5);
 
         var digits6 = new Fractional.DigitArray(0, 2);
-        var filled6 = digits6.Fill(new byte[] { 6, 4, 9, 7 });
+        var filled6 = digits6.Fill([6, 4, 9, 7]);
 
         Assert.Equal(0, filled6);
 
         var digits7 = new Fractional.DigitArray(1, 2);
-        var filled7 = digits7.Fill(Array.Empty<byte>());
+        var filled7 = digits7.Fill([]);
 
         Assert.Equal(0, filled7);
     }
@@ -228,32 +220,32 @@ public static class NumericsTests
         Assert.Equal(0, filled0);
 
         var digits1 = new Fractional.DigitArray(3, 5);
-        var filled1 = await digits1.FillAsync(new byte[] { 4 }.ToAsyncEnumerable());
+        var filled1 = await digits1.FillAsync(MakeAsyncEnum([4]));
 
         Assert.Equal(1, filled1);
 
         var digits2 = new Fractional.DigitArray(3, 7);
-        var filled2 = await digits2.FillAsync(new byte[] { 6, 4 }.ToAsyncEnumerable());
+        var filled2 = await digits2.FillAsync(MakeAsyncEnum([6, 4]));
 
         Assert.Equal(2, filled2);
 
         var digits3 = new Fractional.DigitArray(3, 8);
-        var filled3 = await digits3.FillAsync(new byte[] { 6, 4, 7 }.ToAsyncEnumerable());
+        var filled3 = await digits3.FillAsync(MakeAsyncEnum([6, 4, 7]));
 
         Assert.Equal(3, filled3);
 
         var digits4 = new Fractional.DigitArray(3, 10);
-        var filled4 = await digits4.FillAsync(new byte[] { 6, 4, 9, 7 }.ToAsyncEnumerable());
+        var filled4 = await digits4.FillAsync(MakeAsyncEnum([6, 4, 9, 7]));
 
         Assert.Equal(3, filled4);
 
         var digits5 = new Fractional.DigitArray(30, Fractional.MaxRadix);
-        var filled5 = await digits5.FillAsync(new byte[] { 6, 4, 9, 7, 6, 4, 9, 7, 6, 4, 9, 7 }.ToAsyncEnumerable());
+        var filled5 = await digits5.FillAsync(MakeAsyncEnum([6, 4, 9, 7, 6, 4, 9, 7, 6, 4, 9, 7]));
 
         Assert.Equal(12, filled5);
 
         var digits6 = new Fractional.DigitArray(0, 2);
-        var filled6 = await digits6.FillAsync(new byte[] { 6, 4, 9, 7 }.ToAsyncEnumerable());
+        var filled6 = await digits6.FillAsync(MakeAsyncEnum([6, 4, 9, 7]));
 
         Assert.Equal(0, filled6);
 
@@ -270,10 +262,10 @@ public static class NumericsTests
 
         Assert.False(digits.ReadOnly);
 
-        digits.Fill(new byte[] { 11 });
+        digits.Fill([11]);
 
         Assert.True(digits.ReadOnly);
-        Assert.Throws<InvalidOperationException>(() => digits.Fill(Array.Empty<byte>()));
+        Assert.Throws<InvalidOperationException>(() => digits.Fill([]));
     }
 
     [Fact]
@@ -283,7 +275,7 @@ public static class NumericsTests
 
         Assert.False(digits.ReadOnly);
 
-        await digits.FillAsync(new byte[] { 11 }.ToAsyncEnumerable());
+        await digits.FillAsync(MakeAsyncEnum([11]));
 
         Assert.True(digits.ReadOnly);
         await Assert.ThrowsAsync<InvalidOperationException>(() => digits.FillAsync(AsyncEnumerable.Empty<byte>()));
@@ -304,13 +296,13 @@ public static class NumericsTests
     {
         var digits = new Fractional.DigitArray(20, 80);
 
-        var expectedDigits = new byte[]
-        {
+        byte[] expectedDigits =
+        [
             3, 26, 7, 0, 79,
             56, 38, 1, 15, 32,
             37, 40, 45, 6, 72,
             4, 9, 32, 27, 50
-        };
+        ];
 
         digits.Fill(expectedDigits);
 
@@ -321,20 +313,24 @@ public static class NumericsTests
     }
 
     [Fact]
-    public static void DigitArray_Enumerate_WhatGoesInMustComeOUt()
+    public static void DigitArray_Enumerate_WhatGoesInMustComeOut()
     {
         var digits = new Fractional.DigitArray(20, 80);
 
-        var expectedDigits = new byte[]
-        {
+        byte[] expectedDigits =
+        [
             3, 26, 7, 0, 79,
             56, 38, 1, 15, 32,
             37, 40, 45, 6, 72,
             4, 9, 32, 27, 50
-        };
+        ];
 
         digits.Fill(expectedDigits);
 
         Assert.Equal(expectedDigits, digits);
     }
+
+    // helper to support type inference with collection initializer
+    static IAsyncEnumerable<byte> MakeAsyncEnum(IEnumerable<byte> enumerable) =>
+        enumerable.ToAsyncEnumerable();
 }

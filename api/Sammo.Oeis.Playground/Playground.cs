@@ -91,7 +91,7 @@ static partial class Playground
     [Runner]
     static async Task TagBlobsAsync(BlobContainerClient containerClient, Dictionary<string, int> knownConstants)
     {
-        var empty = new Dictionary<string, string>();
+        Dictionary<string, string> empty = [];
 
         foreach (var (tag, id) in knownConstants)
         {

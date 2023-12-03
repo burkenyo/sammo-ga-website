@@ -64,7 +64,7 @@ class Config : IConfig
     public class CorsConfig : IConfig
     {
         public bool AllowAnyOrigin { get; init; }
-        public IReadOnlyList<Uri> AllowedOrigins { get; init; } = Array.Empty<Uri>();
+        public IReadOnlyList<Uri> AllowedOrigins { get; init; } = [];
 
         public bool UseCors =>
             AllowAnyOrigin || AllowedOrigins.Any();

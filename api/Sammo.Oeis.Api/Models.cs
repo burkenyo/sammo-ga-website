@@ -8,7 +8,6 @@ namespace Sammo.Oeis.Api;
 [JsonSerializable(typeof(OeisExpansionDto))]
 [JsonSerializable(typeof(OeisClientErrorDto))]
 [JsonSerializable(typeof(StoredOeisExpansionInfoDto))]
-[JsonSerializable(typeof(OeisExpansionDto))]
 [JsonSerializable(typeof(GitInfoDto))]
 partial class DtoSerializerContext : JsonSerializerContext { }
 

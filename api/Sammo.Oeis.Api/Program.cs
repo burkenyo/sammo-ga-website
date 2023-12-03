@@ -4,7 +4,7 @@
 using Sammo.Oeis;
 using Sammo.Oeis.Api;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 var config = builder.Configuration.Get<Config>() ?? new();
 WebApplication app;
 
