@@ -62,9 +62,9 @@ static class EndpointConventionBuilderExtensions
     public static TBuilder WithParameterDescriptions<TBuilder>(this TBuilder builder, IEnumerable<string> descriptions) where TBuilder : IEndpointConventionBuilder =>
         builder.WithOpenApi(operation =>
         {
-            foreach (var (@param, description) in operation.Parameters.Zip(descriptions))
+            foreach (var (param, description) in operation.Parameters.Zip(descriptions))
             {
-                @param.Description = description;
+                param.Description = description;
             }
 
             return operation;

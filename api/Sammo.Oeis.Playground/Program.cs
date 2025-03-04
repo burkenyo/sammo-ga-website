@@ -17,7 +17,7 @@ static class Program
         Trace.Listeners.Add(new ConsoleTraceListener());
 
         static string? GetDisplayName(MethodInfo m) =>
-            m.Name.EndsWith("Async")
+            m.Name.EndsWith("Async", StringComparison.Ordinal)
                 ? m.Name[..^5]
                 : m.Name;
 
@@ -26,7 +26,7 @@ static class Program
             .Where(m => m.IsDefined(typeof(RunnerAttribute)))
             .ToList();
 
-        var toRun = args.Contains("*")
+        var toRun = args.Contains("*", StringComparer.Ordinal)
             ? runners
             : runners
                 .IntersectBy(args, m => GetDisplayName(m))

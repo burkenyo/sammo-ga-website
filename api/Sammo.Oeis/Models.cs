@@ -54,7 +54,7 @@ public readonly record struct OeisId : IComparable<OeisId>,
     }
 
     public bool TryFormat(Span<char> destination, out int charsWritten) =>
-        MemoryExtensions.TryWrite(destination, $"A{Value:D6}", out charsWritten);
+        destination.TryWrite($"A{Value:D6}", out charsWritten);
 
     public bool TryFormat(Span<byte> destination, out int bytesWritten) =>
         Utf8.TryWrite(destination, $"A{Value:D6}", out bytesWritten);

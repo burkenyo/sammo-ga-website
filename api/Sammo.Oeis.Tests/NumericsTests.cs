@@ -2,6 +2,7 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 using System.Numerics;
+
 namespace Sammo.Oeis.Tests;
 
 public static class NumericsTests

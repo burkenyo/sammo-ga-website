@@ -230,5 +230,5 @@ public class DozenalExpansionAzureBlobStore : IDozenalExpansionStore
     }
 
     static bool ShouldWrap(Exception ex) =>
-        ex is RequestFailedException || ex is AuthenticationFailedException || ex is IOException;
+        ex is RequestFailedException or AuthenticationFailedException or IOException;
 }

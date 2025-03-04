@@ -12,7 +12,7 @@ namespace Sammo.Oeis.Playground;
 class RunnerAttribute : Attribute;
 
 [SuppressMessage("IDE", "IDE0051:UnusedPrivateMembers")]
-static partial class Playground
+static class Playground
 {
     static void Print()
     {

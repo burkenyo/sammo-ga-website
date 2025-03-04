@@ -161,14 +161,14 @@ public partial class DecimalExpansionDownloader : IDecimalExpansionDownloader
 
                 return new SearchResult(totalCount, index, new OeisSequence(id, name, offset));
             }
-            catch (Exception ex) when (ex is HttpRequestException || ex is IOException)
+            catch (Exception ex) when (ex is HttpRequestException or IOException)
             {
-                throw OeisClientException.IOError($"Could not execute a query against OEIS!", ex);
+                throw OeisClientException.IOError("Could not execute a query against OEIS!", ex);
             }
             catch (Exception ex) when (ex.IsSystemTextJsonException())
             {
                 throw OeisClientException
-                    .ParseError($"OEIS query results were not returned in the expected JSON format!", ex);
+                    .ParseError("OEIS query results were not returned in the expected JSON format!", ex);
             }
 
             static int ParseOffset(OeisId id, string offsetPair)
@@ -303,7 +303,7 @@ public partial class DecimalExpansionDownloader : IDecimalExpansionDownloader
 
             return new OeisDecimalExpansion(sequence.Id, sequence.Name, BigDecimal.Create(digits, sequence.Offset));
         }
-        catch (Exception ex) when (ex is HttpRequestException || ex is IOException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException)
         {
             throw OeisClientException.IOError($"Could not retrieve the b-file for {id} from OEIS!", id, ex);
         }
