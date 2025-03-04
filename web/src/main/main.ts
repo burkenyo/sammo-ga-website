@@ -1,4 +1,4 @@
-// Copyright © 2024 Samuel Justin Speth Gabay
+// Copyright © 2025 Samuel Justin Speth Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
 // this reference enables “import routes from "~pages"” to pass type checking

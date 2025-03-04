@@ -1,4 +1,4 @@
-// Copyright © 2024 Samuel Justin Speth Gabay
+// Copyright © 2025 Samuel Justin Speth Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
 // mini-plugin to automatically set target="_blank" when needed for dynamic urls, i.e. from props, refs, etc.
