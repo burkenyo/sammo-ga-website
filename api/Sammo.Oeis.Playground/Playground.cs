@@ -30,11 +30,11 @@ static partial class Playground
         Print(expansion.Expansion.ToString());
     }
 
-    static async Task PlayWithOeisAsyncInternal(IOeisDecimalExpansionDownloader downloader,
-        IOeisDozenalExpansionStore store,
+    static async Task PlayWithOeisAsyncInternal(IDecimalExpansionDownloader downloader,
+        IDozenalExpansionStore store,
         Dictionary<string, int> knownConstants)
     {
-        var service = new OeisDozenalExpansionService(downloader, store);
+        var service = new DozenalExpansionService(downloader, store);
 
         foreach (var (tag, id) in knownConstants)
         {
@@ -75,15 +75,15 @@ static partial class Playground
     }
 
     [Runner]
-    static Task PlayWithOeisLocalAsync(OeisDecimalExpansionDownloader downloader,
-        OeisDozenalExpansionFileStore store, Dictionary<string, int> knownConstants)
+    static Task PlayWithOeisLocalAsync(DecimalExpansionDownloader downloader,
+        DozenalExpansionFileStore store, Dictionary<string, int> knownConstants)
     {
         return PlayWithOeisAsyncInternal(downloader, store, knownConstants);
     }
 
     [Runner]
-    static Task PlayWithOeisAzureAsync(OeisDecimalExpansionDownloader downloader,
-        OeisDozenalExpansionAzureBlobStore store, Dictionary<string, int> knownConstants)
+    static Task PlayWithOeisAzureAsync(DecimalExpansionDownloader downloader,
+        DozenalExpansionAzureBlobStore store, Dictionary<string, int> knownConstants)
     {
         return PlayWithOeisAsyncInternal(downloader, store, knownConstants);
     }
@@ -128,10 +128,10 @@ static partial class Playground
     }
 
     [Runner]
-    static async Task GetRandomExpansionsAsync(OeisDecimalExpansionDownloader downloader,
-        OeisDozenalExpansionFileStore store)
+    static async Task GetRandomExpansionsAsync(DecimalExpansionDownloader downloader,
+        DozenalExpansionFileStore store)
     {
-        var service = new OeisDozenalExpansionService(downloader, store);
+        var service = new DozenalExpansionService(downloader, store);
 
         for (var i = 0; i < 1000; i++)
         {

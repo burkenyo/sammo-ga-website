@@ -37,15 +37,15 @@ static class StartupExtensions
             dataDir.Create();
         }
 
-        var fileStore = new OeisDozenalExpansionFileStore(dataDir);
-        services.AddSingleton<IOeisDozenalExpansionStore>(fileStore);
+        var fileStore = new DozenalExpansionFileStore(dataDir);
+        services.AddSingleton<IDozenalExpansionStore>(fileStore);
     }
 
     public static void AddLocalTestingOeisDozenalExpansionService(
         this IServiceCollection services, DirectoryInfo dataDir)
     {
-        services.AddScoped<IOeisDozenalExpansionService>(provider =>
-            ActivatorUtilities.CreateInstance<LocalTestingOeisDozenalExpansionService>(provider, dataDir));
+        services.AddScoped<IDozenalExpansionService>(provider =>
+            ActivatorUtilities.CreateInstance<LocalTestingDozenalExpansionService>(provider, dataDir));
     }
 
     public static void AddKeyVaultStoredConfiguration(
@@ -66,7 +66,7 @@ static class StartupExtensions
         var containerUri = new Uri($"https://{accountName}.blob.core.windows.net/{containerName}");
 
         services.AddSingleton(new BlobContainerClient(containerUri, cred));
-        services.AddSingleton<IOeisDozenalExpansionStore, OeisDozenalExpansionAzureBlobStore>();
+        services.AddSingleton<IDozenalExpansionStore, DozenalExpansionAzureBlobStore>();
     }
 
     public static void AddThisAssemblySwaggerGen(this IServiceCollection services) =>
@@ -104,7 +104,7 @@ static class StartupExtensions
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(dataDir.FullName),
-            RequestPath = LocalTestingOeisDozenalExpansionService.UriPath
+            RequestPath = LocalTestingDozenalExpansionService.UriPath
         });
 }
 

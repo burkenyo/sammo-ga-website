@@ -17,7 +17,7 @@ namespace Sammo.Oeis;
 /// Represents a number in any radix between 2 and <see cref="Byte.MaxValue" /> + 1
 /// with an integer part and and a fractional part of any precision.
 /// </summary>
-public partial class Fractional : IEquatable<Fractional>
+public class Fractional : IEquatable<Fractional>
 {
     /// <summary>
     /// A collection that efficiently stores the digits of a fractional number.

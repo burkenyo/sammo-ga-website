@@ -39,9 +39,9 @@ static class Program
                 .AddSingleton(p => GetDataDirectory())
                 .AddSingleton(p => GetContainerClient())
                 .AddTransient<HttpClient>()
-                .AddSingleton<OeisDecimalExpansionDownloader>()
-                .AddSingleton<OeisDozenalExpansionFileStore>()
-                .AddSingleton<OeisDozenalExpansionAzureBlobStore>()
+                .AddSingleton<DecimalExpansionDownloader>()
+                .AddSingleton<DozenalExpansionFileStore>()
+                .AddSingleton<DozenalExpansionAzureBlobStore>()
                 .BuildServiceProvider();
 
             foreach (var method in toRun)

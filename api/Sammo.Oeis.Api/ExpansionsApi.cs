@@ -65,10 +65,10 @@ class ExpansionsApi : IWebApi
         group.AddCors(corsConfig, static policy => policy.WithExposedHeaders(HeaderNames.ContentLocation));
     }
 
-    readonly IOeisDozenalExpansionService _expansionService;
+    readonly IDozenalExpansionService _expansionService;
     readonly ILogger _logger;
 
-    public ExpansionsApi(IOeisDozenalExpansionService expansionService, ILogger<ExpansionsApi> logger)
+    public ExpansionsApi(IDozenalExpansionService expansionService, ILogger<ExpansionsApi> logger)
     {
         _expansionService = expansionService;
         _logger = logger;
@@ -126,10 +126,10 @@ class ExpansionsApi : IWebApi
 
         switch (ex.Cause)
         {
-            case OeisClientExceptionCause.InvalidSequence:
+            case ClientExceptionCause.InvalidSequence:
                 return Results.BadRequest(error);
 
-            case OeisClientExceptionCause.NotFound:
+            case ClientExceptionCause.NotFound:
                 return Results.NotFound(error);
         }
 

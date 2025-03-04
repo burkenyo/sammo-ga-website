@@ -5,21 +5,21 @@ using System.Text;
 
 namespace Sammo.Oeis.Api;
 
-class LocalTestingOeisDozenalExpansionService : IOeisDozenalExpansionService
+class LocalTestingDozenalExpansionService : IDozenalExpansionService
 {
     public const string UriPath = "/data";
 
     readonly DirectoryInfo _dataDir;
     readonly HttpRequest _httpRequest;
-    readonly OeisDozenalExpansionService _service;
+    readonly DozenalExpansionService _service;
 
-    public LocalTestingOeisDozenalExpansionService(IOeisDecimalExpansionDownloader decimalExpansionDownloader,
-        IOeisDozenalExpansionStore dozenalExpansionStore, DirectoryInfo dataDir,
-        IHttpContextAccessor httpContextAccessor, ILogger<OeisDozenalExpansionService> logger)
+    public LocalTestingDozenalExpansionService(IDecimalExpansionDownloader decimalExpansionDownloader,
+        IDozenalExpansionStore dozenalExpansionStore, DirectoryInfo dataDir,
+        IHttpContextAccessor httpContextAccessor, ILogger<DozenalExpansionService> logger)
     {
         _dataDir = dataDir;
         _httpRequest = httpContextAccessor.HttpContext!.Request;
-        _service = new OeisDozenalExpansionService(decimalExpansionDownloader, dozenalExpansionStore, logger);
+        _service = new DozenalExpansionService(decimalExpansionDownloader, dozenalExpansionStore, logger);
     }
 
     public async Task<StoredOeisExpansionInfo> GetInfoAsync(OeisId id) =>

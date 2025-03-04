@@ -9,7 +9,7 @@ using Azure.Storage.Blobs.Specialized;
 
 namespace Sammo.Oeis;
 
-public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
+public class DozenalExpansionAzureBlobStore : IDozenalExpansionStore
 {
     /// <summary>
     /// since every invocation of CreateIfNotExistsAsync will need options, cache this
@@ -37,7 +37,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
 
     readonly BlobContainerClient _client;
 
-    public OeisDozenalExpansionAzureBlobStore(BlobContainerClient client)
+    public DozenalExpansionAzureBlobStore(BlobContainerClient client)
     {
         _client = client;
     }
@@ -68,18 +68,18 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
         {
             // optimize for only pulling the header from the blob
             using var stream = blobClient.OpenRead(bufferSize: 1024);
-            var (readId, name, preview) = await OeisDozenalExpansionSerializer.ReadHeaderAndPreviewAsync(stream);
+            var (readId, name, preview) = await DozenalExpansionSerializer.ReadHeaderAndPreviewAsync(stream);
 
             if (readId != id)
             {
-                throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id);
+                throw IDozenalExpansionStore.Errors.IO.Retrieve(id);
             }
 
             return new StoredOeisExpansionInfo(id, name, Dozenal.Radix, preview, blobClient.Uri);
         }
         catch (Exception ex) when (ShouldWrap(ex))
         {
-            throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id, ex);
+            throw IDozenalExpansionStore.Errors.IO.Retrieve(id, ex);
         }
     }
 
@@ -89,7 +89,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
 
         if (!await ExistsAsyncInternal(id, blobClient))
         {
-            throw IOeisDozenalExpansionStore.Errors.NotFound(id);
+            throw IDozenalExpansionStore.Errors.NotFound(id);
         }
 
         return await GetInfoAsyncInternal(id, blobClient);
@@ -113,22 +113,22 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
         {
             // optimize for reading the whole expansion (131_072 is 2^17)
             using var stream = await blobClient.OpenReadAsync(bufferSize: 131_072);
-            var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(stream);
+            var expansion = await DozenalExpansionSerializer.ReadFromAsync(stream);
 
             if (expansion.Id != id)
             {
-                throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id);
+                throw IDozenalExpansionStore.Errors.IO.Retrieve(id);
             }
 
             return expansion;
         }
         catch (Exception ex) when (ShouldWrap(ex))
         {
-            throw IOeisDozenalExpansionStore.Errors.IO.Retrieve(id, ex);
+            throw IDozenalExpansionStore.Errors.IO.Retrieve(id, ex);
         }
         catch (FormatException ex)
         {
-            throw IOeisDozenalExpansionStore.Errors.Parse(id, ex);
+            throw IDozenalExpansionStore.Errors.Parse(id, ex);
         }
     }
 
@@ -141,14 +141,14 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             var options = s_expansionWriteOptions.Value;
 
             using var stream = await blobClient.OpenWriteAsync(true, options);
-            await OeisDozenalExpansionSerializer.WriteToAsync(expansion, stream);
+            await DozenalExpansionSerializer.WriteToAsync(expansion, stream);
 
             return new StoredOeisExpansionInfo(expansion.Id, expansion.Name, Dozenal.Radix,
                 expansion.Expansion.ToString(maxDigits: Fractional.DefaultMaxDigits), blobClient.Uri);
         }
         catch (Exception ex) when (ShouldWrap(ex))
         {
-            throw IOeisDozenalExpansionStore.Errors.IO.Store(expansion.Id, ex);
+            throw IDozenalExpansionStore.Errors.IO.Store(expansion.Id, ex);
         }
     }
 
@@ -158,7 +158,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
 
         if (!await ExistsAsyncInternal(id, blobClient))
         {
-            throw IOeisDozenalExpansionStore.Errors.NotFound(id);
+            throw IDozenalExpansionStore.Errors.NotFound(id);
         }
 
         return await RetrieveAsyncInternal(id, blobClient);
@@ -193,11 +193,11 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
 
             using var stream = await badSequenceListClient.OpenReadAsync();
 
-            return await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id);
+            return await BadOeisSequenceListUtil.BadSequenceListContainsAsync(stream, id);
         }
         catch (Exception ex) when (ShouldWrap(ex))
         {
-            throw IOeisDozenalExpansionStore.Errors.BadSequenceList.Exists(id, ex);
+            throw IDozenalExpansionStore.Errors.BadSequenceList.Exists(id, ex);
         }
     }
 
@@ -210,7 +210,7 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             // explicit using blocks so stream is closed before any writes
             using (var stream = await badSequenceListClient.OpenReadAsync())
             {
-                if (await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id) is (true, _))
+                if (await BadOeisSequenceListUtil.BadSequenceListContainsAsync(stream, id) is (true, _))
                 {
                     return;
                 }
@@ -219,13 +219,13 @@ public class OeisDozenalExpansionAzureBlobStore : IOeisDozenalExpansionStore
             // use “overwrite: false” to stipulate appending
             using (var stream = await badSequenceListClient.OpenWriteAsync(overwrite: false))
             {
-                await OeisBadSequenceListUtil.AddToBadSequenceList(stream, id, reason);
+                await BadOeisSequenceListUtil.AddToBadSequenceList(stream, id, reason);
             }
 
         }
         catch (Exception ex) when (ShouldWrap(ex))
         {
-            throw IOeisDozenalExpansionStore.Errors.BadSequenceList.Add(id, ex);
+            throw IDozenalExpansionStore.Errors.BadSequenceList.Add(id, ex);
         }
     }
 

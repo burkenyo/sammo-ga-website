@@ -36,12 +36,12 @@ try
 
         services.AddOeisDozenalExpansionAzureBlobStore(config.Azure.Blobs, cred);
 
-        services.AddScoped<IOeisDozenalExpansionService, OeisDozenalExpansionService>();
+        services.AddScoped<IDozenalExpansionService, DozenalExpansionService>();
     }
 
     services.SetLogFormatter(config.LogFormatter);
 
-    services.AddHttpClientWithMinimalLogger<IOeisDecimalExpansionDownloader, OeisDecimalExpansionDownloader>();
+    services.AddHttpClientWithMinimalLogger<IDecimalExpansionDownloader, DecimalExpansionDownloader>();
 
     services.AddWebApi<ExpansionsApi>();
 
