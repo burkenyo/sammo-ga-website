@@ -16,10 +16,14 @@ public readonly record struct OeisId : IComparable<OeisId>,
 {
     public enum ParseOption
     {
-        // String must match canonical form of ‘A’ + a positive integer.
+        /// <summary>
+        /// String must match canonical form of ‘A’ + a positive integer.
+        /// </summary>
         Strict,
 
-        // Prefix of ‘A’ is optional.
+        /// <summary>
+        /// Prefix of ‘A’ is optional.
+        /// </summary>
         Lax
     }
 
@@ -40,7 +44,7 @@ public readonly record struct OeisId : IComparable<OeisId>,
     //   • 9 chars for the MaxValue
     public const int MaxStringLength = 10;
 
-    readonly public int Value { get; }
+    public int Value { get; }
 
     public override string ToString()
     {
@@ -275,7 +279,7 @@ public enum OeisClientExceptionCause
     IOError,
 
     /// <summary>
-    /// The sequence data could not interpreted in the expected format.
+    /// The sequence data could not be interpreted in the expected format.
     /// </summary>
     ParseError
 
@@ -294,7 +298,7 @@ public class OeisClientException : Exception
         Exception? innerException) : base(message, innerException)
     {
 #if DEBUG
-        var mustIncludeId = cause == OeisClientExceptionCause.NotFound || cause == OeisClientExceptionCause.NotFound;
+        var mustIncludeId = cause is OeisClientExceptionCause.NotFound or OeisClientExceptionCause.InvalidSequence;
 
         Debug.Assert(!mustIncludeId || id?.Value != 0, $"Id must be specified for cause {cause}!");
 #endif
@@ -323,7 +327,7 @@ public class OeisClientException : Exception
 }
 
 /// <summary>
-/// Downloads decimal expansions from the The On-Line Encyclopedia of Integer Sequences® (OEIS®)
+/// Downloads decimal expansions from the On-Line Encyclopedia of Integer Sequences® (OEIS®)
 /// </summary>
 public interface IOeisDecimalExpansionDownloader
 {
@@ -339,7 +343,7 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
 {
     class QueryBuilder
     {
-        int _index = 0;
+        int _index;
 
         readonly Dictionary<string, object> _filters = [];
 
@@ -399,11 +403,6 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
 
                 switch (value)
                 {
-                    case OeisId id:
-                        builder.Append('A');
-                        builder.Append(id.Value);
-
-                        break;
                     case string s:
                         builder.Append(quote);
                         builder.Append(s);
@@ -414,11 +413,9 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
                         builder.Append(f);
 
                         break;
-#if DEBUG
                     default:
                         Debug.Assert(false, "Unhandled filter object type!");
                         break;
-#endif
                 }
 
                 addSpace = true;
@@ -455,24 +452,24 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
 
         public static async Task<SearchResult> FromQueryAsync(HttpClient client, QueryBuilder query)
         {
-            Debug.WriteLine("Executing query: " + query.ToString());
+            Debug.WriteLine("Executing query: " + query);
 
             try
             {
-                using var stream = await client.GetStreamAsync(query.ToString());
+                await using var stream = await client.GetStreamAsync(query.ToString());
                 using var jsonDoc = await JsonDocument.ParseAsync(stream);
-                var _json = jsonDoc.RootElement;
+                var json = jsonDoc.RootElement;
 
-                var totalCount = _json.GetProperty("count").GetInt32();
+                var totalCount = json.GetProperty("count").GetInt32();
 
                 if (totalCount == 0)
                 {
                     return Empty;
                 }
 
-                var index = _json.GetProperty("start").GetInt32();
+                var index = json.GetProperty("start").GetInt32();
 
-                var result = _json.GetProperty("results")[0];
+                var result = json.GetProperty("results")[0];
 
                 var id = (OeisId) result.GetProperty("number").GetInt32();
 
@@ -518,7 +515,7 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
     }
 
     [GeneratedRegex(@"^[ \t]*-?[0-9]+[ \t]*(-?[0-9]{1,2})[0-9]*[ \t]*$")]
-    private static partial Regex GetBFileLineRegex();
+    private static partial Regex BFileLineParser { get; }
 
     static int? s_randomExpansionCount;
 
@@ -539,7 +536,7 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
             // initialize the count the first time the endpoint is called
             result = await SearchResult.FromQueryAsync(_oeisClient, GetDecimalExpansionQuery());
 
-            s_randomExpansionCount = result!.TotalCount;
+            s_randomExpansionCount = result.TotalCount;
         }
 
         var index = Random.Shared.Next((int) s_randomExpansionCount);
@@ -599,14 +596,14 @@ public partial class OeisDecimalExpansionDownloader : IOeisDecimalExpansionDownl
 
         try
         {
-            using var bFileContent = await _oeisClient.GetStreamAsync($"/{id}/b{id.GetPaddedValue()}.txt");
+            await using var bFileContent = await _oeisClient.GetStreamAsync($"/{id}/b{id.GetPaddedValue()}.txt");
             using var reader = new StreamReader(bFileContent);
 
             var parsedTermsAsyncEnum = reader.EnumerateLinesAsync()
                 .Where(static l => l != "" && l[0] != '#')
                 .Select(l =>
                 {
-                    var parsedTerm = GetBFileLineRegex().Match(l).Groups[1].ValueSpan;
+                    var parsedTerm = BFileLineParser.Match(l).Groups[1].ValueSpan;
 
                     CheckBFileTerm(id, parsedTerm);
 
@@ -806,10 +803,8 @@ public static class OeisDozenalExpansionSerializer
 
     public static async Task WriteToAsync(OeisDozenalExpansion expansion, Stream stream)
     {
-        using var writer = new StreamWriter(stream, leaveOpen: true)
-        {
-            NewLine = "\n"
-        };
+        await using var writer = new StreamWriter(stream, leaveOpen: true);
+        writer.NewLine = "\n";
 
         await writer.WriteLineAsync(expansion.Id.ToString());
         await writer.WriteLineAsync(expansion.Name);
@@ -849,10 +844,8 @@ public static class OeisBadSequenceListUtil
 
     public static async Task AddToBadSequenceList(Stream stream, OeisId id, string reason)
     {
-        using var writer = new StreamWriter(stream,  leaveOpen: true)
-        {
-            NewLine = "\n"
-        };
+        await using var writer = new StreamWriter(stream,  leaveOpen: true);
+        writer.NewLine = "\n";
 
         await writer.WriteAsync(id.ToString());
         await writer.WriteAsync(": ");
@@ -877,7 +870,7 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     {
         try
         {
-            using var stream = file.OpenRead();
+            await using var stream = file.OpenRead();
             var (readId, name, preview) = await OeisDozenalExpansionSerializer.ReadHeaderAndPreviewAsync(stream);
 
             if (readId != id)
@@ -925,7 +918,7 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     {
         try
         {
-            using var stream = file.OpenRead();
+            await using var stream = file.OpenRead();
             var expansion = await OeisDozenalExpansionSerializer.ReadFromAsync(stream);
 
             if (expansion.Id != id)
@@ -963,7 +956,7 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
 
         try
         {
-            using var stream = file.OpenWrite();
+            await using var stream = file.OpenWrite();
             await OeisDozenalExpansionSerializer.WriteToAsync(expansion, stream);
 
             return new StoredOeisExpansionInfo(expansion.Id, expansion.Name, Dozenal.Radix,
@@ -994,7 +987,7 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     {
         try
         {
-            using var stream = File.Open(GetBadSequenceListPath(), FileMode.OpenOrCreate, FileAccess.Read);
+            await using var stream = File.Open(GetBadSequenceListPath(), FileMode.OpenOrCreate, FileAccess.Read);
 
             return await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id);
         }
@@ -1008,7 +1001,7 @@ public class OeisDozenalExpansionFileStore : IOeisDozenalExpansionStore
     {
         try
         {
-            using var stream = File.Open(GetBadSequenceListPath(), FileMode.OpenOrCreate);
+            await using var stream = File.Open(GetBadSequenceListPath(), FileMode.OpenOrCreate);
 
             if (await OeisBadSequenceListUtil.BadSequenceListContainsAsync(stream, id) is (true, _))
             {
@@ -1080,7 +1073,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
         if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
         {
             return info2;
-        };
+        }
 
         try
         {
@@ -1125,7 +1118,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
         if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
         {
             return existingExpansion2;
-        };
+        }
 
         try
         {
@@ -1196,7 +1189,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             if (await _dozenalExpansionStore.TryGetInfoAsync(id) is (true, { } info2))
             {
                 return info2;
-            };
+            }
 
             try
             {
@@ -1258,7 +1251,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion))
             {
                 return existingExpansion;
-            };
+            }
 
             using var semaphore = s_locks.Borrow(id);
             await semaphore.WaitAsync();
@@ -1270,7 +1263,7 @@ public class OeisDozenalExpansionService : IOeisDozenalExpansionService
             if (await _dozenalExpansionStore.TryRetrieveAsync(id) is (true, { } existingExpansion2))
             {
                 return existingExpansion2;
-            };
+            }
 
             try
             {

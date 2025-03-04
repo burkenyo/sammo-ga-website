@@ -1,8 +1,6 @@
 // Copyright © 2024 Samuel Justin Speth Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
-using System.Runtime.InteropServices;
-
 namespace Sammo.Oeis.Tests;
 
 public static class UtilsTests
@@ -12,6 +10,7 @@ public static class UtilsTests
     {
         StackStringBuilder builder = default;
 
+        // fill up the builder
         builder.Append(new String('\0', builder.RemainingCapacity));
 
         Assert.Equal(0, builder.RemainingCapacity);
@@ -25,6 +24,7 @@ public static class UtilsTests
     {
         StackStringBuilder builder = default;
 
+        // fill up the builder
         builder.Append(new String('\0', builder.RemainingCapacity));
 
         // not using assert.throws because we have a ref struct
@@ -84,13 +84,5 @@ public static class UtilsTests
         Assert.Equal(remainingCapacity -= "1970-01-01".Length, builder.RemainingCapacity);
 
         Assert.Equal("90foo#1970-01-01", builder.ToString());
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    readonly struct CrunchyStruct
-    {
-        readonly int A;
-        readonly bool B;
-        readonly short C;
     }
 }

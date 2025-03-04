@@ -72,7 +72,7 @@ ref struct StackStringBuilder
     {
         if (RemainingCapacity < value.Length)
         {
-            throw BufferExhausted();
+            ThrowOnBufferExhausted();
         }
 
         value.CopyTo(_buffer[Position..]);
@@ -85,7 +85,7 @@ ref struct StackStringBuilder
     {
         if (RemainingCapacity == 0)
         {
-            throw BufferExhausted();
+            ThrowOnBufferExhausted();
         }
 
         _buffer[Position] = value;
@@ -101,7 +101,7 @@ ref struct StackStringBuilder
     {
         if (!value.TryFormat(_buffer[Position..], out var charsWritten, format, provider))
         {
-            throw BufferExhausted();
+            ThrowOnBufferExhausted();
         }
 
         Position += charsWritten;
@@ -110,8 +110,9 @@ ref struct StackStringBuilder
     public override string ToString() =>
         _buffer[..Position].ToString();
 
-    static InvalidOperationException BufferExhausted() =>
-        new InvalidOperationException("Buffer is exhausted!");
+    [DoesNotReturn]
+    static void ThrowOnBufferExhausted() =>
+        throw new InvalidOperationException("Buffer is exhausted!");
 }
 
 static class ExceptionExtensions

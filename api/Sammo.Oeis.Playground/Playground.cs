@@ -9,7 +9,7 @@ using Azure.Storage.Blobs;
 namespace Sammo.Oeis.Playground;
 
 [AttributeUsage(AttributeTargets.Method)]
-class RunnerAttribute : Attribute { }
+class RunnerAttribute : Attribute;
 
 [SuppressMessage("IDE", "IDE0051:UnusedPrivateMembers")]
 static partial class Playground

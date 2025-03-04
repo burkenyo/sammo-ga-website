@@ -913,7 +913,7 @@ public partial class Fractional : IEquatable<Fractional>
 public partial class BigDecimal : Fractional
 {
     [GeneratedRegex(@"^0*([0-9]*)(?:[.,]([0-9]*))?$")]
-    private static partial Regex GetDigitMatcherRegex();
+    private static partial Regex DigitMatcher { get; }
 
     readonly static char s_decimalSeparator = NumberFormatInfo.CurrentInfo.NumberDecimalSeparator[0];
 
@@ -946,7 +946,7 @@ public partial class BigDecimal : Fractional
         (BigDecimal) FromFractional(value, Radix);
 
     public static BigDecimal Parse(string input) =>
-        (BigDecimal) ParseInternal(input, GetDigitMatcherRegex(), Radix, null);
+        (BigDecimal) ParseInternal(input, DigitMatcher, Radix, null);
 
     public override string ToString() =>
         ToStringInternal(null, s_decimalSeparator, DefaultMaxDigits);
@@ -960,9 +960,8 @@ public partial class Dozenal : Fractional
     const string s_digitMap = "0123456789XE";
 
     // The semicolon in the regex string purposefully matches the default fractional separator
-    // .NET const semantics prevent concatenating a single character into a built string
     [GeneratedRegex(@"^0*([" + s_digitMap + "]*)(?:;([" + s_digitMap + "]*))?$")]
-    private static partial Regex GetDigitMatcherRegex();
+    private static partial Regex DigitMatcher { get; }
 
     new public const int Radix = 12;
 
@@ -993,7 +992,7 @@ public partial class Dozenal : Fractional
         (Dozenal) FromFractional(value, Radix);
 
     public static Dozenal Parse(string input) =>
-        (Dozenal) ParseInternal(input, GetDigitMatcherRegex(), Radix, s_digitMap);
+        (Dozenal) ParseInternal(input, DigitMatcher, Radix, s_digitMap);
 
     public override string ToString()
         => ToStringInternal(s_digitMap, s_defaultFractionalSeparator, DefaultMaxDigits);
