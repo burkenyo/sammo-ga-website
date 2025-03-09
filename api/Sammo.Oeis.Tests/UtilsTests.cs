@@ -5,8 +5,10 @@ namespace Sammo.Oeis.Tests;
 
 public static class UtilsTests
 {
-    [Fact]
-    public static void StackStringBuilder_Exhausted_AppendEmptyOk()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public static void StackStringBuilder_Exhausted_AppendEmptyOk(string? emptyIshValue)
     {
         StackStringBuilder builder = default;
 
@@ -15,43 +17,37 @@ public static class UtilsTests
 
         Assert.Equal(0, builder.RemainingCapacity);
 
-        builder.Append("");
-        builder.Append(null);
+        builder.Append(emptyIshValue);
     }
 
-    [Fact]
-    public static void StackStringBuilder_Exhausted_AppendsThrow()
+    [Theory]
+    [InlineData("foo")]
+    [InlineData('p')]
+    [InlineData(90)]
+    public static void StackStringBuilder_Exhausted_AppendsThrow(object value)
     {
         StackStringBuilder builder = default;
 
         // fill up the builder
         builder.Append(new String('\0', builder.RemainingCapacity));
 
-        // not using assert.throws because we have a ref struct
-        // that cannot be captured in the lambda it requires
+        Assert.Equal(0, builder.RemainingCapacity);
 
+        // not using Assert.Throws because we have a ref struct that cannot be captured in the lambda it requires
         try
         {
-            Assert.Equal(0, builder.RemainingCapacity);
-            builder.Append("foo");
-
-            Assert.Fail("Exception not thrown as expected!");
-        }
-        catch (InvalidOperationException) { }
-
-        try
-        {
-            Assert.Equal(0, builder.RemainingCapacity);
-            builder.Append('p');
-
-            Assert.Fail("Exception not thrown as expected!");
-        }
-        catch (InvalidOperationException) { }
-
-        try
-        {
-            Assert.Equal(0, builder.RemainingCapacity);
-            builder.Append(90);
+            switch (value)
+            {
+                case string s:
+                    builder.Append(s);
+                    break;
+                case char c:
+                    builder.Append(c);
+                    break;
+                default:
+                    builder.Append((ISpanFormattable) value);
+                    break;
+            }
 
             Assert.Fail("Exception not thrown as expected!");
         }
@@ -68,7 +64,7 @@ public static class UtilsTests
 
         builder.Append(90);
 
-        Assert.Equal(remainingCapacity -= "90".Length, builder.RemainingCapacity);
+        Assert.Equal(remainingCapacity -= 90.ToString().Length, builder.RemainingCapacity);
 
         builder.Append("foo");
 
@@ -78,11 +74,10 @@ public static class UtilsTests
 
         Assert.Equal(--remainingCapacity, builder.RemainingCapacity);
 
-        var epoch = new DateTime(1970, 1, 1);
-        builder.Append(epoch, "yyyy-MM-dd");
+        builder.Append(new DateTime(1965, 8, 23), "yyyy-MM-dd");
 
-        Assert.Equal(remainingCapacity -= "1970-01-01".Length, builder.RemainingCapacity);
+        Assert.Equal(remainingCapacity -= "yyyy-MM-dd".Length, builder.RemainingCapacity);
 
-        Assert.Equal("90foo#1970-01-01", builder.ToString());
+        Assert.Equal("90foo#1965-08-23", builder.ToString());
     }
 }
