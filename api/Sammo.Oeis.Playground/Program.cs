@@ -12,7 +12,7 @@ namespace Sammo.Oeis.Playground;
 
 static class Program
 {
-    static void Main(string[] args)
+    static int Main(string[] args)
     {
         Trace.Listeners.Add(new ConsoleTraceListener());
 
@@ -44,6 +44,7 @@ static class Program
                 .AddSingleton<DozenalExpansionAzureBlobStore>()
                 .BuildServiceProvider();
 
+            bool fail = false;
             foreach (var method in toRun)
             {
                 Console.WriteLine($"-----\nRunning {GetDisplayName(method)}...\n-----\n");
@@ -52,22 +53,33 @@ static class Program
                     .Select(p => services.GetService(p.ParameterType))
                     .ToArray();
 
-                if (method.ReturnType.IsAssignableTo(typeof(Task)))
+                try
                 {
-                    ((Task)method.Invoke(null, @params)!).Wait();
+                    if (method.ReturnType.IsAssignableTo(typeof(Task)))
+                    {
+                        ((Task)method.Invoke(null, @params)!).Wait();
+                    }
+                    else
+                    {
+                        method.Invoke(null, @params);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    method.Invoke(null, @params);
+                    Console.Error.WriteLine(ex);
+                    fail = true;
                 }
             }
-        }
-        else
-        {
-            var options = String.Join(", ", runners.Select(m => GetDisplayName(m)));
 
-            Console.WriteLine($"Nothing selected to run! Options are {options}.\nUse '*' to run all (may need to quote in shell).");
+            return fail ? 1 : 0;
         }
+
+        var options = String.Join(", ", runners.Select(m => GetDisplayName(m)));
+
+        Console.Error.WriteLine($"Nothing selected to run! Options are {options}.\n"
+                                + "Use '*' to run all (may need to quote in shell).");
+
+        return 1;
     }
 
     static async Task<Dictionary<string, int>> GetKnownConstantsAsync()

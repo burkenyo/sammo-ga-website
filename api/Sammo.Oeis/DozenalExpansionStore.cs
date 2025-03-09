@@ -1,6 +1,9 @@
 // Copyright © 2025 Samuel Justin Speth Gabay
 // Licensed under the GNU Affero Public License, Version 3
 
+using System.Text;
+using Cysharp.IO;
+
 namespace Sammo.Oeis;
 
 /// <summary>
@@ -177,18 +180,19 @@ public static class BadOeisSequenceListUtil
 {
     public static async Task<(bool result, string? reason)> BadSequenceListContainsAsync(Stream stream, OeisId id)
     {
-        using var reader = new StreamReader(stream, leaveOpen: true);
+        await using var reader = new Utf8StreamReader(stream, leaveOpen: true);
 
-        await foreach (var line in reader.EnumerateLinesAsync())
+        await foreach (var line in reader.ReadAllLinesAsync())
         {
-            var indexOfColon = line.IndexOf(':');
+            var span = line.Span;
+            var indexOfColon = span.IndexOf((byte)':');
 
-            var parsedId = OeisId.Parse(line.AsSpan(0, indexOfColon));
+            var parsedId = OeisId.Parse(span[..indexOfColon]);
 
             if (parsedId == id)
             {
                 // skip the colon and the space
-                return (true, line[(indexOfColon + 2)..]);
+                return (true, Encoding.UTF8.GetString(span[(indexOfColon + 2)..]));
             }
         }
 

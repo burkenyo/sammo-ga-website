@@ -3,12 +3,13 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Text.Unicode;
 
 namespace Sammo.Oeis;
 
 [DebuggerStepThrough]
-public readonly record struct OeisId : IComparable<OeisId>,
+public readonly record struct OeisId : IComparable<OeisId>, IEqualityOperators<OeisId, OeisId, bool>,
     ISpanParsable<OeisId>, ISpanFormattable, IUtf8SpanParsable<OeisId>, IUtf8SpanFormattable
 {
     public enum ParseOption
@@ -255,6 +256,31 @@ public class OeisDozenalExpansion : IOeisFractionalExpansion<Dozenal>
         Id = id;
         Name = name;
         Expansion = expansion;
+    }
+}
+
+class OeisSearchResult
+{
+    public static readonly OeisSearchResult Empty = new(-1, 0, null);
+
+    public int Index { get; }
+
+    public int TotalCount { get; }
+
+    public OeisSequence? Sequence { get; }
+
+    public OeisSearchResult(int index, int totalCount, OeisSequence? sequence)
+    {
+        Debug.Assert(totalCount > 0 ^ sequence is null,
+            $"{nameof(totalCount)} must be 0 and {nameof(sequence)} must be null "
+            + $"or {nameof(totalCount)} must be > 0 and {nameof(sequence)} must be not null!");
+
+        Debug.Assert(index >= 0 && index < totalCount || index == -1 && totalCount == 0,
+            $"Invalid {nameof(index)} and {nameof(TotalCount)}!");
+
+        Index = index;
+        TotalCount = totalCount;
+        Sequence = sequence;
     }
 }
 

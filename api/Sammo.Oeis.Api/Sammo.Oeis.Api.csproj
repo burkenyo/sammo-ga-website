@@ -20,14 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Sammo.Oeis.Azure/Sammo.Oeis.Azure.csproj" />
+    
     <PackageReference Include="GitInfo" Version="3.3.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
-
-    <ProjectReference Include="../Sammo.Oeis.Azure/Sammo.Oeis.Azure.csproj" />
   </ItemGroup>
 
 </Project>

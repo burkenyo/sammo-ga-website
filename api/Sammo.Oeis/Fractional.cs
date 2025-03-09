@@ -78,8 +78,8 @@ public class Fractional : IEquatable<Fractional>
             {
                 CheckIndex(index);
 
-                var block_num = Math.DivRem(index, _digitsPerBlock, out var digit_num);
-                return (byte)(_blocks[block_num] >> (digit_num * _bitsPerDigit) & _mask);
+                var blockNum = Math.DivRem(index, _digitsPerBlock, out var digitNum);
+                return (byte)(_blocks[blockNum] >> (digitNum * _bitsPerDigit) & _mask);
             }
         }
 
@@ -906,8 +906,6 @@ public class Fractional : IEquatable<Fractional>
 
     public override int GetHashCode() =>
         HashCode.Combine(_digits, Offset);
-
-
 }
 
 public partial class BigDecimal : Fractional
@@ -924,7 +922,7 @@ public partial class BigDecimal : Fractional
     public static BigDecimal Create(IReadOnlyList<byte> digits, int offset) =>
         (BigDecimal) Create(digits, offset, Radix);
 
-    public static Fractional FromRatio(BigInteger num, BigInteger den, int numFracDigits) =>
+    public static BigDecimal FromRatio(BigInteger num, BigInteger den, int numFracDigits) =>
         (BigDecimal) FromRatio(num, den, Radix, numFracDigits);
 
     public static BigDecimal FromInteger(long value) =>
@@ -970,7 +968,7 @@ public partial class Dozenal : Fractional
     public static Dozenal Create(IReadOnlyList<byte> digits, int offset) =>
         (Dozenal) Create(digits, offset, Radix);
 
-    public static Fractional FromRatio(BigInteger num, BigInteger den, int numFracDigits) =>
+    public static Dozenal FromRatio(BigInteger num, BigInteger den, int numFracDigits) =>
         (Dozenal) FromRatio(num, den, Radix, numFracDigits);
 
     public static Dozenal FromInteger(long value) =>

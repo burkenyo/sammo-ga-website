@@ -133,12 +133,12 @@ static class Playground
     {
         var service = new DozenalExpansionService(downloader, store);
 
-        for (var i = 0; i < 1000; i++)
+        for (var i = 0; i < 10; i++)
         {
             Print($"Random #{i + 1}");
             var sw = Stopwatch.StartNew();
 
-            var sequence = await service.RetrieveRandomAsync(100);
+            var sequence = await service.RetrieveRandomAsync();
 
             PrintExpansion(sequence);
 

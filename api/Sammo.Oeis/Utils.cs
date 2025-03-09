@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace Sammo.Oeis;
 
@@ -113,36 +112,6 @@ ref struct StackStringBuilder
     [DoesNotReturn]
     static void ThrowOnBufferExhausted() =>
         throw new InvalidOperationException("Buffer is exhausted!");
-}
-
-static class ExceptionExtensions
-{
-    public static bool IsSystemTextJsonException(this Exception ex) =>
-        ex is JsonException
-            || (ex.Source is not null && ex.Source.StartsWith("System.Text.Json", StringComparison.Ordinal));
-}
-
-[DebuggerStepThrough]
-public static class TextReaderExtensions
-{
-    public static IEnumerable<string> EnumerateLines(this TextReader reader)
-    {
-        while(reader.ReadLine() is { } line)
-        {
-           yield return line;
-        }
-    }
-
-    public static async IAsyncEnumerable<string> EnumerateLinesAsync(this TextReader reader,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        while(await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
-        {
-            yield return line;
-
-            cancellationToken.ThrowIfCancellationRequested();
-        }
-    }
 }
 
 static class NumberUtil
