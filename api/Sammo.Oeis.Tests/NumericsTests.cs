@@ -2,11 +2,31 @@
 // Licensed under the GNU Affero Public License, Version 3
 
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Sammo.Oeis.Tests;
 
 public static class NumericsTests
 {
+    public class FuncWrapper<T>
+    {
+        readonly string _expression;
+
+        public Func<T> Func { get; }
+
+        public FuncWrapper(Func<T> func, string expression)
+        {
+            Func = func;
+            _expression = expression;
+        }
+
+        public override string ToString() =>
+            _expression;
+    }
+
+    static FuncWrapper<T> Wrap<T>(Func<T> func, [CallerArgumentExpression(nameof(func))] string expression = null!) =>
+        new(func, expression);
+
     static void AssertFractional<T>(T value, int radix, string digits) where T : Fractional
     {
         digits = String.Concat(digits.Where(d => d != '_'));
@@ -22,62 +42,62 @@ public static class NumericsTests
 
     public static IEnumerable<object[]> BigDecimalFactories =>
     [
-        [() => BigDecimal.Create([3, 7, 8], 2), "37:8"],
-        [() => BigDecimal.FromDecimal(89.6000m), "89:600_0"],
-        [() => BigDecimal.FromDouble(23.3125), "23:3"],
-        [() => BigDecimal.FromFractional(BigDecimal.FromDouble(23.3125)), "23:3"],
-        [() => BigDecimal.FromInteger(16), "16:"],
-        [() => BigDecimal.FromInteger(16_700_000_000_000_000_000UL), "16_700_000_000_000_000_000:"],
-        [() => BigDecimal.FromInteger(BigInteger.One), "1:"],
-        [() => BigDecimal.FromRatio(400, 8_361_293, 20), ":000_047_839_490_853_866_74"]
+        [Wrap(() => BigDecimal.Create([3, 7, 8], 2)), "37:8"],
+        [Wrap(() => BigDecimal.FromDecimal(89.6000m)), "89:600_0"],
+        [Wrap(() => BigDecimal.FromDouble(23.3125)), "23:3"],
+        [Wrap(() => BigDecimal.FromFractional(BigDecimal.FromDouble(23.3125))), "23:3"],
+        [Wrap(() => BigDecimal.FromInteger(16)), "16:"],
+        [Wrap(() => BigDecimal.FromInteger(16_700_000_000_000_000_000UL)), "16_700_000_000_000_000_000:"],
+        [Wrap(() => BigDecimal.FromInteger(BigInteger.One)), "1:"],
+        [Wrap(() => BigDecimal.FromRatio(400, 8_361_293, 20)), ":000_047_839_490_853_866_74"]
     ];
 
     [Theory]
     [MemberData(nameof(BigDecimalFactories))]
-    public static void BigDecimalFactories_ValidInput_Works(Func<BigDecimal> factory, string digits)
+    public static void BigDecimalFactories_ValidInput_Works(FuncWrapper<BigDecimal> factory, string digits)
     {
-        AssertFractional(factory(), 10, digits);
+        AssertFractional(factory.Func(), 10, digits);
     }
 
     public static IEnumerable<object[]> DozenalFactories =>
     [
-        [() => Dozenal.Create([3, 7, 8], 2), "37:8"],
-        [() => Dozenal.FromDecimal(89.6000m), "75:724"],
-        [() => Dozenal.FromDouble(23.3125), "1B:3"],
-        [() => Dozenal.FromFractional(Dozenal.FromDouble(23.3125)), "1B:3"],
-        [() => Dozenal.FromInteger(16L), "14:"],
-        [() => Dozenal.FromInteger(16_700_000_000_000_000_000UL), "763_B08_175_142_4B7_A28:"],
-        [() => Dozenal.FromInteger(BigInteger.One), "1:"],
-        [() => Dozenal.FromRatio(400, 8_361_293, 20), ":000_0BA_A21_321_A1A_903_76"]
+        [Wrap(() => Dozenal.Create([3, 7, 8], 2)), "37:8"],
+        [Wrap(() => Dozenal.FromDecimal(89.6000m)), "75:724"],
+        [Wrap(() => Dozenal.FromDouble(23.3125)), "1B:3"],
+        [Wrap(() => Dozenal.FromFractional(Dozenal.FromDouble(23.3125))), "1B:3"],
+        [Wrap(() => Dozenal.FromInteger(16)), "14:"],
+        [Wrap(() => Dozenal.FromInteger(16_700_000_000_000_000_000UL)), "763_B08_175_142_4B7_A28:"],
+        [Wrap(() => Dozenal.FromInteger(BigInteger.One)), "1:"],
+        [Wrap(() => Dozenal.FromRatio(400, 8_361_293, 20)), ":000_0BA_A21_321_A1A_903_76"]
     ];
 
     [Theory]
     [MemberData(nameof(DozenalFactories))]
-    public static void DozenalFactories_ValidInput_Works(Func<Dozenal> factory, string digits)
+    public static void DozenalFactories_ValidInput_Works(FuncWrapper<Dozenal> factory, string digits)
     {
-        AssertFractional(factory(), 12, digits);
+        AssertFractional(factory.Func(), 12, digits);
     }
 
     public static IEnumerable<object[]> BadBigDecimalFactories =>
     [
         //negative numbers disallowed
-        [() => BigDecimal.FromDecimal(-89.6m)],
-        [() => BigDecimal.FromDouble(-23.5)],
-        [() => BigDecimal.FromInteger(-6_700_000_000_000_000_000)],
-        [() => BigDecimal.FromInteger(BigInteger.MinusOne)],
+        [Wrap(() => BigDecimal.FromDecimal(-89.6m))],
+        [Wrap(() => BigDecimal.FromDouble(-23.5))],
+        [Wrap(() => BigDecimal.FromInteger(-6_700_000_000_000_000_000))],
+        [Wrap(() => BigDecimal.FromInteger(BigInteger.MinusOne))],
 
         // mismatched sign
-        [() => BigDecimal.FromRatio(-400, 8_361_293, 20)],
+        [Wrap(() => BigDecimal.FromRatio(-400, 8_361_293, 20))],
 
         // 0 denominator
-        [() => BigDecimal.FromRatio(718, 0, 20)]
+        [Wrap(() => BigDecimal.FromRatio(718, 0, 20))]
     ];
 
     [Theory]
     [MemberData(nameof(BadBigDecimalFactories))]
-    public static void BigDecimalFactories_Garbage_Throws(Func<BigDecimal> factory)
+    public static void BigDecimalFactories_Garbage_Throws(FuncWrapper<BigDecimal> factory)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(factory);
+        Assert.Throws<ArgumentOutOfRangeException>(factory.Func);
     }
 
     [Fact]
@@ -89,23 +109,23 @@ public static class NumericsTests
     public static IEnumerable<object[]> BadDozenalFactories =>
     [
         //negative numbers disallowed
-        [() => Dozenal.FromDecimal(-89.6m)],
-        [() => Dozenal.FromDouble(-23.5)],
-        [() => Dozenal.FromInteger(-6_700_000_000_000_000_000)],
-        [() => Dozenal.FromInteger(BigInteger.MinusOne)],
+        [Wrap(() => Dozenal.FromDecimal(-89.6m))],
+        [Wrap(() => Dozenal.FromDouble(-23.5))],
+        [Wrap(() => Dozenal.FromInteger(-6_700_000_000_000_000_000))],
+        [Wrap(() => Dozenal.FromInteger(BigInteger.MinusOne))],
 
         // mismatched sign
-        [() => Dozenal.FromRatio(-400, 8_361_293, 20)],
+        [Wrap(() => Dozenal.FromRatio(-400, 8_361_293, 20))],
 
         // 0 denominator
-        [() => Dozenal.FromRatio(718, 0, 20)]
+        [Wrap(() => Dozenal.FromRatio(718, 0, 20))]
     ];
 
     [Theory]
     [MemberData(nameof(BadDozenalFactories))]
-    public static void DozenalFactories_Garbage_Throws(Func<Dozenal> factory)
+    public static void DozenalFactories_Garbage_Throws(FuncWrapper<Dozenal> factory)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(factory);
+        Assert.Throws<ArgumentOutOfRangeException>(factory.Func);
     }
 
     [Fact]
