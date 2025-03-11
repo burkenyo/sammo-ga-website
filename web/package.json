@@ -1,7 +1,7 @@
 {
   "name": "sammo-ga-website",
   "type": "module",
-  "packageManager": "pnpm@9.10.0",
+  "packageManager": "pnpm@10.6.2",
   "scripts": {
     "dev": "vite --open",
     "build": "run-p type-check build-only",
@@ -54,7 +54,7 @@
     "rollup": "^4.22.0",
     "typescript": "^5.6.2",
     "unplugin-vue-markdown": "^0.26.2",
-    "vexflow": "^4.2.5",
+    "vexflow": "^5.0.0",
     "vite": "^5.4.6",
     "vite-plugin-pages": "^0.32.3",
     "vite-ssg": "^0.23.8",

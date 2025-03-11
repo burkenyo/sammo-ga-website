@@ -112,8 +112,8 @@ importers:
         specifier: ^0.26.2
         version: 0.26.2(rollup@4.22.0)(vite@5.4.6(@types/node@22.5.5)(terser@5.31.3))
       vexflow:
-        specifier: ^4.2.5
-        version: 4.2.5
+        specifier: ^5.0.0
+        version: 5.0.0
       vite:
         specifier: ^5.4.6
         version: 5.4.6(@types/node@22.5.5)(terser@5.31.3)
@@ -2410,8 +2410,8 @@ packages:
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
 
-  vexflow@4.2.5:
-    resolution: {integrity: sha512-+P+V2VWFyKcpW4Pwbs0p7nwICRQCzLWvkiPi4RpFlMXh/MRsiN1r7X6yvl1WauoJ4J6pVsnCzTAhC4m1ASlTng==}
+  vexflow@5.0.0:
+    resolution: {integrity: sha512-rjB7TV4ygKE5Fl3W5OlG+0dHv22CFufUJdMG6oNgvcn0zp34u+sOboZsadQXnF1O3tZ3myXThaUIaLkJlpNM2Q==}
 
   vite-node@2.1.1:
     resolution: {integrity: sha512-N/mGckI1suG/5wQI35XeR9rsMsPqKXzq1CdUndzVstBj/HvyxxGctwnK6WX43NGt5L3Z5tcRf83g4TITKJhPrA==}
@@ -5061,7 +5061,7 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vexflow@4.2.5: {}
+  vexflow@5.0.0: {}
 
   vite-node@2.1.1(@types/node@22.5.5)(terser@5.31.3):
     dependencies:

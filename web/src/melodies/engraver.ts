@@ -6,7 +6,7 @@ import { dynamicImport } from "@shared/utils";
 import type { RenderContext, StaveNote as StaveNoteType } from "vexflow";
 
 // import vexflow code dynamically
-const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@4.2.5/+esm");
+const vexflowImport = dynamicImport<typeof import("vexflow")>("https://cdn.jsdelivr.net/npm/vexflow@5.0.0/+esm");
 
 const CLEF_OFFSET = 40;
 const NOTE_WIDTH = 24;
@@ -20,7 +20,7 @@ export interface Engraver {
 }
 
 export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
-  const { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, Flow, Stem }
+  const { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, TextNote, Voice, VexFlow, Stem }
     = await vexflowImport.value;
 
   class Engraver {
@@ -53,7 +53,7 @@ export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
             break;
           }
 
-          const note = new StaveNote({ keys: [notes[i]], duration: "4", stem_direction: Stem.DOWN });
+          const note = new StaveNote({ keys: [notes[i]], duration: "4", stemDirection: Stem.DOWN });
           if (accidental) {
             note.addModifier(new Accidental("#"));
           }
@@ -89,8 +89,8 @@ export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
         const text = new TextNote({ text: String(staves[i].offset), duration: "q" }).setLine(2.6)
           .setStave(stave).setJustification(TextNote.Justification.CENTER);
 
-        const voice = new Voice({ num_beats: staves[i].notes.length, beat_value: 4, resolution: Flow.RESOLUTION });
-        const voice2 = new Voice({ num_beats: staves[i].notes.length, beat_value: 4, resolution: Flow.RESOLUTION });
+        const voice = new Voice({ numBeats: staves[i].notes.length, beatValue: 4, resolution: VexFlow.RESOLUTION });
+        const voice2 = new Voice({ numBeats: staves[i].notes.length, beatValue: 4, resolution: VexFlow.RESOLUTION });
         voice.addTickables(staves[i].notes);
         voice2.addTickables([text]);
         voice2.setStrict(false);

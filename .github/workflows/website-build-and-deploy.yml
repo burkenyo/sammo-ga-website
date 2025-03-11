@@ -21,10 +21,15 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Setup PNPM
+        id: setuppnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Install Build Dependencies
         id: installbuilddependencies
         run: |
-          corepack enable
           echo Using pnpm $(pnpm --version)
           pnpm install
         working-directory: web
