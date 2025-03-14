@@ -9,11 +9,5 @@
       "@melodies/*": ["./src/melodies/*"],
       "@vote-demo/*": ["./src/vote-demo/*"]
     }
-  },
-
-  "references": [
-    {
-      "path": "./tsconfig.config.json"
-    }
-  ]
+  }
 }

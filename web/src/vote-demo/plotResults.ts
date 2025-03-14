@@ -5,7 +5,7 @@ import { dynamicImport, immutable, ordinalize, range } from "@shared/utils";
 import type { ElectionData } from "./election";
 
 const plotlyImport = dynamicImport<{ default: typeof import("plotly.js") }>(
-  "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.34.0/+esm");
+  "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.35.3/+esm");
 
 namespace shared {
   const context = document.createElement("canvas").getContext("2d")!;
