@@ -42,6 +42,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
 
     plugins: [
       replace({
+        preventAssignment: true,
         include: ["**.vue", "**.md"],
         __ASSETS_BASE_URL: env.VITE__ASSETS_BASE_URL?.replace(/\/?$/, ""),
       }),

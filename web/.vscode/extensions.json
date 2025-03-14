@@ -2,7 +2,7 @@
   "recommendations": [
     "vue.volar",
     "editorconfig.editorconfig",
-    "zixuanchen.vitest-explorer",
+    "vitest.explorer",
     "dbaeumer.vscode-eslint"
   ]
 }

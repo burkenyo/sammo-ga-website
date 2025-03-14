@@ -122,16 +122,18 @@ state.getExpansionById(INITIAL_OEIS_ID);
   </span>
   <h4>Mapping</h4>
   <table>
-    <tr>
-      <td class="key" v-for="d in DISPLAY_DIGIT_MAP" :key="d">
-        {{ d }}
-      </td>
-    </tr>
-    <tr>
-      <td class="key" v-for="note in noteSequence" :key="note">
-        {{ note }}
-      </td>
-    </tr>
+    <tbody>
+      <tr>
+        <td class="key" v-for="d in DISPLAY_DIGIT_MAP" :key="d">
+          {{ d }}
+        </td>
+      </tr>
+      <tr>
+        <td class="key" v-for="note in noteSequence" :key="note">
+          {{ note }}
+        </td>
+      </tr>
+    </tbody>
   </table>
   <h3>Generated Melody</h3>
   <ScoreRenderer />

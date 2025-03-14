@@ -33,3 +33,7 @@ type JsonObject = { [key: string]: Json };
 interface JSON {
   parse(text: string) : Json
 }
+
+interface Response {
+  json() : Promise<Json>
+}

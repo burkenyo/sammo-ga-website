@@ -14,9 +14,11 @@ const isLocal = ["[::]", "127.0.0.1", "localhost"].includes(location.hostname);
   <div v-if="gitBranch != 'prime' || isLocal">
     {{ gitBranch }} {{ gitCommit }}<br />
     <table>
-      <tr><th>clean</th><td><CheckIcon :value="!isDirty" /></td></tr>
-      <tr><th>built</th><td><CheckIcon :value="isBuilt" /></td></tr>
-      <tr><th>hosted</th><td><CheckIcon :value="!isLocal" /></td></tr>
+      <tbody>
+        <tr><th>clean</th><td><CheckIcon :value="!isDirty" /></td></tr>
+        <tr><th>built</th><td><CheckIcon :value="isBuilt" /></td></tr>
+        <tr><th>hosted</th><td><CheckIcon :value="!isLocal" /></td></tr>
+      </tbody>
     </table>
   </div>
 </template>

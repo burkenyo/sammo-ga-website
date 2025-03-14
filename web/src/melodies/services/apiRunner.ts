@@ -70,7 +70,7 @@ export class DefaultApiRunner implements ApiRunner {
   async getRandomExpansion(): Promise<OeisFractionalExpansion> {
     const response = await fetch(new URL("dozenalExpansions/random", this.#baseUrl));
 
-    const id = OeisId.parse((await response.json()).id);
+    const id = OeisId.parse((await response.json() as { id: string }).id);
 
     // attempt to see if the expansion is already in the db
     const expansion = await this.#db.getFromDb(id);
@@ -83,7 +83,7 @@ export class DefaultApiRunner implements ApiRunner {
 
   async #checkApiResponse(response: Response): Promise<Optional<ApiError>> {
     if (!response.ok) {
-      const result = (await response.json()) as { message: string, details: { cause: string, id: string } };
+      const result = await response.json() as { message: string, details: { cause: string, id: string } };
 
       const error = new ApiError(
         result.message,
