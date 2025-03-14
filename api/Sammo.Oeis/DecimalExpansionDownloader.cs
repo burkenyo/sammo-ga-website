@@ -12,9 +12,9 @@ namespace Sammo.Oeis;
 /// </summary>
 public interface IDecimalExpansionDownloader
 {
-    Task<OeisDecimalExpansion> DownloadAsync(OeisId id, int? maxDigits = null);
+    Task<OeisDecimalExpansion> DownloadAsync(OeisId id);
 
-    Task<OeisDecimalExpansion> HydrateAsync(OeisSequence sequence, int? maxDigits = null);
+    Task<OeisDecimalExpansion> HydrateAsync(OeisSequence sequence);
 
     Task<OeisSequence> GetRandomSequence();
 }
@@ -83,7 +83,7 @@ public class DecimalExpansionDownloader : IDecimalExpansionDownloader
                 .WithName("decimal%20expansion");
     }
 
-    public async Task<OeisDecimalExpansion> DownloadAsync(OeisId id, int? maxDigits = null)
+    public async Task<OeisDecimalExpansion> DownloadAsync(OeisId id)
     {
         var query = new QueryBuilder()
             .WithId(id);
@@ -101,22 +101,17 @@ public class DecimalExpansionDownloader : IDecimalExpansionDownloader
 
         var sequence = result.Sequence!;
 
-        return await HydrateAsync(sequence, maxDigits);
+        return await HydrateAsync(sequence);
     }
 
-    public async Task<OeisDecimalExpansion> HydrateAsync(OeisSequence sequence, int? maxDigits = null)
+    public async Task<OeisDecimalExpansion> HydrateAsync(OeisSequence sequence)
     {
         var id = sequence.Id;
-
-        if (maxDigits is not null)
-        {
-            ArgumentOutOfRangeException.ThrowIfLessThan((int) maxDigits, 1);
-        }
 
         try
         {
             await using var bFileContent = await _oeisClient.GetStreamAsync($"/{id}/b{id.GetPaddedValue()}.txt");
-            var terms = await BFileParser.ParseAsync(id, bFileContent, maxDigits);
+            var terms = await BFileParser.ParseAsync(id, bFileContent);
 
             var digits = new Fractional.DigitArray(terms.Count, 10);
             digits.Fill(terms);
@@ -126,26 +121,6 @@ public class DecimalExpansionDownloader : IDecimalExpansionDownloader
         catch (Exception ex) when (ex is HttpRequestException or IOException)
         {
             throw OeisClientException.IOError($"Could not retrieve the b-file for {id} from OEIS!", id, ex);
-        }
-    }
-
-    static void CheckBFileTerm(OeisId id, ReadOnlySpan<char> parsedTerm)
-    {
-        switch (parsedTerm)
-        {
-            case { Length: 0 }:
-                // indicates the format of the b-file has changed
-                throw OeisClientException.ParseError($"Could not to parse the b-file for {id}!", id);
-
-            case ['-', ..]:
-                throw OeisClientException.InvalidSequence(
-                    $"Could not interpret OEIS sequence {id} as a decimal expansion! "
-                        + "The sequence contains one or more terms that are negative.", id);
-
-            case { Length: > 1 }:
-                throw OeisClientException.InvalidSequence(
-                    $"Could not interpret OEIS sequence {id} as a decimal expansion! "
-                        + "The sequence contains one or more terms that are more than a single decimal digit.", id);
         }
     }
 }
@@ -368,11 +343,10 @@ static class SeachResultParser
 
 static class BFileParser
 {
-    public static async Task<List<byte>> ParseAsync(OeisId id, Stream stream, int? maxDigits)
+    public static async Task<List<byte>> ParseAsync(OeisId id, Stream stream)
     {
         await using var reader = new Utf8StreamReader(stream, leaveOpen: true);
 
-        int current = 0;
         List<byte> terms = [];
         await foreach (var line in reader.ReadAllLinesAsync())
         {
@@ -385,11 +359,6 @@ static class BFileParser
             span = span[(span.IndexOf((byte)' ') + 1)..];
             CheckBFileTerm(id, span);
             terms.Add((byte)(span[0] - '0'));
-
-            if (maxDigits is not null && ++current == maxDigits)
-            {
-                break;
-            }
         }
 
         return terms;

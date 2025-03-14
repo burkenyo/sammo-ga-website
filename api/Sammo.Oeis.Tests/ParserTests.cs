@@ -38,19 +38,10 @@ public class SeachResultParserTests : IClassFixture<TestDataProvider>
     public async Task BFileParserParser_ParseUnlimited_ReturnsFullResult()
     {
         await using var bFile = _testDataProvider.GetTestData("A021575-bfile");
-        var terms = await BFileParser.ParseAsync(OeisId.Parse("A021575"), bFile, null);
+        var terms = await BFileParser.ParseAsync(OeisId.Parse("A021575"), bFile);
 
         Assert.Equal(99, terms.Count);
         Assert.True(terms is [0, 0, 1, 7, 5, .., 0, 1, 9, 2, 6]);
-    }
-
-    [Fact]
-    public async Task BFileParserParser_ParseWithLimit_ReturnsCappedResult()
-    {
-        await using var bFile = _testDataProvider.GetTestData("A021575-bfile");
-        var terms = await BFileParser.ParseAsync(OeisId.Parse("A021575"), bFile, 20);
-
-        Assert.Equal(20, terms.Count);
     }
 
     [Fact]
@@ -59,7 +50,7 @@ public class SeachResultParserTests : IClassFixture<TestDataProvider>
         await using var bFile = _testDataProvider.GetTestData("A105309-bfile");
 
         var ex = await Assert.ThrowsAsync<OeisClientException>(() =>
-            BFileParser.ParseAsync(OeisId.Parse("A105309"), bFile, null));
+            BFileParser.ParseAsync(OeisId.Parse("A105309"), bFile));
         Assert.Equal(ClientExceptionCause.InvalidSequence, ex.Cause);
         Assert.Contains("single decimal digit", ex.Message);
     }
@@ -70,7 +61,7 @@ public class SeachResultParserTests : IClassFixture<TestDataProvider>
         await using var bFile = _testDataProvider.GetTestData("A290737-bfile");
 
         var ex = await Assert.ThrowsAsync<OeisClientException>(() =>
-            BFileParser.ParseAsync(OeisId.Parse("A290737"), bFile, null));
+            BFileParser.ParseAsync(OeisId.Parse("A290737"), bFile));
         Assert.Equal(ClientExceptionCause.InvalidSequence, ex.Cause);
         Assert.Contains("single decimal digit", ex.Message);
     }
