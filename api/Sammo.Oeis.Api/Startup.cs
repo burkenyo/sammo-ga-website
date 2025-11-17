@@ -11,6 +11,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Console;
 using Sammo.Oeis;
 using Sammo.Oeis.Api;
+using Scalar.AspNetCore;
 
 /// <summary>
 /// Contains extension methods for adding configuration sources,
@@ -18,6 +19,8 @@ using Sammo.Oeis.Api;
 /// </summary>
 static class StartupExtensions
 {
+    static readonly string s_openApiDocumentName = ThisAssembly.Title.Replace(' ', '_') + '_' + ThisAssembly.Version;
+
     /// <remarks>
     /// When using WebApplication.CreateBuilder(), the formatter is automatically selected
     /// from the config entry “Logging:Console:FormatterName”. In the case of CreateSlimBuilder(),
@@ -69,18 +72,19 @@ static class StartupExtensions
         services.AddSingleton<IDozenalExpansionStore, DozenalExpansionAzureBlobStore>();
     }
 
-    public static void AddThisAssemblySwaggerGen(this IServiceCollection services) =>
-        services.AddSwaggerGen(options =>
+    public static void AddOpenApi(this IServiceCollection services) =>
+        services.AddOpenApi(s_openApiDocumentName, options =>
         {
-            var version = ThisAssembly.Version;
-
-            options.SwaggerDoc(version, new()
+            options.AddDocumentTransformer((document, _, _) =>
             {
-                Version = version,
-                Title = ThisAssembly.Title,
-                Description = ThisAssembly.Description,
+                document.Info.Version = ThisAssembly.Version;
+                document.Info.Title = ThisAssembly.Title;
+                document.Info.Description = ThisAssembly.Description;
+
+                return Task.CompletedTask;
             });
         });
+
 
     public static void ConfigureJsonOptions(this IServiceCollection services) =>
         services.ConfigureHttpJsonOptions(static options =>
@@ -92,13 +96,15 @@ static class StartupExtensions
     public static void AddRegexRoutingConstraint(this IServiceCollection services) =>
         services.Configure<RouteOptions>(options => options.SetParameterPolicy<RegexInlineRouteConstraint>("regex"));
 
-    public static void UseThisAssemblySwaggerUi(this WebApplication app) =>
-        app.UseSwaggerUI(static options =>
+    public static void MapApiDocs(this WebApplication app)
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference("api-docs", options =>
         {
-            var version = ThisAssembly.Version;
-
-            options.SwaggerEndpoint($"/swagger/{version}/swagger.json", ThisAssembly.Title + ' ' + version);
+            options.AddDocument(s_openApiDocumentName);
+            options.Title = ThisAssembly.Title + ' ' + ThisAssembly.Version;
         });
+    }
 
     public static void UseDataDirStaticFiles(this WebApplication app, DirectoryInfo dataDir) =>
         app.UseStaticFiles(new StaticFileOptions

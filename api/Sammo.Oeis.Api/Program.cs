@@ -45,8 +45,7 @@ try
 
     services.AddWebApi<ExpansionsApi>();
 
-    services.AddEndpointsApiExplorer();
-    services.AddThisAssemblySwaggerGen();
+    services.AddOpenApi();
 
     if (config.Cors.UseCors)
     {
@@ -73,8 +72,7 @@ catch (Exception ex)
 // Configure the request pipeline and run the app.
 try
 {
-    app.UseSwagger();
-    app.UseThisAssemblySwaggerUi();
+    app.MapApiDocs();
 
     if (config.Cors.UseCors)
     {

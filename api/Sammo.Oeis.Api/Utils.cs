@@ -24,51 +24,22 @@ static class LoggerExtensions
 
 static class EndpointConventionBuilderExtensions
 {
-    public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder, int statusCode, string description, IEnumerable<string> contentTypes) =>
-        builder.Produces(statusCode, description, typeof(TResponse), null, contentTypes as string[] ?? contentTypes.ToArray());
+     public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder, int statusCode, string description) =>
+         builder.Produces(statusCode, typeof(TResponse))
+             .AddOpenApiOperationTransformer((operation, _, _) =>
+             {
+                 operation.Responses![statusCode.ToString()].Description = description;
 
-    public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder, int statusCode, string description, string? contentType = null, params string[] additionalContentTypes) =>
-        builder.Produces(statusCode, description, typeof(TResponse), contentType, additionalContentTypes);
+                 return Task.CompletedTask;
+             });
 
+     public static TBuilder WithParameterDescription<TBuilder>(this TBuilder builder, string name, string description) where TBuilder : IEndpointConventionBuilder =>
+         builder.AddOpenApiOperationTransformer((operation, _, _) =>
+         {
+             operation.Parameters!.Single(p => p.Name == name).Description = description;
 
-    public static RouteHandlerBuilder Produces(this RouteHandlerBuilder builder, int statusCode, string description, Type? responseType = null, string? contentType = null, params string[] additionalContentTypes) =>
-        builder.Produces(statusCode, responseType, contentType, additionalContentTypes)
-            .WithOpenApi(operation =>
-            {
-                operation.Responses[statusCode.ToString()].Description = description;
-
-                return operation;
-            });
-
-    public static TBuilder WithParameterDescription<TBuilder>(this TBuilder builder, int id, string description) where TBuilder : IEndpointConventionBuilder =>
-        builder.WithOpenApi(operation =>
-        {
-            operation.Parameters[id].Description = description;
-
-            return operation;
-        });
-
-    public static TBuilder WithParameterDescription<TBuilder>(this TBuilder builder, string name, string description) where TBuilder : IEndpointConventionBuilder =>
-        builder.WithOpenApi(operation =>
-        {
-            operation.Parameters.Single(p => p.Name == name).Description = description;
-
-            return operation;
-        });
-
-    public static TBuilder WithParameterDescriptions<TBuilder>(this TBuilder builder, params string[] descriptions) where TBuilder : IEndpointConventionBuilder =>
-        builder.WithParameterDescriptions((IEnumerable<string>) descriptions);
-
-    public static TBuilder WithParameterDescriptions<TBuilder>(this TBuilder builder, IEnumerable<string> descriptions) where TBuilder : IEndpointConventionBuilder =>
-        builder.WithOpenApi(operation =>
-        {
-            foreach (var (param, description) in operation.Parameters.Zip(descriptions))
-            {
-                param.Description = description;
-            }
-
-            return operation;
-        });
+             return Task.CompletedTask;
+         });
 }
 
 interface IWebApi

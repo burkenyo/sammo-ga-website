@@ -45,11 +45,11 @@ class ExpansionsApi : IWebApi
             .WithTags("Dozenal Expansions");
 
         group.MapGet("byId/{id}", (ExpansionsApi api, string id) => api.GetById(id))
-            .WithSummary("Returns the dozenal expansion of an OEIS Sequence by its ID.")
+            .WithDescription("Returns the dozenal expansion of an OEIS Sequence by its ID.")
             .WithParameterDescription("id", "The ID of the OEIS Sequence")
             .Produces<StoredOeisExpansionInfoDto>(Status200OK,
                 "Info about the requested dozenal expansion. "
-                    + "The Content-Location header indicates where the full expansion can be found.")
+                + "The Content-Location header indicates where the full expansion can be found.")
             .Produces<OeisClientErrorDto>(Status400BadRequest,
                 "The Id parameter is invalid "
                 + "or represents an OEIS Sequence that cannot be interpreted as a dozenal expansion.")
@@ -57,7 +57,7 @@ class ExpansionsApi : IWebApi
                 "No OEIS Sequence can be found by the requested ID.");
 
         group.MapGet("random", (ExpansionsApi api) => api.GetRandom())
-            .WithSummary("Returns the dozenal expansion of a random OEIS Sequence.")
+            .WithDescription("Returns the dozenal expansion of a random OEIS Sequence.")
             .Produces<StoredOeisExpansionInfoDto>(Status200OK,
                 "Info about a random dozenal expansion. "
                 + "The Content-Location header indicates where the full expansion can be found.");

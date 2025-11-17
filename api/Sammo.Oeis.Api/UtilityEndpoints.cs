@@ -8,10 +8,10 @@ class UtilityEndpoints : IWebApi
     public static void MapRoutes(IEndpointRouteBuilder builder, Config.CorsConfig corsConfig)
     {
         var group = builder.MapGroup("/")
-            .ExcludeFromDescription(); //prevent showing up in swagger
+            .ExcludeFromDescription(); //prevent showing up in OpenAPI
 
-        // redirect requests to the root to the swagger UI
-        group.MapGet("/", () => Results.Redirect("/swagger", preserveMethod: true));
+        // redirect requests to the root to the Scalar UI
+        group.MapGet("/", () => Results.Redirect("/api-docs", preserveMethod: true));
         group.MapGet("gitInfo", () => new GitInfoDto());
         // use a “simple request” HTTP method to prevent CORS pre-flight
         group.MapPost("ping", () => Results.NoContent())
