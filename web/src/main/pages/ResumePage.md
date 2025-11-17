@@ -41,6 +41,33 @@ A diverse set of languages
 
 <SkillsSection>
 <template #icons>
+  <img src="/icons/sql.svg" />
+  <img src="/icons/PostgreSQL_logo.3colors.svg" />
+  <img src="/icons/spark.svg" />
+  <img src="/icons/s3-logo.png" />
+  <img src="/icons/Swagger-logo.png" />
+</template>
+
+#### SQL Server • PostgreSQL • Apache Spark • S3/Blobs • Web APIs
+
+Various data storage and retrieval paradigms
+</SkillsSection>
+
+<SkillsSection>
+<template #icons>
+  <img src="/icons/logo_ASP.NET_RGB_square-negative.svg" />
+  <img src="/icons/Vue-logo.svg" />
+  <img src="/icons/AWS_Logo.svg" />
+  <img src="/icons/Azure-logo.svg" />
+</template>
+
+#### ASP.NET Core • Vue • AWS • Azure
+
+Multiple web frameworks with cloud experience
+</SkillsSection>
+
+<SkillsSection>
+<template #icons>
   <img src="/icons/Git-Icon-1788C.svg" />
   <img src="/icons/gh-actions.png" />
   <img src="/icons/Moby-logo.png" />
@@ -50,31 +77,6 @@ A diverse set of languages
 #### Git • CI/CD • Docker • Kubernetes
 
 Portable code that runs anywhere
-</SkillsSection>
-
-<SkillsSection>
-<template #icons>
-  <img src="/icons/logo_ASP.NET_RGB_square-negative.svg" />
-  <img src="/icons/Vue-logo.svg" />
-  <img src="/icons/Azure-logo.svg" />
-</template>
-
-#### ASP.NET Core • Vue • Azure
-
-Multiple web frameworks with cloud experience
-</SkillsSection>
-
-<SkillsSection>
-<template #icons>
-  <img src="/icons/sql.svg" />
-  <img src="/icons/PostgreSQL_logo.3colors.svg" />
-  <img src="/icons/s3-logo.png" />
-  <img src="/icons/Swagger-logo.png" />
-</template>
-
-#### SQL Server • PostgreSQL • S3/Blobs • Web APIs
-
-Various data storage and retrieval paradigms
 </SkillsSection>
 
 <SkillsSection>
