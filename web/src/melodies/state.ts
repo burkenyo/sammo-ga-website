@@ -52,7 +52,7 @@ export const interestingConstantsInfo: readonly InterestingConstant[] = [
   },
 ];
 
-export const INITIAL_OEIS_ID = interestingConstantsInfo[0].id;
+export const INITIAL_OEIS_ID = interestingConstantsInfo[0]!.id;
 
 export const BASE = 12;
 

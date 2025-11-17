@@ -44,8 +44,8 @@ namespace Helpers {
     return factorials.slice(MAX_BASE - base + 1);
   }
 
-  export function getMaxPermutationNumber(base: number) {
-    return factorials[MAX_BASE - base];
+  export function getMaxPermutationNumber(base: number): number {
+    return factorials[MAX_BASE - base]!;
   }
 }
 
@@ -62,7 +62,7 @@ export class Permutation implements Equatable  {
   }
 
   public get offset(): number {
-    return this.sequence[0];
+    return this.sequence[0]!;
   }
 
   private constructor(key: symbol, number: number, sequence: readonly number[]) {
@@ -125,8 +125,8 @@ export class Permutation implements Equatable  {
     let mods = number - 1;
 
     for (let i = 0; i < base - 2; i++) {
-      lehmer[i] = Math.floor(mods/factorials[i]);
-      mods = mods % factorials[i];
+      lehmer[i] = Math.floor(mods/factorials[i]!);
+      mods = mods % factorials[i]!;
     }
 
     const digitBag = Helpers.getDigitBag(base);
@@ -138,13 +138,13 @@ export class Permutation implements Equatable  {
     const sequence = [offset];
 
     for (let i = 0; i < base - 2; i++) {
-      sequence.push((digitBag[lehmer[i]] + offset) % base);
+      sequence.push((digitBag[lehmer[i]!]! + offset) % base);
 
       // This digit is “used up”; remove it.
-      digitBag.splice(lehmer[i], 1);
+      digitBag.splice(lehmer[i]!, 1);
     }
     // the remaining digit goes last in the sequence
-    sequence.push((digitBag[0] + offset) % base);
+    sequence.push((digitBag[0]! + offset) % base);
 
     return new Permutation(this.#CONSTRUCTOR_KEY, number, sequence);
   }
@@ -169,18 +169,18 @@ export class Permutation implements Equatable  {
     const factorials = Helpers.getFactorials(base);
     const digitBag = Helpers.getDigitBag(base);
     let number = 1;
-    const offset = sequence[0];
+    const offset = sequence[0]!;
 
     for (let i = 0; i < base - 2; i++) {
-      const index = digitBag.indexOf((base + sequence[i + 1] - offset) % base);
-      number += index * factorials[i];
+      const index = digitBag.indexOf((base + sequence[i + 1]! - offset) % base);
+      number += index * factorials[i]!;
       digitBag.splice(index, 1);
     }
 
     return new Permutation(this.#CONSTRUCTOR_KEY, number, sequence);
   }
 
-  static getMaxNumber(base: number) {
+  static getMaxNumber(base: number): number {
     this.#validateBase(base);
 
     return Helpers.getMaxPermutationNumber(base);
@@ -208,7 +208,7 @@ export class Permutation implements Equatable  {
     const inverted = [];
     for (let i = 0; i < this.base; i++) {
       // when computing the inverse of an element, add the offset back
-      inverted[this.sequence[i]] = i;
+      inverted[this.sequence[i]!] = i;
     }
 
     return Permutation.fromSequence(inverted);

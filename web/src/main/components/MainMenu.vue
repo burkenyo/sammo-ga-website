@@ -21,9 +21,9 @@ const menuRoutes = readonly(
   menuPages.map(p => routes.filter(r => r.name == p))
     .filter(rs => rs.length)
     .map(([r]) => ({
-      name: r.name,
+      name: r!.name,
       // use nbsp so menu links don’t wrap
-      title: r.meta.title.replace(/ /g, "\xA0"),
+      title: r!.meta.title.replace(/ /g, "\xA0"),
     }))
 );
 

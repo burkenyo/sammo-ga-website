@@ -43,8 +43,9 @@ export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
         let width = CLEF_OFFSET;
         const staffOffsetNum = offset + i + 1;
         while (i < notes.length) {
+          const note = notes[i]!;
           width += NOTE_WIDTH;
-          const accidental = notes[i].charAt(1) == "#";
+          const accidental = note.charAt(1) == "#";
           if (accidental) {
             width += ACCIDENTAL_WIDTH;
           }
@@ -53,22 +54,22 @@ export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
             break;
           }
 
-          const note = new StaveNote({ keys: [notes[i]], duration: "4", stemDirection: Stem.DOWN });
+          const vexNote = new StaveNote({ keys: [note], duration: "4", stemDirection: Stem.DOWN });
           if (accidental) {
-            note.addModifier(new Accidental("#"));
+            vexNote.addModifier(new Accidental("#"));
           }
-          vexNotes.push(note);
+          vexNotes.push(vexNote);
 
           i++;
         }
         staves.push({ notes: vexNotes, width: width, offset: staffOffsetNum });
       }
 
-      const lastStave = staves[staves.length - 1];
+      const lastStave = staves[staves.length - 1]!;
       if (workableWidth - lastStave.width < 2 * (NOTE_WIDTH + ACCIDENTAL_WIDTH)) {
         lastStave.width = workableWidth - TERMINAL_BAR_LINE_WIDTH;
       } else if (staves.length > 1 && lastStave.width < 2 * (NOTE_WIDTH + ACCIDENTAL_WIDTH) + CLEF_OFFSET) {
-        const newLastStave = staves[staves.length - 2];
+        const newLastStave = staves[staves.length - 2]!;
         newLastStave.notes = newLastStave.notes.concat(lastStave.notes);
         newLastStave.width = workableWidth - TERMINAL_BAR_LINE_WIDTH;
         staves.pop();
@@ -78,25 +79,26 @@ export async function useEngraver(element: HTMLDivElement): Promise<Engraver> {
       this.#context.resize(workableWidth, staves.length * STAFF_HEIGHT + CANVAS_PADDING);
 
       for (i = 0; i < staves.length; i++) {
-        const stave = new Stave(0, i * STAFF_HEIGHT, i + 1 == staves.length ? staves[i].width + TERMINAL_BAR_LINE_WIDTH : staves[i].width);
+        const staff = staves[i]!;
+        const vefStaff = new Stave(0, i * STAFF_HEIGHT, i + 1 == staves.length ? staff.width + TERMINAL_BAR_LINE_WIDTH : staff.width);
         if (i + 1 == staves.length) {
-          stave.setEndBarType(Barline.type.END);
+          vefStaff.setEndBarType(Barline.type.END);
         } else {
-          stave.setEndBarType(Barline.type.NONE);
+          vefStaff.setEndBarType(Barline.type.NONE);
         }
-        stave.addClef("treble").setContext(this.#context).draw();
+        vefStaff.addClef("treble").setContext(this.#context).draw();
 
-        const text = new TextNote({ text: String(staves[i].offset), duration: "q" }).setLine(2.6)
-          .setStave(stave).setJustification(TextNote.Justification.CENTER);
+        const text = new TextNote({ text: String(staff.offset), duration: "q" }).setLine(2.6)
+          .setStave(vefStaff).setJustification(TextNote.Justification.CENTER);
 
-        const voice = new Voice({ numBeats: staves[i].notes.length, beatValue: 4, resolution: VexFlow.RESOLUTION });
-        const voice2 = new Voice({ numBeats: staves[i].notes.length, beatValue: 4, resolution: VexFlow.RESOLUTION });
-        voice.addTickables(staves[i].notes);
+        const voice = new Voice({ numBeats: staff.notes.length, beatValue: 4, resolution: VexFlow.RESOLUTION });
+        const voice2 = new Voice({ numBeats: staff.notes.length, beatValue: 4, resolution: VexFlow.RESOLUTION });
+        voice.addTickables(staff.notes);
         voice2.addTickables([text]);
         voice2.setStrict(false);
 
-        new Formatter().joinVoices([voice, voice2]).format([voice, voice2], staves[i].width - CLEF_OFFSET);
-        voice.draw(this.#context, stave);
+        new Formatter().joinVoices([voice, voice2]).format([voice, voice2], staff.width - CLEF_OFFSET);
+        voice.draw(this.#context, vefStaff);
         text.setContext(this.#context).draw();
       }
     }

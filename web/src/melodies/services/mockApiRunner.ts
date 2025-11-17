@@ -27,7 +27,7 @@ export class MockApiRunner implements ApiRunner {
     const idStrings = (await response.json()) as string[];
     const ids = idStrings.map(s => OeisId.parse(s));
 
-    const id = ids[Math.floor(Math.random() * ids.length)];
+    const id = ids[Math.floor(Math.random() * ids.length)]!;
 
     await delay(1000 + Math.random() * 500);
 

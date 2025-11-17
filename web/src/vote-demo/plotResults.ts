@@ -5,7 +5,7 @@ import { dynamicImport, immutable, ordinalize, range } from "@shared/utils";
 import type { ElectionData } from "./election";
 
 const plotlyImport = dynamicImport<{ default: typeof import("plotly.js") }>(
-  "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.35.3/+esm");
+  "https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@3.3.0/+esm");
 
 namespace shared {
   const context = document.createElement("canvas").getContext("2d")!;
@@ -40,7 +40,7 @@ export async function plotFirstRoundTallies(
 
   for (const ballot of ballots)
   for (const [index, nomination] of ballot.entries()) {
-    tallies.get(nomination)![index]++;
+    tallies.get(nomination)![index]!++;
   }
 
   // This plot will have all the nominations
@@ -57,8 +57,8 @@ export async function plotFirstRoundTallies(
     height: 48 + gridSize + plotTitleHeight,
     width: 124 + gridSize + labelWidth,
     margin: { t: plotTitleHeight + 8, b: 40, },
-    xaxis: { title: "Preference", fixedrange: true },
-    yaxis: { title: "Nomination", automargin: true, fixedrange: true}
+    xaxis: { title: { text: "Preference" }, fixedrange: true },
+    yaxis: { title: { text: "Nomination" }, automargin: true, fixedrange: true}
   });
 }
 
@@ -77,7 +77,7 @@ export async function plotInstantRunoffRounds(
       const counts = new Map<string, number>();
 
       for (const [firstChoice] of wipData) {
-        counts.set(firstChoice, (counts.get(firstChoice) ?? 0) + 1);
+        counts.set(firstChoice!, (counts.get(firstChoice!) ?? 0) + 1);
       }
 
       if (round == 1) {
@@ -138,8 +138,8 @@ export async function plotInstantRunoffRounds(
     height: 334 + plotTitleHeight,
     width: 160 + gridWidth + labelWidth,
     margin: { t: plotTitleHeight + 8, b: 40 },
-    xaxis: { title: "Round", dtick: 1, fixedrange: true },
-    yaxis: { title: "Percentage of Ballots", range: [0, 1], dtick: 0.1, tickformat: ".0%", fixedrange: true },
+    xaxis: { title: { text: "Round" }, dtick: 1, fixedrange: true },
+    yaxis: { title: { text: "Percentage of Ballots" }, range: [0, 1], dtick: 0.1, tickformat: ".0%", fixedrange: true },
     shapes: [...dividers, {
       type: "line",
       xref: "paper", yref: "y",
@@ -193,6 +193,6 @@ export async function plotBordaCountScores(
     margin: { t: plotTitleHeight + 8, b: 8 },
     xaxis: { visible: false, fixedrange: true },
     // yaxis: { title: "Normalized Score", range: [0, 1], dtick: 0.1, tickformat: ".0%", fixedrange: true }
-    yaxis: { title: "Raw Score", fixedrange: true },
+    yaxis: { title: { text: "Raw Score" }, fixedrange: true },
   });
 }

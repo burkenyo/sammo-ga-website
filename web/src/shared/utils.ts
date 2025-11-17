@@ -205,5 +205,5 @@ export function shuffle(array: unknown[]): void {
 }
 
 export function pickRandom<T>(array: readonly T[]): T {
-  return array[Math.floor(Math.random() * array.length)]
+  return array[Math.floor(Math.random() * array.length)]!;
 }

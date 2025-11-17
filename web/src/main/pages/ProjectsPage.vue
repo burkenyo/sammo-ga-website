@@ -39,7 +39,7 @@ onMounted(() => {
 
   for (let i = 0; i < projectElements.length; i++)
   {
-    projectElements[i].classList.add(colors[i]);
+    projectElements[i]!.classList.add(colors[i]!);
   }
 })
 

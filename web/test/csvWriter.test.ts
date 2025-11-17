@@ -43,7 +43,7 @@ function getMockData(): {
   .flat();
 
   function swap(a: number, b: number) {
-    [headers[b], headers[a]] = [headers[a], headers[b]];
+    [headers[b], headers[a]] = [headers[a]!, headers[b]!];
   }
 
   // move some columns so it’s not completely regular

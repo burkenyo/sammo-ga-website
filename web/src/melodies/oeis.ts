@@ -108,7 +108,7 @@ export class Fractional {
           continue;
         }
 
-        const digit = Fractional.DOZENAL_DIGIT_MAP.indexOf(dozenal[i]);
+        const digit = Fractional.DOZENAL_DIGIT_MAP.indexOf(dozenal[i]!);
 
         if (digit == -1) {
           throw new RangeError(`Invalid digit! ${dozenal[i]}`);
@@ -158,9 +158,9 @@ export class OeisFractionalExpansion {
   static parseRawText(text: string): OeisFractionalExpansion {
     const lines = text.split(/\r?\n/g, 3);
 
-    const id = OeisId.parse(lines[0]);
-    const name = lines[1];
-    const expansion = Fractional.parseDozenal(lines[2]);
+    const id = OeisId.parse(lines[0]!);
+    const name = lines[1]!;
+    const expansion = Fractional.parseDozenal(lines[2]!);
 
     return new OeisFractionalExpansion(id, name, expansion);
   }

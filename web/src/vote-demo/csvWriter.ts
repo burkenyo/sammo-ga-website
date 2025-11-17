@@ -20,11 +20,11 @@ export class CsvWriter {
     this.#lastIndex = fields.length - 1;
 
     for (let i = 0; i < this.#lastIndex; i++) {
-      this.#writeString(this.#fields[i]);
+      this.#writeString(this.#fields[i]!);
       this.#writeRaw(",");
     }
 
-    this.#writeString(this.#fields[this.#lastIndex]);
+    this.#writeString(this.#fields[this.#lastIndex]!);
     this.#writeRaw("\r\n");
   }
 
@@ -63,7 +63,7 @@ export class CsvWriter {
     }
 
     for (let i = 0; i < this.#lastIndex; i++) {
-      const value = values[this.#fields[i]];
+      const value = values[this.#fields[i]!]!;
 
       if (value != null) {
         this.#writeValue(value);
@@ -72,7 +72,7 @@ export class CsvWriter {
       this.#writeRaw(",");
     }
 
-    const lastValue = values[this.#fields[this.#lastIndex]];
+    const lastValue = values[this.#fields[this.#lastIndex]!]!;
 
     if (lastValue != null) {
       this.#writeValue(lastValue);

@@ -23,14 +23,14 @@ function setup() {
   const index = storedName ? GIVEN_NAMES.indexOf(storedName) : -1;
 
   if (index == -1) {
-    oldGivenName = GIVEN_NAMES[0];
+    oldGivenName = GIVEN_NAMES[0]!;
     nameCounter = 1;
   } else {
-    oldGivenName = GIVEN_NAMES[index];
+    oldGivenName = GIVEN_NAMES[index]!;
     nameCounter = (index + 1) % GIVEN_NAMES.length;
   }
 
-  newGivenName = GIVEN_NAMES[nameCounter];
+  newGivenName = GIVEN_NAMES[nameCounter]!;
 }
 
 async function removeOldGivenName(nameRef: Ref<string>): Promise<void> {
@@ -80,7 +80,7 @@ export function useNameUpdater(): Readonly<{ nameRef: Ref<string>, canceler: () 
       await prependNewGivenName(nameRef);
 
       oldGivenName = newGivenName;
-      newGivenName = GIVEN_NAMES[++nameCounter % GIVEN_NAMES.length];
+      newGivenName = GIVEN_NAMES[++nameCounter % GIVEN_NAMES.length]!;
     }
   })();
 

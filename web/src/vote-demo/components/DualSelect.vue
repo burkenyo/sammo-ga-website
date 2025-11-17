@@ -63,7 +63,7 @@ function up() {
     return;
   }
 
-  state.value.selections.splice(index - 1, 2, state.value.selectedSelection, state.value.selections[index - 1]);
+  state.value.selections.splice(index - 1, 2, state.value.selectedSelection, state.value.selections[index - 1]!);
   emit("selectionsupdated", state.value.selections);
 }
 
@@ -77,7 +77,7 @@ function down() {
     return;
   }
 
-  state.value.selections.splice(index, 2, state.value.selections[index + 1], state.value.selectedSelection);
+  state.value.selections.splice(index, 2, state.value.selections[index + 1]!, state.value.selectedSelection);
   emit("selectionsupdated", state.value.selections);
 }
 

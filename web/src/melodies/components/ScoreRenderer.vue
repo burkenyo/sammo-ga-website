@@ -27,7 +27,7 @@ async function engrave() {
   const engraver = await useEngraver(engraveArea.value!);
 
   const noteSequence = state.permutation.sequence.map(e => SCORE_NOTES[e]);
-  const notes = [...state.expansion.expansion.digits].map(d => noteSequence[d]);
+  const notes = [...state.expansion.expansion.digits].map(d => noteSequence[d]!);
 
   engraver.drawNotes(notes.slice(0, 500), 0, engraveArea.value!.clientWidth);
   engraverReady.value = true;
