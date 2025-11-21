@@ -16,6 +16,15 @@ class UtilityEndpoints : IWebApi
         // use a “simple request” HTTP method to prevent CORS pre-flight
         group.MapPost("ping", () => Results.NoContent())
             .AddCors(corsConfig);
+        group.MapGet("debug", (HttpRequest request) => new
+        {
+            Headers = request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()),
+            Host = request.Host.ToString(),
+            request.IsHttps,
+            request.Method,
+            Path = request.Path.ToString(),
+            request.Protocol
+        });
     }
 
     // Private constructor: This class is not meant to be instantiated,

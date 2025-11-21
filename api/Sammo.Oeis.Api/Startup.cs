@@ -90,7 +90,7 @@ static class StartupExtensions
         services.ConfigureHttpJsonOptions(static options =>
         {
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.SerializerOptions.TypeInfoResolver = DtoSerializerContext.Default;
+            // options.SerializerOptions.TypeInfoResolver = DtoSerializerContext.Default;
         });
 
     public static void AddRegexRoutingConstraint(this IServiceCollection services) =>
